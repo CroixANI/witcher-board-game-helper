@@ -21,7 +21,7 @@
 |---|---|---|---|
 | R0.1 | done | 2026-11-03 | — (bootstrap `264eba1` в `main`) |
 | R0.1b | done | 2026-11-03 | #1 |
-| R0.2 | todo | | |
+| R0.2 | review | 2026-11-03 | #? |
 | R0.3 | todo | | |
 | R0.4 | todo | | |
 | R1.1 | todo | | |
@@ -100,7 +100,7 @@
   - PR этой задачи открыт через `scripts/session/pr-open.sh`.
 - **Проверка:** `bash -n scripts/session/*.sh`; `scripts/session/open-prs.sh` показывает этот PR; в новой сессии `/next-task` выбирает R0.2.
 
-### - [ ] R0.2 Каркас Astro + Preact, layout, тема, страницы-заглушки
+### - [x] R0.2 Каркас Astro + Preact, layout, тема, страницы-заглушки
 - **Ветка:** `chore/r0.2-astro-scaffold` · labels `infra` · M0.
 - **Цель:** собираемый сайт с base path, тёмной темой, tab bar и 8 пустыми маршрутами.
 - **Файлы:** `package.json`, `package-lock.json`, `astro.config.mjs`, `tsconfig.json`, `eslint.config.js`, `.prettierrc`, `.prettierignore`, `src/layouts/BaseLayout.astro`, `src/styles/tokens.css`, `src/styles/global.css`, `src/lib/url.ts`, `src/pages/{index,about}.astro`, `src/pages/setup/index.astro`, `src/pages/turn/index.astro`, `src/pages/turn/not-my-turn/index.astro`, `src/pages/reference/index.astro`, `src/pages/rules/index.astro`, `src/pages/faq/index.astro`, `public/{favicon.svg,robots.txt}`.
