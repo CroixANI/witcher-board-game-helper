@@ -1,12 +1,59 @@
 # ROADMAP
 
-> Правило: **1 задача = 1 сессия Claude Code = 1 ветка = 1 PR.** Исключение одно — R0.1, это bootstrap прямо в `main` до создания репозитория.
-> Каждая задача самодостаточна при наличии `docs/SPEC.md` и этого файла. Ссылки вида «SPEC 8.5» ведут на разделы спецификации.
-> Ветка: `<type>/<id>-<slug>`, например `feat/r2.1-wizard-engine`. Коммиты — Conventional Commits. PR: label + milestone, в описании `Задача: R?.?`.
-> Общий DoD для любого PR (не повторяется в задачах): `npm run lint && npm run check && npm test && npm run build` зелёные локально и в CI; контентные изменения сверены с PDF правил, страницы указаны.
-> Отмечайте выполненное: `- [x]`.
+> **Правило:** 1 задача = 1 сессия Claude Code = 1 ветка = 1 PR. Исключение одно — R0.1, bootstrap прямо в `main` до создания репозитория.
+> **Запуск:** `/next-task` (`.claude/skills/next-task/SKILL.md`). Сессия сама выберет задачу по таблице ниже, сделает её, прогонит тесты, simplifier и code review, откроет PR и обновит таблицу. PR мержит пользователь вручную после зелёного CI. Комментарии в PR — `/pr-sweep <N>`.
+> **Самодостаточность:** каждой задаче достаточно `docs/SPEC.md`, этого файла и `CLAUDE.md`. Ссылки вида «SPEC 8.5» ведут на разделы спецификации.
+> **Ветка:** `<type>/<id>-<slug>`, например `feat/r2.1-wizard-engine`. Коммиты — Conventional Commits. PR: label + milestone, тело по `.github/pull_request_template.md`.
+> **Общий DoD для любого PR** (не повторяется в задачах):
+> - `npm run lint && npm run check && npm test && npm run build` зелёные локально и в CI;
+> - **новое поведение покрыто тестами**;
+> - пройдены simplifier и code review (`REVIEW.md`), important-находки исправлены;
+> - контентные изменения сверены с PDF правил, страницы указаны.
 
-## Статус
+## Статус задач
+Источник правды о прогрессе. Обновляется **в PR самой задачи**:
+- `todo` → `review` + номер PR при открытии PR;
+- `review` → `done` первым коммитом следующей задачи, после того как сессия убедилась, что PR смержен.
+
+Статусы: `todo` · `review` (PR открыт) · `done` (PR смержен) · `skipped`.
+
+| Задача | Статус | Дата | PR |
+|---|---|---|---|
+| R0.1 | done | 2026-11-03 | — (bootstrap `264eba1` в `main`) |
+| R0.1b | review | 2026-11-03 | #1 |
+| R0.2 | todo | | |
+| R0.3 | todo | | |
+| R0.4 | todo | | |
+| R1.1 | todo | | |
+| R1.2 | todo | | |
+| R1.3 | todo | | |
+| R1.4 | todo | | |
+| R1.5 | todo | | |
+| R1.6 | todo | | |
+| R2.1 | todo | | |
+| R2.2 | todo | | |
+| R2.3 | todo | | |
+| R2.4 | todo | | |
+| R2.5 | todo | | |
+| R3.1 | todo | | |
+| R3.2 | todo | | |
+| R3.3 | todo | | |
+| R3.4 | todo | | |
+| R3.5 | todo | | |
+| R4.1 | todo | | |
+| R4.2 | todo | | |
+| R4.3 | todo | | |
+| R5.1 | todo | | |
+| R5.2 | todo | | |
+| R5.3 | todo | | |
+| R5.4 | todo | | |
+| R6.1 | todo | | |
+| R6.2 | todo | | |
+| R6.3 | todo | | |
+| R6.4 | todo | | |
+| R6.5 | todo | | |
+
+## Этапы
 | Этап | Milestone | Задачи |
 |---|---|---|
 | M0 Репозиторий и каркас | `M0 Репозиторий и каркас` | R0.1–R0.4 |
@@ -21,7 +68,7 @@
 
 ## M0 — Репозиторий и каркас
 
-### - [ ] R0.1 Bootstrap: git, документы, репозиторий на GitHub
+### - [x] R0.1 Bootstrap: git, документы, репозиторий на GitHub
 - **Цель:** локальная папка становится публичным репозиторием `CroixANI/witcher-board-game-helper` с документацией и без PDF правил.
 - **Файлы:** `.gitignore`, `.nvmrc`, `README.md`, `LICENSE`, `NOTICE.md`, `CONTRIBUTING.md`, `docs/PLAN.md` (заменить актуальным брифом из проекта), `docs/SPEC.md`, `docs/ROADMAP.md`.
 - **Шаги:** SPEC 14.1 шаги 1–4 и шаг 6 без защиты ветки (labels, milestones, Pages `build_type=workflow`).
@@ -36,6 +83,22 @@
   gh api repos/CroixANI/witcher-board-game-helper/milestones --jq '.[].title'
   gh api repos/CroixANI/witcher-board-game-helper/pages --jq .build_type   # workflow
   ```
+
+### - [x] R0.1b Процесс сессий: CLAUDE.md, /next-task, ревью
+- **Ветка:** `chore/r0.1b-session-workflow` · `infra` · M0.
+- **Цель:** каждая новая сессия запускается командой `/next-task` и сама знает, где задачи, что сделано, что дальше, как тестировать и ревьюить.
+- **Файлы:**
+  - `CLAUDE.md`, `REVIEW.md`;
+  - `.claude/skills/next-task/SKILL.md`, `.claude/skills/pr-sweep/SKILL.md`;
+  - `.claude/agents/{simplifier,code-reviewer}.md`;
+  - `scripts/session/*.sh` (REST-обёртки `gh api`);
+  - `.github/pull_request_template.md`;
+  - таблица статусов в этом файле.
+- **Готово, когда:**
+  - таблица статусов отражает R0.1 = done;
+  - скрипты работают через REST (без GraphQL);
+  - PR этой задачи открыт через `scripts/session/pr-open.sh`.
+- **Проверка:** `bash -n scripts/session/*.sh`; `scripts/session/open-prs.sh` показывает этот PR; в новой сессии `/next-task` выбирает R0.2.
 
 ### - [ ] R0.2 Каркас Astro + Preact, layout, тема, страницы-заглушки
 - **Ветка:** `chore/r0.2-astro-scaffold` · labels `infra` · M0.
@@ -52,7 +115,7 @@
 ### - [ ] R0.3 CI, деплой, шаблоны GitHub, Dependabot
 - **Ветка:** `chore/r0.3-ci-deploy` · `infra` · M0.
 - **Цель:** PR проверяется CI, merge в `main` деплоит на Pages.
-- **Файлы:** `.github/workflows/ci.yml` (только job `check`), `.github/workflows/deploy.yml`, `.github/ISSUE_TEMPLATE/{config.yml,faq-question.yml,rules-bug.yml}`, `.github/pull_request_template.md`, `.github/dependabot.yml`.
+- **Файлы:** `.github/workflows/ci.yml` (только job `check`), `.github/workflows/deploy.yml`, `.github/ISSUE_TEMPLATE/{config.yml,faq-question.yml,rules-bug.yml}`, `.github/dependabot.yml`. (`pull_request_template.md` уже создан в R0.1b.)
 - **Шаги:**
   - SPEC 13.4, 12.7, 14.1 шаг 5;
   - до записи workflow проверить актуальные мажоры: `gh api repos/withastro/action/releases/latest --jq .tag_name` (то же для `actions/checkout`, `actions/setup-node`, `actions/deploy-pages`, `actions/upload-artifact`).
@@ -62,8 +125,8 @@
   - Issue Forms видны в «New issue».
 - **Проверка:**
   ```bash
-  gh pr checks --watch
-  gh run list --workflow deploy --limit 1
+  scripts/session/ci-wait.sh                       # job check зелёный
+  gh api "repos/CroixANI/witcher-board-game-helper/actions/workflows/deploy.yml/runs?per_page=1" --jq '.workflow_runs[0] | "\(.status) \(.conclusion)"'
   curl -sI https://croixani.github.io/witcher-board-game-helper/ | head -1
   ```
 
@@ -220,7 +283,7 @@
 - **Цель:** Playwright по SPEC 13.3 (`setup.spec.ts`, `links.spec.ts`), job `e2e` в `ci.yml`, контекст `e2e` в защите `main`.
 - **Файлы:** `playwright.config.ts` (projects Pixel 7, iPhone 14; `webServer: npm run preview`), `tests/e2e/{setup,links}.spec.ts`, `.github/workflows/ci.yml`.
 - **Готово, когда:** e2e зелёный в CI, скриншоты и отчёт — в артефактах; `gh api …/branches/main/protection --jq .required_status_checks.contexts` → `["check","e2e"]`.
-- **Проверка:** `npm run build && npm run test:e2e`; `gh pr checks`.
+- **Проверка:** `npm run build && npm run test:e2e`; `scripts/session/ci-wait.sh` (job `e2e` зелёный).
 
 ---
 
