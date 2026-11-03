@@ -22,7 +22,7 @@
 | R0.1 | done | 2026-11-03 | — (bootstrap `264eba1` в `main`) |
 | R0.1b | done | 2026-11-03 | #1 |
 | R0.2 | done | 2026-11-03 | #2 |
-| R0.3 | todo | | |
+| R0.3 | review | 2026-11-03 | #? |
 | R0.4 | todo | | |
 | R1.1 | todo | | |
 | R1.2 | todo | | |
@@ -112,7 +112,7 @@
   - `astro check` без ошибок, TS strict.
 - **Проверка:** `npm run build && npx serve dist` (или `npm run preview`) → открыть в DevTools mobile 360×740, пройти по tab bar. `grep -R 'href="/' dist | grep -v witcher-board-game-helper` пусто.
 
-### - [ ] R0.3 CI, деплой, шаблоны GitHub, Dependabot
+### - [x] R0.3 CI, деплой, шаблоны GitHub, Dependabot
 - **Ветка:** `chore/r0.3-ci-deploy` · `infra` · M0.
 - **Цель:** PR проверяется CI, merge в `main` деплоит на Pages.
 - **Файлы:** `.github/workflows/ci.yml` (только job `check`), `.github/workflows/deploy.yml`, `.github/ISSUE_TEMPLATE/{config.yml,faq-question.yml,rules-bug.yml}`, `.github/dependabot.yml`. (`pull_request_template.md` уже создан в R0.1b.)
