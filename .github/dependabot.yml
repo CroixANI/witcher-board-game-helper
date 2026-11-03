@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule: { interval: weekly, day: monday }
+    groups:
+      astro: { patterns: ['astro', '@astrojs/*', 'astro-*'] }
+      lint: { patterns: ['eslint*', '@typescript-eslint/*', 'typescript-eslint', 'prettier*'] }
+      test: { patterns: ['vitest', '@playwright/*', '@testing-library/*'] }
+    open-pull-requests-limit: 5
+    labels: [infra]
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule: { interval: weekly }
+    labels: [infra]

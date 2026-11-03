@@ -1,0 +1,26 @@
+name: 'Ошибка в правилах'
+description: 'На сайте написано не так, как в книге правил'
+title: 'Правила: '
+labels: [rules]
+body:
+  - type: input
+    id: where
+    attributes: { label: 'Где (URL / шаг wizard’а)', placeholder: '/turn/ → «Фаза II»' }
+    validations: { required: true }
+  - type: textarea
+    id: actual
+    attributes: { label: 'Что написано' }
+    validations: { required: true }
+  - type: textarea
+    id: expected
+    attributes: { label: 'Как по правилам', description: 'Своими словами, без цитат из книги' }
+    validations: { required: true }
+  - type: input
+    id: page
+    attributes: { label: 'Страница правил', placeholder: '15' }
+    validations: { required: true }
+  - type: dropdown
+    id: players
+    attributes:
+      label: 'Число игроков'
+      options: ['2', '3', '4', '5']

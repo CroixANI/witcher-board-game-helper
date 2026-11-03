@@ -1,0 +1,21 @@
+name: 'Новый вопрос в FAQ'
+description: 'Вопрос, возникший за столом'
+title: 'FAQ: '
+labels: [faq]
+body:
+  - type: textarea
+    id: question
+    attributes: { label: 'Вопрос', placeholder: 'Можно ли …?' }
+    validations: { required: true }
+  - type: dropdown
+    id: phase
+    attributes:
+      label: 'Фаза'
+      options: [Подготовка, 'Фаза I', 'Фаза II', Битва, 'Фаза III', Общее]
+    validations: { required: true }
+  - type: textarea
+    id: answer
+    attributes: { label: 'Как решили за столом (если решили)' }
+  - type: input
+    id: page
+    attributes: { label: 'Страница правил (если знаете)', placeholder: '15' }
