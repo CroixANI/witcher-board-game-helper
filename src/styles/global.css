@@ -54,6 +54,11 @@ svg {
   outline-offset: 2px;
 }
 
+/* Заглушка раздела «в разработке». */
+.stub {
+  color: var(--color-text-muted);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
