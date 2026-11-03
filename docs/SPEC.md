@@ -1466,17 +1466,7 @@ body:
     attributes: { label: "Страница правил (если знаете)", placeholder: "15" }
 ```
 - `ISSUE_TEMPLATE/rules-bug.yml` (labels `[rules]`): поля «Где (URL / шаг wizard'а)», «Что написано», «Как по правилам», «Страница правил» (обязательно), «Число игроков» (dropdown 2–5).
-- `pull_request_template.md`:
-```md
-## Что сделано
-Задача из ROADMAP: <!-- R?.? -->
-## Как проверить
-- [ ] `npm run lint && npm run check && npm test && npm run build`
-- [ ] Проверено на мобильном viewport (если UI)
-## Сверка с правилами (если контент)
-- [ ] Каждый изменённый шаг/правило сверен с PDF, страницы указаны
-Closes #
-```
+- `pull_request_template.md` — создан в R0.1b (разделы: задача, что сделано, тесты, сверка с правилами, code review, как проверить, вне scope).
 - `dependabot.yml`:
 ```yaml
 version: 2
