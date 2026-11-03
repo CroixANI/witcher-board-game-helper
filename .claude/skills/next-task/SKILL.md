@@ -40,7 +40,7 @@ git switch main && git pull --ff-only
    - `review` — PR открыт, ждёт merge;
    - `done` — PR смержен;
    - `skipped` — пропущена по решению пользователя.
-2. Каждую строку `review` проверьте через `scripts/session/pr-state.sh <N>`:
+2. Каждую строку `review` проверьте через `scripts/session/pr-state.sh <N>`. Если вместо номера `#?` (прошлая сессия оборвалась), найдите PR по ветке в `scripts/session/open-prs.sh` или `gh api "repos/$R/pulls?state=all&head=${R%%/*}:<ветка>"`:
    - `merged` → станет `done` (шаг 4);
    - `open` → **стоп**: «Задача X ждёт merge PR #N. Если в PR есть комментарии — запустите `/pr-sweep N`»;
    - `closed` → стоп, спросить пользователя.

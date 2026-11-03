@@ -125,8 +125,8 @@
   - Issue Forms видны в «New issue».
 - **Проверка:**
   ```bash
-  gh pr checks --watch
-  gh run list --workflow deploy --limit 1
+  scripts/session/ci-wait.sh                       # job check зелёный
+  gh api "repos/CroixANI/witcher-board-game-helper/actions/workflows/deploy.yml/runs?per_page=1" --jq '.workflow_runs[0] | "\(.status) \(.conclusion)"'
   curl -sI https://croixani.github.io/witcher-board-game-helper/ | head -1
   ```
 
@@ -283,7 +283,7 @@
 - **Цель:** Playwright по SPEC 13.3 (`setup.spec.ts`, `links.spec.ts`), job `e2e` в `ci.yml`, контекст `e2e` в защите `main`.
 - **Файлы:** `playwright.config.ts` (projects Pixel 7, iPhone 14; `webServer: npm run preview`), `tests/e2e/{setup,links}.spec.ts`, `.github/workflows/ci.yml`.
 - **Готово, когда:** e2e зелёный в CI, скриншоты и отчёт — в артефактах; `gh api …/branches/main/protection --jq .required_status_checks.contexts` → `["check","e2e"]`.
-- **Проверка:** `npm run build && npm run test:e2e`; `gh pr checks`.
+- **Проверка:** `npm run build && npm run test:e2e`; `scripts/session/ci-wait.sh` (job `e2e` зелёный).
 
 ---
 

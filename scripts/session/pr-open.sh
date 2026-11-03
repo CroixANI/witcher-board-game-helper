@@ -31,8 +31,8 @@ if [[ ${#labels[@]} -gt 0 ]]; then
   gh api "repos/$R/issues/$num/labels" "${args[@]}" >/dev/null
 fi
 if [[ -n "$milestone" ]]; then
-  ms=$(gh api "repos/$R/milestones?state=open&per_page=100" \
-         --jq ".[] | select(.title == \"$milestone\") | .number")
+  ms=$(gh api "repos/$R/milestones?state=open&per_page=100" --jq '.[] | "\(.number)\t\(.title)"' \
+         | awk -F'\t' -v t="$milestone" '$2 == t { print $1 }')
   [[ -n "$ms" ]] || die "milestone не найден: $milestone"
   gh api -X PATCH "repos/$R/issues/$num" -F milestone="$ms" >/dev/null
 fi

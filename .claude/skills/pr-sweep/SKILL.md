@@ -17,7 +17,7 @@ description: Один цикл обработки открытого PR в witch
 ## 2. Собрать
 - **Проверки:**
   ```bash
-  gh api "repos/$R/commits/$(git rev-parse HEAD)/check-runs" --jq '.check_runs[] | select(.conclusion != "success") | "\(.name)\t\(.status)\t\(.conclusion)\t\(.html_url)"'
+  gh api "repos/$R/commits/$(git rev-parse HEAD)/check-runs" --jq '.check_runs[] | select(.status != "completed" or (.conclusion | IN("success","skipped","neutral") | not)) | "\(.name)\t\(.status)\t\(.conclusion)\t\(.html_url)"'
   ```
 - **Нерешённые треды ревью:**
   ```bash
