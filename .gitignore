@@ -1,0 +1,23 @@
+# deps & build
+node_modules/
+dist/
+.astro/
+coverage/
+playwright-report/
+test-results/
+
+# env
+.env
+.env.*
+!.env.example
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Правила игры: чужой копирайт, 13 МБ — только локально (SPEC, решение D4)
+docs/*.pdf
+docs/_ref/
