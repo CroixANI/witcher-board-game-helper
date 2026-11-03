@@ -1,0 +1,54 @@
+/* SPEC 12.6. Тёмная тема по умолчанию, светлая — по prefers-color-scheme. */
+:root {
+  color-scheme: dark;
+
+  --color-bg: #0f1512;
+  --color-surface: #17211c;
+  --color-surface-raised: #1f2c25;
+  --color-border: #2b3a32;
+  --color-accent: #2f5d46;
+  --color-accent-light: #7fb59a;
+  --color-on-accent: #f3f0e8;
+  --color-important: #7a1f22;
+  --color-parchment: #e9dfc7;
+  --color-parchment-text: #2a2118;
+  --color-text: #e8e4da;
+  --color-text-muted: #a9b1a8;
+  --color-focus: #7fb59a;
+
+  --font-body:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  /* Self-hosted книжный шрифт с кириллицей подключается отдельной задачей. */
+  --font-heading: 'Cormorant', 'Alegreya SC', Georgia, 'Times New Roman', serif;
+
+  --font-size-base: 17px;
+  --line-height: 1.5;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  --radius: 12px;
+  --tap-min: 48px;
+  --content-max: 42rem;
+  --tabbar-height: 64px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+
+    --color-bg: #f4f1ea;
+    --color-surface: #ffffff;
+    --color-surface-raised: #ebe6da;
+    --color-border: #d3cbb8;
+    --color-accent: #2f5d46;
+    --color-accent-light: #2f5d46;
+    --color-text: #1d211e;
+    --color-text-muted: #4f5a52;
+    --color-focus: #2f5d46;
+  }
+}

@@ -1,0 +1,11 @@
+dist/
+.astro/
+node_modules/
+coverage/
+package-lock.json
+
+# Документы и процесс оформлены вручную
+*.md
+docs/
+.claude/
+.github/pull_request_template.md
