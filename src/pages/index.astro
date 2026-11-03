@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { url } from '../lib/url';
+
+const actions = [
+  { path: 'setup', title: 'Подготовка', hint: 'Раскладка поля и компонентов по шагам' },
+  { path: 'turn', title: 'Мой ход', hint: 'Фазы I–III и битва с подсказками' },
+  {
+    path: 'turn/not-my-turn',
+    title: 'Не мой ход',
+    hint: 'Что может понадобиться, пока ходят другие',
+  },
+];
+---
+
+<BaseLayout title="Ведьмак: помощник">
+  <h1>Ведьмак: Старый мир</h1>
+  <p class="lead">Помощник за игровым столом: подготовка, ход по фазам и ответы на вопросы.</p>
+
+  <ul class="actions">
+    {actions.map((action) => (
+      <li>
+        <a class="action" href={url(action.path)}>
+          <span class="action-title">{action.title}</span>
+          <span class="action-hint">{action.hint}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+
+  <p class="more">
+    Ещё: <a href={url('reference')}>Справочник</a> · <a href={url('rules')}>Правила</a> ·
+    <a href={url('faq')}>FAQ</a>
+  </p>
+</BaseLayout>
+
+<style>
+  .lead {
+    color: var(--color-text-muted);
+  }
+
+  .actions {
+    display: grid;
+    gap: var(--space-3);
+    margin: var(--space-5) 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .action {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-height: 88px;
+    justify-content: center;
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-accent-light);
+    border-radius: var(--radius);
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .action:hover {
+    background: var(--color-surface-raised);
+  }
+
+  .action-title {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .action-hint {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+  }
+
+  .more a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+</style>
