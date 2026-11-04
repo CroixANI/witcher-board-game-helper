@@ -23,7 +23,7 @@
 | R0.1b | done | 2026-11-03 | #1 |
 | R0.2 | done | 2026-11-03 | #2 |
 | R0.3 | done | 2026-11-04 | #3 |
-| R0.4 | todo | | |
+| R0.4 | review | 2026-11-04 | #? |
 | R1.1 | todo | | |
 | R1.2 | todo | | |
 | R1.3 | todo | | |
@@ -130,7 +130,7 @@
   curl -sI https://croixani.github.io/witcher-board-game-helper/ | head -1
   ```
 
-### - [ ] R0.4 Защита main и проверка процесса
+### - [x] R0.4 Защита main и проверка процесса
 - **Ветка:** `chore/r0.4-branch-protection` (PR с правкой README: «Сайт: <url>») · `infra` · M0.
 - **Цель:** `main` защищена; процесс «ветка → PR → CI → squash» работает.
 - **Шаги:** SPEC 14.1 шаг 6, блок «Защита main». Затем открыть этот PR.
