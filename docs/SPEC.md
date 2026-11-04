@@ -1258,8 +1258,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: withastro/action@v5        # мажор проверить: gh api repos/withastro/action/releases/latest
+      - uses: actions/checkout@v7
+      - uses: withastro/action@v6        # мажор проверить: gh api repos/withastro/action/releases/latest
         with: { node-version: 22, package-manager: npm@latest }
   deploy:
     needs: build
@@ -1267,7 +1267,7 @@ jobs:
     environment: { name: github-pages, url: '${{ steps.deployment.outputs.page_url }}' }
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 ```
 
 ### 12.8 `robots.txt` и правовое
@@ -1310,33 +1310,36 @@ name: ci
 on:
   pull_request:
   push: { branches: [main] }
-concurrency: { group: ci-${{ github.ref }}, cancel-in-progress: true }
+permissions: { contents: read }
+concurrency:                         # блочный стиль: `${{ }}` внутри { } — невалидный YAML
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version-file: .nvmrc, cache: npm }
       - run: npm ci
       - run: npm run lint
       - run: npm run check          # astro check (типы + схемы)
       - run: npm test               # vitest + validate-content
       - run: npm run build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with: { name: dist, path: dist, retention-days: 3 }
   e2e:                               # добавляется в M2
     needs: check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version-file: .nvmrc, cache: npm }
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run build && npm run test:e2e
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with: { name: playwright-report, path: playwright-report, retention-days: 7 }
 ```
 Обязательные статусы для `main`: `check` (с M0), `e2e` (с M2).
