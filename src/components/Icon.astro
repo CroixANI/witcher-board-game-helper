@@ -1,0 +1,17 @@
+---
+// Inline SVG-иконка (SPEC 11.2). Размер — высота, ширина по пропорциям viewBox.
+import { renderIcon, type IconName } from '../lib/icons';
+
+interface Props {
+  name: IconName;
+  label?: string;
+  decorative?: boolean;
+  size?: string;
+  class?: string;
+}
+
+const { name, label, decorative, size = '1.5em', class: className } = Astro.props;
+const svg = renderIcon(name, { label, decorative });
+---
+
+<span class:list={['icon', className]} style={`--icon-size: ${size}`} set:html={svg} />
