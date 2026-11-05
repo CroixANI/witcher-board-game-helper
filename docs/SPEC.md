@@ -1511,7 +1511,7 @@ gh api -X POST repos/$R/pages -f build_type=workflow \
 gh api -X PUT repos/$R/branches/main/protection --input - <<'JSON'
 {
   "required_status_checks": { "strict": true, "contexts": ["check"] },
-  "enforce_admins": false,
+  "enforce_admins": true,
   "required_pull_request_reviews": { "required_approving_review_count": 0 },
   "restrictions": null,
   "required_linear_history": true,
@@ -1520,7 +1520,7 @@ gh api -X PUT repos/$R/branches/main/protection --input - <<'JSON'
 }
 JSON
 ```
-`enforce_admins: false` — владелец может в экстренном случае смержить без зелёного CI. `required_approving_review_count: 0` — PR обязателен, ревьюер не нужен.
+`enforce_admins: true` — защита действует и на владельца: прямой `git push origin main` отклоняется (критерий R0.4). В экстренном случае её временно снимают `gh api -X DELETE repos/$R/branches/main/protection/enforce_admins` и возвращают `gh api -X POST repos/$R/branches/main/protection/enforce_admins`. `required_approving_review_count: 0` — PR обязателен, ревьюер не нужен.
 
 **Шаг 7. Каркас Astro (задача R0.2)**
 ```bash
