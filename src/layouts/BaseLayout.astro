@@ -5,10 +5,15 @@ import { url } from '../lib/url';
 interface Props {
   title: string;
   description?: string;
+  /** Служебная страница (`/dev/*`): не индексировать. */
+  noindex?: boolean;
 }
 
-const { title, description = 'Фанатский помощник для настольной игры «Ведьмак: Старый мир».' } =
-  Astro.props;
+const {
+  title,
+  description = 'Фанатский помощник для настольной игры «Ведьмак: Старый мир».',
+  noindex = false,
+} = Astro.props;
 
 const siteName = 'Ведьмак: помощник';
 const pageTitle = title === siteName ? title : `${title} · ${siteName}`;
@@ -32,6 +37,7 @@ const tabs = [
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="theme-color" content="#14201a" />
     <link rel="icon" type="image/svg+xml" href={url('favicon.svg')} />
     <title>{pageTitle}</title>

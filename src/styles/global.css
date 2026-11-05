@@ -49,6 +49,21 @@ svg {
   height: auto;
 }
 
+/* <Icon>: высота задаётся --icon-size, ширина — по пропорциям viewBox. Цвет — currentColor. */
+.icon {
+  display: inline-block;
+  height: var(--icon-size, 1.5em);
+  line-height: 0;
+  vertical-align: middle;
+}
+
+.icon > svg {
+  display: block;
+  width: auto;
+  max-width: none;
+  height: 100%;
+}
+
 :focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
