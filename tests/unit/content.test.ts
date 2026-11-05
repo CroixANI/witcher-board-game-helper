@@ -15,7 +15,7 @@ describe('validate-content: реальный контент', () => {
   });
 
   it('в каждой коллекции есть хотя бы один пример', () => {
-    for (const name of Object.keys(COLLECTIONS)) {
+    for (const name of Object.keys(COLLECTIONS) as (keyof typeof COLLECTIONS)[]) {
       expect(result.counts[name], name).toBeGreaterThan(0);
     }
   });
@@ -26,7 +26,7 @@ describe('validate-content: битые фикстуры (tests/fixtures/bad)', (
     const { errors } = bad('node-without-pages');
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain('setup/s01-board.md');
-    expect(errors[0]).toContain('node.pages');
+    expect(errors[0]).toContain('node.pages: обязательное поле не указано');
   });
 
   it('next на несуществующий id', () => {

@@ -15,7 +15,9 @@
     "check": "astro check",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run && npm run validate:content",
+    "validate:content": "tsx scripts/validate-content.ts",
+    "prebuild": "npm run validate:content"
   },
   "dependencies": {
     "preact": "^11.1.1"
