@@ -1,0 +1,7 @@
+title: 'Тренировка в школе'
+iconHint: 'Символы школ'
+icon: no-such-action.svg
+steps:
+  - 'Навык +1.'
+rule: training
+page: 36

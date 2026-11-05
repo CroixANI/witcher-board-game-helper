@@ -58,6 +58,19 @@ describe('validate-content: битые фикстуры (tests/fixtures/bad)', (
     expect(errors[0]).toContain('неизвестная зона z-nope');
   });
 
+  it('usedIn компонента на несуществующий узел', () => {
+    const { errors } = bad('used-in-missing');
+    expect(errors).toEqual(['components/wilds.yaml: usedIn: несуществующий узел s99-nope']);
+  });
+
+  it('нет файла иконки у компонента и у действия локации', () => {
+    const { errors } = bad('icon-missing');
+    expect(errors).toEqual([
+      'components/wilds.yaml: нет файла иконки src/assets/svg/components/no-such-icon.svg',
+      'location-actions/training.yaml: нет файла иконки src/assets/svg/actions/no-such-action.svg',
+    ]);
+  });
+
   it('несуществующая папка контента — пустой результат, а не исключение', () => {
     const result = validateContent({ contentDir: root('tests/fixtures/none'), svgDir });
     expect(result.errors).toEqual([]);
