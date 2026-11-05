@@ -27,7 +27,7 @@
 | R1.1 | done | 2026-11-05 | #9 |
 | R1.2 | done | 2026-11-05 | #10 |
 | R1.3 | done | 2026-11-06 | #11 |
-| R1.4 | todo | | |
+| R1.4 | review | 2026-11-06 | #? |
 | R1.5 | todo | | |
 | R1.6 | todo | | |
 | R2.1 | todo | | |
@@ -196,7 +196,7 @@
   - схема ≤ 25 КБ, читается на 360 px.
 - **Проверка:** `npm test`; открыть `/dev/board/` на мобильном viewport.
 
-### - [ ] R1.4 Карточки правил: основы, подготовка, фазы I–III, трофеи, действия локаций
+### - [x] R1.4 Карточки правил: основы, подготовка, фазы I–III, трофеи, действия локаций
 - **Ветка:** `content/r1.4-rules-part1` · `content` · M1.
 - **Цель:** группы `basics`, `setup`, `phase1`, `phase2`, `phase3`, `trophies`, `location-actions` из SPEC 9.1 — около 45 файлов.
 - **Файлы:** `src/content/rules/*.md`, `src/content/location-actions/*.yaml` (7), `src/content/schools/*.yaml` (5, SPEC 9.3).
