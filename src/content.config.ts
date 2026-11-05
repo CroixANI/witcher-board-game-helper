@@ -2,14 +2,19 @@
 // их же использует scripts/validate-content.ts без Astro.
 import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
-import { COLLECTIONS, createSchemas, type CollectionName } from './lib/content-schemas';
+import {
+  COLLECTIONS,
+  createSchemas,
+  type CollectionLayout,
+  type CollectionName,
+} from './lib/content-schemas';
 
 export { Condition, Expansion, Id, Page, Pages, Phase, PlayerCount } from './lib/content-schemas';
 
-const { collections: schemas } = createSchemas(reference);
+const schemas = createSchemas(reference);
 
 function collection<K extends CollectionName>(name: K) {
-  const c: { dir: string; ext: string; exclude?: readonly string[] } = COLLECTIONS[name];
+  const c: CollectionLayout = COLLECTIONS[name];
   const pattern = [`**/*${c.ext}`, ...(c.exclude ?? []).map((f) => `!${f}`)];
   return defineCollection({
     loader: glob({ pattern, base: `./src/content/${c.dir}` }),

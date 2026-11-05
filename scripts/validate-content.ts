@@ -16,6 +16,7 @@ import {
   COLLECTIONS,
   createSchemas,
   Id,
+  type CollectionLayout,
   type CollectionName,
   type RefCollection,
 } from '../src/lib/content-schemas';
@@ -32,7 +33,7 @@ export { COLLECTIONS };
 export type ValidateOptions = { contentDir: string; svgDir: string };
 export type ValidateResult = { errors: string[]; counts: Record<CollectionName, number> };
 
-type Schemas = ReturnType<typeof createSchemas<z.ZodType<string>>>['collections'];
+type Schemas = ReturnType<typeof createSchemas<z.ZodType<string>>>;
 type Entry<K extends CollectionName> = { file: string; data: z.output<Schemas[K]> };
 type RawEntry = { id: string; file: string; raw: unknown };
 
@@ -58,7 +59,7 @@ function readEntry(path: string, ext: string): unknown {
 }
 
 function loadRaw(contentDir: string, name: CollectionName, errors: string[]): RawEntry[] {
-  const c: { dir: string; ext: string; exclude?: readonly string[] } = COLLECTIONS[name];
+  const c: CollectionLayout = COLLECTIONS[name];
   const entries: RawEntry[] = [];
   for (const rel of listFiles(join(contentDir, c.dir))) {
     if (!rel.endsWith(c.ext) || c.exclude?.includes(rel)) continue;
@@ -104,7 +105,7 @@ export function validateContent({ contentDir, svgDir }: ValidateOptions): Valida
   };
 
   // Ссылка = id существующей записи коллекции (как reference() в Astro).
-  const { collections: schemas } = createSchemas((collection) =>
+  const schemas = createSchemas((collection) =>
     Id.refine((v) => known[collection].has(v), {
       error: (iss) => `нет записи ${collection}/${String(iss.input)}`,
     }),
@@ -129,13 +130,13 @@ export function validateContent({ contentDir, svgDir }: ValidateOptions): Valida
   for (const name of ['rules', 'schools', 'reminders', 'notMyTurn', 'faq'] as const) parse(name);
 
   // Граф проверяем, только если все его файлы прошли схему: иначе ошибки каскадом.
-  const graphs: [string, CollectionName, GraphNode[], string[]][] = [
-    ['setup', 'setup', setup.map((e) => e.data.node), []],
-    ['turn', 'turn', turn.flatMap((e) => e.data.nodes), turn.map((e) => e.data.entry)],
+  const graphs: ['setup' | 'turn', GraphNode[], string[]][] = [
+    ['setup', setup.map((e) => e.data.node), []],
+    ['turn', turn.flatMap((e) => e.data.nodes), turn.map((e) => e.data.entry)],
   ];
   const nodeIds = new Set<string>();
-  for (const [graph, name, nodes, entries] of graphs) {
-    if (failed.has(name)) continue;
+  for (const [graph, nodes, entries] of graphs) {
+    if (failed.has(graph)) continue;
     errors.push(
       ...checkGraphRefs(graph, nodes, entries),
       ...checkPagesAndRules(graph, nodes, known.rules),

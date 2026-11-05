@@ -27,7 +27,9 @@ export const Condition = z
 /** Коллекции, на которые можно ссылаться из других коллекций. */
 export type RefCollection = 'rules' | 'components';
 
-/** Где лежат файлы коллекций (папка внутри `src/content/`, расширение, исключения). */
+/** Где лежат файлы коллекции (папка внутри `src/content/`, расширение, исключения). */
+export type CollectionLayout = { dir: string; ext: string; exclude?: readonly string[] };
+
 export const COLLECTIONS = {
   rules: { dir: 'rules', ext: '.md' },
   components: { dir: 'components', ext: '.yaml' },
@@ -38,7 +40,7 @@ export const COLLECTIONS = {
   reminders: { dir: 'reminders', ext: '.yaml' },
   notMyTurn: { dir: 'not-my-turn', ext: '.md' },
   faq: { dir: 'faq', ext: '.md', exclude: ['_template.md'] },
-} as const satisfies Record<string, { dir: string; ext: string; exclude?: readonly string[] }>;
+} as const satisfies Record<string, CollectionLayout>;
 
 export type CollectionName = keyof typeof COLLECTIONS;
 
@@ -259,18 +261,5 @@ export function createSchemas<R extends z.ZodType>(ref: (collection: RefCollecti
     .strict()
     .refine((f) => f.source !== 'rulebook' || f.page, { message: 'rulebook → нужен page' });
 
-  return {
-    collections: {
-      rules,
-      components,
-      schools,
-      locationActions,
-      setup,
-      turn,
-      reminders,
-      notMyTurn,
-      faq,
-    },
-    WizardNode,
-  };
+  return { rules, components, schools, locationActions, setup, turn, reminders, notMyTurn, faq };
 }
