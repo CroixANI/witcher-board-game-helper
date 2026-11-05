@@ -1,0 +1,5 @@
+text: 'В руке максимум 7 карт: если уже 7 — новые не берите.'
+order: 10
+rule: hand-limit
+page: 9
+phases: [general]
