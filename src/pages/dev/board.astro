@@ -1,0 +1,52 @@
+---
+// Служебное превью схемы поля (ROADMAP R1.3). Не индексируется.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { BoardSchematicDemo } from '../../islands/BoardSchematicDemo';
+---
+
+<BaseLayout title="Схема поля (dev)" noindex>
+  <h1>Схема поля</h1>
+  <p>
+    Зоны из <code>src/data/board-zones.ts</code> поверх{' '}
+    <code>src/assets/svg/board/board-schematic.svg</code>. Раскладка повторяет пример подготовки
+    вдвоём (стр. 7) по расположению зон; ряд карт действий — стр. 19.
+  </p>
+  <BoardSchematicDemo client:load />
+</BaseLayout>
+
+<style>
+  :global(.board-demo) {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  :global(.board-demo fieldset) {
+    display: grid;
+    gap: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  :global(.board-demo label) {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+
+  :global(.board-demo label code) {
+    display: block;
+    font-size: 0.75em;
+    opacity: 0.75;
+  }
+
+  :global(.board-demo__actions) {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  :global(.board-demo button) {
+    min-height: var(--tap-min);
+    padding: 0 var(--space-4);
+  }
+</style>
