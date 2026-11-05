@@ -59,7 +59,7 @@ describe('<BoardSchematic>', () => {
 describe('<BoardSchematic> бейджи', () => {
   it('бейдж на верхней границе зоны, у края поля — не выходит за viewBox', () => {
     const row = render({ zones: ['z-action-row'], labels: { 'z-action-row': '2' } });
-    expect(row).toMatch(/<g class="board-schematic__badge"><rect x="135" y="10"/);
+    expect(row).toMatch(/<g class="board-schematic__badge"><rect x="135" y="9"/);
     const map = render({ zones: ['z-map'], labels: { 'z-map': '8.5' } });
     expect(map).toMatch(/<g class="board-schematic__badge"><rect x="1" y="0"/);
   });

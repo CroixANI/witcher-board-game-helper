@@ -13,7 +13,8 @@ const zonesById = new Map(BOARD_ZONES.map((zone) => [zone.id, zone]));
 const BASE = withA11y(schematic, { decorative: true }).replaceAll(' id="z-', ' data-zone="z-');
 
 // Бейдж сидит на верхней границе зоны, чтобы не закрывать её содержимое (например, «у колоды +1»).
-const BADGE = { height: 6, fontSize: 4.4, charWidth: 2.5, padding: 1.6, inset: 1 } as const;
+// Размеры в единицах viewBox: на экране 360 px шрифт бейджа ≈ 10 px.
+const BADGE = { height: 8, fontSize: 6, charWidth: 3.3, padding: 2, inset: 1 } as const;
 
 function zone(id: string): BoardZone {
   const found = zonesById.get(id);
