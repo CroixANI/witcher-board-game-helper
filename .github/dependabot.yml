@@ -8,6 +8,13 @@ updates:
       lint: { patterns: ['eslint*', '@typescript-eslint/*', 'typescript-eslint', 'prettier*'] }
       test: { patterns: ['vitest', '@playwright/*', '@testing-library/*'] }
     open-pull-requests-limit: 5
+    ignore:
+      # Типы должны соответствовать Node из .nvmrc (22); мажор поднимаем вместе с .nvmrc.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      # Мажор TypeScript — только после поддержки в @astrojs/check (SPEC, риск R4).
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
     labels: [infra]
   - package-ecosystem: github-actions
     directory: '/'
