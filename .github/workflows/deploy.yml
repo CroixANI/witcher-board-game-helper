@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: withastro/action@v6
-        with: { node-version: 22, package-manager: npm@latest }
+        with: { node-version: 26, package-manager: npm@latest }
   deploy:
     needs: build
     runs-on: ubuntu-latest
