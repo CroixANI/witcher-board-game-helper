@@ -1,0 +1,94 @@
+---
+// Служебное превью всех SVG (ROADMAP R1.2). Не индексируется; две панели — тёмная и светлая тема,
+// чтобы проверить currentColor и контраст цветных рубашек.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { iconLabel, iconNames } from '../../lib/icons';
+
+const groups = [
+  { id: 'components', title: 'Компоненты' },
+  { id: 'actions', title: 'Перемещение и действия локаций' },
+  { id: 'icons', title: 'Местность, навыки, атаки, школы' },
+].map((group) => ({
+  ...group,
+  icons: iconNames
+    .filter((name) => name.startsWith(`${group.id}/`))
+    .map((name) => ({ name, label: iconLabel(name) ?? name })),
+}));
+
+const themes = [
+  { id: 'dark', title: 'Тёмная тема' },
+  { id: 'light', title: 'Светлая тема' },
+];
+---
+
+<BaseLayout title="Иконки (dev)" noindex>
+  <h1>Иконки</h1>
+  <p>
+    Собственные SVG из <code>src/assets/svg/</code>: {iconNames.length} шт.
+  </p>
+
+  {groups.map((group) => (
+    <section aria-labelledby={`g-${group.id}`}>
+      <h2 id={`g-${group.id}`}>
+        {group.title} ({group.icons.length})
+      </h2>
+      <div class="themes">
+        {themes.map((theme) => (
+          <ul class:list={['grid', `theme-${theme.id}`]} aria-label={theme.title}>
+            {group.icons.map((icon) => (
+              <li>
+                <Icon name={icon.name} size="3rem" decorative />
+                <span class="label">{icon.label}</span>
+                <code>{icon.name.split('/')[1]}</code>
+              </li>
+            ))}
+          </ul>
+        ))}
+      </div>
+    </section>
+  ))}
+</BaseLayout>
+
+<style>
+  .themes {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: var(--space-3);
+    list-style: none;
+    border-radius: var(--radius);
+  }
+
+  .grid li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    text-align: center;
+    font-size: 0.8rem;
+  }
+
+  .grid code {
+    font-size: 0.7rem;
+    opacity: 0.75;
+    word-break: break-all;
+  }
+
+  /* Фиксированные цвета тем из tokens.css: превью не зависит от prefers-color-scheme. */
+  .theme-dark {
+    background: #0f1512;
+    color: #e8e4da;
+  }
+
+  .theme-light {
+    background: #f4f1ea;
+    color: #1d211e;
+  }
+</style>
