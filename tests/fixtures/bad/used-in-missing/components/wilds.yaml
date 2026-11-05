@@ -1,0 +1,7 @@
+name: 'Карты исследования окрестностей'
+kind: card
+count: 36
+icon: card-back-exploration-wilds.svg
+howToTell: 'Зелёная рубашка.'
+usedIn: [s99-nope]
+rulesPage: 16

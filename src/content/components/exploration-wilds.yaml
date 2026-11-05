@@ -1,0 +1,8 @@
+name: 'Карты исследования окрестностей'
+kind: card
+count: 36
+icon: card-back-exploration-wilds.svg
+howToTell: 'Зелёная рубашка с пейзажем. Не путать с картами исследования города (серая рубашка со зданиями) и картами событий (коричневая рубашка с книгой).'
+usedIn: [s05-exploration-events]
+rules: [exploration]
+rulesPage: [4, 6, 16]

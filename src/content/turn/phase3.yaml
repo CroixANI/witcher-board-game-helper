@@ -1,0 +1,54 @@
+subgraph: phase3
+entry: p3-discard
+nodes:
+  - id: p3-discard
+    type: step
+    title: 'Фаза III: сбросьте лишнее'
+    phase: phase3
+    pages: 18
+    checklist:
+      - text: 'Сбросьте карты из руки, чтобы осталось 3 или меньше (сбросить можно и больше)'
+      - text: 'После битвы рука пуста — сбрасывать нечего'
+        showIf: { flags: { afterBattle: true } }
+    next: p3-draw
+  - id: p3-draw
+    type: step
+    title: 'Доберите до трёх'
+    phase: phase3
+    pages: [9, 10, 18]
+    rules: [hand-limit]
+    checklist:
+      - text: 'Если в руке меньше 3 карт, доберите недостающие из своей колоды (эффекты могут менять это число)'
+      - text: 'Вы проиграли битву в этот ход — доберите на 1 карту меньше'
+        showIf: { flags: { lostBattle: true } }
+      - text: 'В руке не больше 7 карт'
+        rule: hand-limit
+      - text: 'Колода кончилась — перемешайте свой сброс в новую колоду'
+    next: p3-buy
+  - id: p3-buy
+    type: step
+    title: 'Возьмите карту из ряда'
+    phase: phase3
+    pages: [18, 19]
+    note: 'Обязательно, если можете оплатить; не больше одной карты.'
+    checklist:
+      - text: 'Выберите 1 карту из ряда и сбросьте из руки столько карт, сколько она стоит'
+      - text: 'Крайняя правая ячейка — стоимость −1 (не ниже 0), две крайние левые — +1'
+      - text: 'Новая карта сразу идёт в руку'
+    next: p3-refill
+  - id: p3-refill
+    type: step
+    title: 'Восполните ряд'
+    phase: phase3
+    pages: 19
+    checklist:
+      - text: 'Сдвиньте карты ряда вправо, чтобы пустой осталась крайняя левая ячейка'
+      - text: 'Откройте верхнюю карту колоды действий и положите её в пустую ячейку'
+    next: turn-end
+  - id: turn-end
+    type: end
+    title: 'Ход завершён'
+    phase: phase3
+    pages: 12
+    note: 'Ход переходит по часовой стрелке. Следующий игрок может начинать, пока вы заканчиваете фазу III.'
+    outcome: turn-complete
