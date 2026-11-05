@@ -9,7 +9,7 @@ updates:
       test: { patterns: ['vitest', '@playwright/*', '@testing-library/*'] }
     open-pull-requests-limit: 5
     ignore:
-      # Типы должны соответствовать Node из .nvmrc (22); мажор поднимаем вместе с .nvmrc.
+      # Типы должны соответствовать Node из .nvmrc (26); мажор поднимаем вместе с .nvmrc.
       - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']
       # Мажор TypeScript — только после поддержки в @astrojs/check (SPEC, риск R4).

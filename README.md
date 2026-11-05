@@ -18,7 +18,7 @@
 
 ## Запуск локально
 ```bash
-nvm use            # Node 22 (.nvmrc)
+nvm use            # Node 26 (.nvmrc)
 npm ci
 npm run dev        # http://localhost:4321/witcher-board-game-helper/
 ```

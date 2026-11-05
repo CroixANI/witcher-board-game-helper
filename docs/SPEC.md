@@ -1210,7 +1210,7 @@ witcher-board-game-helper/
 | `svgo` | latest | Оптимизация SVG |
 | `tsx` | latest | Запуск `scripts/*.ts` |
 
-Node **22 LTS** (`.nvmrc`, `engines`).
+Node **26 LTS** (`.nvmrc`, `engines`, `node-version` в `deploy.yml`). Мажор Node поднимается одним PR вместе с `@types/node`.
 
 ### 12.3 Почему Preact (решение D7)
 - У wizard'а реальное клиентское состояние: история с откатом флагов, счётчики цикла битвы, условия `showIf`, синхронизация с `localStorage`, bottom sheet. На vanilla TS это ручная синхронизация DOM и самописный мини-рендерер.
@@ -1379,7 +1379,7 @@ jobs:
 Детализация задач — `docs/ROADMAP.md`.
 
 ### 14.1 M0 «Репозиторий и каркас» — команды
-Выполняется локально в `~/Documents/github/claude/witcher-board-game-helper` (macOS, установлены `git`, `gh` ≥ 2.60, Node 22, `gh auth status` → аккаунт `CroixANI`, scope `repo, workflow`).
+Выполняется локально в `~/Documents/github/claude/witcher-board-game-helper` (macOS, установлены `git`, `gh` ≥ 2.60, Node 26, `gh auth status` → аккаунт `CroixANI`, scope `repo, workflow`).
 
 **Шаг 1. git init и первый коммит (задача R0.1)**
 ```bash
@@ -1419,7 +1419,7 @@ docs/_ref/
 - `LICENSE`: MIT, `Copyright (c) 2026 Aleksandr (CroixANI)`.
 - `NOTICE.md`: 12.8.
 - `CONTRIBUTING.md`: ветки `type/short-name` (`feat/`, `fix/`, `content/`, `chore/`), Conventional Commits, 1 задача = 1 PR, как добавить FAQ (10.3), правило «своими словами».
-- `.nvmrc`: `22`.
+- `.nvmrc`: `26` (изначально `22`, поднят до 26 LTS в ноябре 2026).
 ```bash
 git add -A && git commit -m "chore: bootstrap repo with docs, license and gitignore"
 ```
@@ -1507,20 +1507,32 @@ done
 # Pages: источник — GitHub Actions
 gh api -X POST repos/$R/pages -f build_type=workflow \
   || gh api -X PUT repos/$R/pages -f build_type=workflow
-# Защита main — ПОСЛЕ первого зелёного прогона ci (иначе контекст 'check' неизвестен)
-gh api -X PUT repos/$R/branches/main/protection --input - <<'JSON'
+# Защита main — ruleset, ПОСЛЕ первого зелёного прогона ci (иначе контекст 'check' неизвестен)
+gh api -X POST repos/$R/rulesets --input - <<'JSON'
 {
-  "required_status_checks": { "strict": true, "contexts": ["check"] },
-  "enforce_admins": true,
-  "required_pull_request_reviews": { "required_approving_review_count": 0 },
-  "restrictions": null,
-  "required_linear_history": true,
-  "allow_force_pushes": false,
-  "allow_deletions": false
+  "name": "main",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": { "ref_name": { "include": ["~DEFAULT_BRANCH"], "exclude": [] } },
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    { "type": "required_linear_history" },
+    { "type": "pull_request", "parameters": {
+        "required_approving_review_count": 0, "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false, "require_last_push_approval": false,
+        "required_review_thread_resolution": false, "allowed_merge_methods": ["squash"] } },
+    { "type": "required_status_checks", "parameters": {
+        "strict_required_status_checks_policy": true,
+        "required_status_checks": [{ "context": "check" }] } }
+  ]
 }
 JSON
+# Проверка
+gh api repos/$R/rules/branches/main --jq '[.[]|select(.type=="required_status_checks")|.parameters.required_status_checks[].context]'
 ```
-`enforce_admins: true` — защита действует и на владельца: прямой `git push origin main` отклоняется (критерий R0.4). В экстренном случае её временно снимают `gh api -X DELETE repos/$R/branches/main/protection/enforce_admins` и возвращают `gh api -X POST repos/$R/branches/main/protection/enforce_admins`. `required_approving_review_count: 0` — PR обязателен, ревьюер не нужен.
+Защита сделана **ruleset'ом** (классическая branch protection не используется, `…/branches/main/protection` отвечает 404). Пустой `bypass_actors` — правила действуют и на владельца: прямой `git push origin main` отклоняется (критерий R0.4). В экстренном случае ruleset временно выключают (Settings → Rules → Rulesets → `main` → Enforcement: Disabled) и включают обратно. `required_approving_review_count: 0` — PR обязателен, ревьюер не нужен.
 
 **Шаг 7. Каркас Astro (задача R0.2)**
 ```bash
