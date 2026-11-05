@@ -17,11 +17,11 @@ export function BoardSchematicDemo({ initial = ['z-action-row'] }: { initial?: s
 
   const labels = withLabels
     ? Object.fromEntries(zones.map((id) => [id, STEP_LABELS[id] ?? '']))
-    : undefined;
+    : {};
 
   return (
     <div class="board-demo">
-      <BoardSchematic zones={zones} {...(labels === undefined ? {} : { labels })} />
+      <BoardSchematic zones={zones} labels={labels} />
       <fieldset>
         <legend>Подсветить зоны</legend>
         <label>
