@@ -133,9 +133,9 @@
 ### - [x] R0.4 Защита main и проверка процесса
 - **Ветка:** `chore/r0.4-branch-protection` (PR с правкой README: «Сайт: <url>») · `infra` · M0.
 - **Цель:** `main` защищена; процесс «ветка → PR → CI → squash» работает.
-- **Шаги:** SPEC 14.1 шаг 6, блок «Защита main». Затем открыть этот PR.
+- **Шаги:** SPEC 14.1 шаг 6, блок «Защита main». Затем открыть этот PR. (Фактически защита сделана ruleset'ом через веб-интерфейс.)
 - **Готово, когда:**
-  - `gh api repos/CroixANI/witcher-board-game-helper/branches/main/protection --jq .required_status_checks.contexts` → `["check"]`;
+  - `gh api repos/CroixANI/witcher-board-game-helper/rules/branches/main --jq '[.[]|select(.type=="required_status_checks")|.parameters.required_status_checks[].context]'` → `["check"]` (защита — ruleset, см. SPEC 14.1);
   - прямой `git push origin main` отклоняется;
   - PR мержится только после зелёного `check`;
   - сайт открывается с телефона (критерий M0).
@@ -282,7 +282,7 @@
 - **Ветка:** `test/r2.5-setup-e2e` · `infra`, `setup-wizard` · M2.
 - **Цель:** Playwright по SPEC 13.3 (`setup.spec.ts`, `links.spec.ts`), job `e2e` в `ci.yml`, контекст `e2e` в защите `main`.
 - **Файлы:** `playwright.config.ts` (projects Pixel 7, iPhone 14; `webServer: npm run preview`), `tests/e2e/{setup,links}.spec.ts`, `.github/workflows/ci.yml`.
-- **Готово, когда:** e2e зелёный в CI, скриншоты и отчёт — в артефактах; `gh api …/branches/main/protection --jq .required_status_checks.contexts` → `["check","e2e"]`.
+- **Готово, когда:** e2e зелёный в CI, скриншоты и отчёт — в артефактах; `gh api …/rules/branches/main` → в `required_status_checks` контексты `check` и `e2e` (добавить `e2e` в ruleset `main`, SPEC 14.1).
 - **Проверка:** `npm run build && npm run test:e2e`; `scripts/session/ci-wait.sh` (job `e2e` зелёный).
 
 ---
