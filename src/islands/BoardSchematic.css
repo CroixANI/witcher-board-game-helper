@@ -1,0 +1,75 @@
+/* Схема поля (SPEC 11.3): подложка в цвете текста, подсветка — акцентом темы. */
+.board-schematic {
+  margin: 0;
+}
+
+.board-schematic > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+}
+
+.board-schematic__zone > rect {
+  fill: var(--color-accent-light);
+  fill-opacity: 0.18;
+  stroke: var(--color-accent-light);
+  stroke-width: 1.2;
+  animation: board-schematic-pulse 1.6s ease-in-out infinite;
+}
+
+.board-schematic__badge rect {
+  fill: var(--color-accent);
+  stroke: var(--color-on-accent);
+  stroke-width: 0.4;
+}
+
+.board-schematic__badge text {
+  fill: var(--color-on-accent);
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+@keyframes board-schematic-pulse {
+  50% {
+    fill-opacity: 0.05;
+    stroke-opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-schematic__zone > rect {
+    animation: none;
+  }
+}
+
+.board-schematic__legend {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.board-schematic__legend li {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+}
+
+.board-schematic__legend small {
+  display: block;
+  color: var(--color-text-muted);
+}
+
+.board-schematic__legend-badge {
+  flex: none;
+  padding: 0 var(--space-2);
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 700;
+  font-size: 0.85em;
+}

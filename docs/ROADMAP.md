@@ -25,8 +25,8 @@
 | R0.3 | done | 2026-11-04 | #3 |
 | R0.4 | done | 2026-11-05 | #6 |
 | R1.1 | done | 2026-11-05 | #9 |
-| R1.2 | review | 2026-11-05 | #10 |
-| R1.3 | todo | | |
+| R1.2 | done | 2026-11-05 | #10 |
+| R1.3 | review | 2026-11-06 | #11 |
 | R1.4 | todo | | |
 | R1.5 | todo | | |
 | R1.6 | todo | | |
@@ -180,7 +180,7 @@
   - превью-страница показывает все с подписями.
 - **Проверка:** `npm run optimize:svg && find src/assets/svg -name '*.svg' -size +3k` пусто; визуально `/dev/icons/`.
 
-### - [ ] R1.3 Схема игрового поля
+### - [x] R1.3 Схема игрового поля
 - **Ветка:** `feat/r1.3-board-schematic` · `content`, `setup-wizard` · M1.
 - **Цель:** `board-schematic.svg` и `BoardSchematic` (Preact) с подсветкой зон.
 - **Файлы:** `src/assets/svg/board/board-schematic.svg`, `src/islands/BoardSchematic.tsx`, `src/pages/dev/board.astro`, `tests/unit/board-zones.test.ts`.
