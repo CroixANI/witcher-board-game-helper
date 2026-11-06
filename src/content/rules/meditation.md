@@ -4,7 +4,7 @@ page: 15
 group: phase2
 summary: 'Трофей за навык 5-го уровня, если такой трофей ещё лежит в колоде и у вас его нет.'
 important: false
-related: [exploration]
+related: [last-trophy-meditation, exhaustion, skill-max-5, phase2-overview]
 ---
 
 Медитация — одно из трёх действий фазы II. Медитировать можно, только если выполнены все условия сразу:
