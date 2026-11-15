@@ -7,8 +7,6 @@ import { parse as parseYaml } from 'yaml';
 const root = (p: string) => fileURLToPath(new URL(`../../${p}`, import.meta.url));
 const RULES_DIR = root('src/content/rules');
 
-/** Группы, карточки которых ещё не написаны. R1.5 добавит `battle` и очистит список. */
-const PENDING_GROUPS = new Set(['battle']);
 const MAX_WORDS = 150;
 
 type SpecRow = { id: string; title: string; group: string; pages: number[] };
@@ -49,7 +47,6 @@ function readCard(id: string): Card {
 }
 
 const rows = specRows();
-const ready = rows.filter((r) => !PENDING_GROUPS.has(r.group));
 
 describe('parsePages', () => {
   it('одна страница, список и диапазоны', () => {
@@ -70,7 +67,7 @@ describe('карточки правил ↔ SPEC 9.1', () => {
     expect(new Set(rows.map((r) => r.id)).size).toBe(rows.length);
   });
 
-  it.each(ready)('$id: файл есть, группа и страницы как в SPEC', ({ id, group, pages }) => {
+  it.each(rows)('$id: файл есть, группа и страницы как в SPEC', ({ id, group, pages }) => {
     expect(existsSync(`${RULES_DIR}/${id}.md`), `нет src/content/rules/${id}.md`).toBe(true);
     const { data } = readCard(id);
     expect(data.group).toBe(group);
