@@ -1,9 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { WizardIsland } from '../../islands/WizardIsland';
+import { loadWizardData } from '../../lib/load-wizard-data';
+
+const data = await loadWizardData('turn');
 ---
 
 <BaseLayout title="Мой ход">
   <h1>Мой ход</h1>
-  <p>Проведёт через фазы I–III и битву, подскажет правило и страницу книги.</p>
-  <p class="stub">Раздел в разработке (ROADMAP, этапы M3–M4).</p>
+  <p>Проведёт через фазы хода, подскажет правило и страницу книги.</p>
+  <WizardIsland client:load data={data} />
 </BaseLayout>

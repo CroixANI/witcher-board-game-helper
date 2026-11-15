@@ -52,3 +52,4 @@ nodes:
     pages: 12
     note: 'Ход переходит по часовой стрелке. Следующий игрок может начинать, пока вы заканчиваете фазу III.'
     outcome: turn-complete
+    resetTo: t-start

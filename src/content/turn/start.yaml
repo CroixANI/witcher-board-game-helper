@@ -1,0 +1,61 @@
+subgraph: start
+entry: t-params
+nodes:
+  - id: t-params
+    type: choice
+    title: 'Сколько игроков?'
+    phase: general
+    pages: [9, 12]
+    rules: [turn-structure]
+    note: 'Спрашиваем один раз за партию. Если вы проходили подготовку, число игроков уже известно.'
+    showIf: { missingParam: players }
+    options:
+      - label: '2 игрока'
+        next: t-school
+        setParam: { key: players, value: 2 }
+      - label: '3 игрока'
+        next: t-school
+        setParam: { key: players, value: 3 }
+      - label: '4 игрока'
+        next: t-school
+        setParam: { key: players, value: 4 }
+      - label: '5 игроков'
+        next: t-school
+        setParam: { key: players, value: 5 }
+  - id: t-school
+    type: choice
+    title: 'Ваша школа?'
+    phase: general
+    pages: [34, 35]
+    rules: [specializations]
+    note: 'Спрашиваем один раз за партию. Специализация школы будет видна на каждом шаге хода.'
+    showIf: { missingParam: school }
+    options:
+      - label: 'Волк'
+        hint: 'Владение мечом'
+        next: t-start
+        setParam: { key: school, value: wolf }
+      - label: 'Грифон'
+        hint: 'Магия'
+        next: t-start
+        setParam: { key: school, value: griffin }
+      - label: 'Медведь'
+        hint: 'Доспехи'
+        next: t-start
+        setParam: { key: school, value: bear }
+      - label: 'Кот'
+        hint: 'Прыть'
+        next: t-start
+        setParam: { key: school, value: cat }
+      - label: 'Змея'
+        hint: 'Отравленный клинок'
+        next: t-start
+        setParam: { key: school, value: viper }
+  - id: t-start
+    type: info
+    title: 'Ваш ход'
+    phase: general
+    pages: [12, 13]
+    rules: [turn-structure, phase1-actions-after-move]
+    body: 'Ход состоит из трёх фаз: перемещения и действия, затем битва, медитация или исследование, затем добор и новая карта. Ваш ведьмак стоит там, где закончил прошлый ход: в этой локации действовать нельзя, пока вы не уйдёте и не вернётесь.'
+    next: p1-move-q

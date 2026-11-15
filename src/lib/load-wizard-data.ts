@@ -5,7 +5,13 @@
 import { getCollection } from 'astro:content';
 import { renderIcon } from './icons';
 import type { GraphName } from './wizard-engine';
-import { buildWizardData, toViewNode, type ViewNode, type WizardData } from './wizard-view';
+import {
+  buildWizardData,
+  toSchoolViews,
+  toViewNode,
+  type ViewNode,
+  type WizardData,
+} from './wizard-view';
 
 const TITLES: Record<GraphName, string> = { setup: 'Подготовка', turn: 'Ход' };
 
@@ -34,8 +40,9 @@ export async function loadWizardData(graph: GraphName): Promise<WizardData> {
   }
   if (!entry) throw new Error(`wizard: у графа ${graph} нет точки входа`);
   const [rules, components] = await loadWizardRefs();
+  const schools = graph === 'turn' ? toSchoolViews(await getCollection('schools')) : undefined;
   return buildWizardData(
-    { graph, title: TITLES[graph], entry, nodes, progress },
+    { graph, title: TITLES[graph], entry, nodes, progress, schools },
     rules,
     components,
     componentIconSvg,

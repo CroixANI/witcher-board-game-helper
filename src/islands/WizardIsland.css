@@ -306,3 +306,75 @@
   color: var(--color-text-muted);
   font-size: 0.9rem;
 }
+
+/* Меню параметров партии в баре хода (R3.1): ☰ → «Сменить школу / число игроков». */
+.wizard-menu {
+  position: relative;
+}
+
+.wizard-menu__panel {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + var(--space-2));
+  display: grid;
+  gap: var(--space-2);
+  width: max-content;
+  max-width: min(18rem, 90vw);
+  padding: var(--space-3);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
+}
+
+.wizard-menu__hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* Бейдж школы (SchoolBadge): свёрнут до названия специализации. */
+.school-badge {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--school-color, var(--color-accent-light));
+  border-radius: 4px;
+}
+
+.school-badge > summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  cursor: pointer;
+}
+
+.school-badge__dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  background: var(--school-color, currentColor);
+  border-radius: 50%;
+}
+
+.school-badge__name {
+  font-weight: 600;
+}
+
+.school-badge__spec {
+  color: var(--color-text-muted);
+}
+
+.school-badge__body {
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.school-badge__body p {
+  margin: 0 0 var(--space-2);
+}
+
+.school-badge__pages {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
