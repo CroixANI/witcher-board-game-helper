@@ -34,7 +34,7 @@
 | R2.2 | done | 2026-11-15 | #17 |
 | R2.3 | done | 2026-11-15 | #18 |
 | R2.4 | done | 2026-11-15 | #19 |
-| R2.5 | todo | | |
+| R2.5 | review | 2026-11-15 | #? |
 | R2.6 | todo | | |
 | R3.1 | todo | | |
 | R3.2 | todo | | |
@@ -279,7 +279,7 @@
 - **Готово, когда:** таблица совпадает с SPEC 7.1 для 2–5 (тест); после перехода `/turn/` не спрашивает число игроков.
 - **Проверка:** `npm test`; ручной проход.
 
-### - [ ] R2.5 E2E подготовки + job `e2e` в CI
+### - [x] R2.5 E2E подготовки + job `e2e` в CI
 - **Ветка:** `test/r2.5-setup-e2e` · `infra`, `setup-wizard` · M2.
 - **Цель:** Playwright по SPEC 13.3 (`setup.spec.ts`, `links.spec.ts`), job `e2e` в `ci.yml`, контекст `e2e` в защите `main`.
 - **Файлы:** `playwright.config.ts` (projects Pixel 7, iPhone 14; `webServer: npm run preview`), `tests/e2e/{setup,links}.spec.ts`, `.github/workflows/ci.yml`.
