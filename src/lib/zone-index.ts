@@ -3,6 +3,7 @@
  * Связь не пишется руками: она вычисляется из `zones` узлов wizard'ов при сборке.
  * Узел с подзоной попадает и в подзону, и в её родителя. FAQ добавится в R5.1.
  */
+import { BOARD_ZONES } from '../data/board-zones';
 import type { GraphName } from './wizard-engine';
 
 export type ZoneIndexNode = {
@@ -37,10 +38,7 @@ export function buildZoneIndex(
 
 /** Индекс по коллекциям Astro. Вызывать только на этапе сборки (frontmatter страниц). */
 export async function loadZoneIndex(): Promise<ZoneIndex> {
-  const [{ getCollection }, { BOARD_ZONES }] = await Promise.all([
-    import('astro:content'),
-    import('../data/board-zones'),
-  ]);
+  const { getCollection } = await import('astro:content');
   const setup = (await getCollection('setup'))
     .map((e) => e.data)
     .toSorted((a, b) => a.order - b.order)
