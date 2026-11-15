@@ -1,0 +1,8 @@
+name: 'Карты действий'
+kind: card
+count: 90
+icon: card-back-action.svg
+howToTell: 'Тёмно-серая рубашка с бронзовой эмблемой в ромбе. На лице — цветная полоса слева (синяя, красная, зелёная, фиолетовая или жёлтая) и стоимость.'
+confusedWith: [starter-cards, witcher-trophy, elixir]
+rules: [action-card-anatomy, card-colors, card-cost]
+rulesPage: [4, 10]

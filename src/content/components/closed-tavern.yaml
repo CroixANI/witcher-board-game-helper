@@ -1,0 +1,8 @@
+name: 'Жетон закрытой корчмы'
+kind: token
+count: 1
+icon: token-tavern.svg
+howToTell: 'Один небольшой тёмно-красный круглый жетон. Кладётся в локацию после битвы ведьмаков.'
+confusedWith: [gold, trophy-marker]
+rules: [closed-tavern]
+rulesPage: [5, 20]

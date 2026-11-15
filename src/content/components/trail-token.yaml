@@ -1,0 +1,9 @@
+name: 'Жетон следа'
+kind: token
+count: 18
+countNote: 'те же жетоны локаций'
+icon: token-trail.svg
+howToTell: 'Отдельного компонента нет: это жетон локации, который лежит у игрока лицом вниз. Важен только тип местности на рубашке, номер не важен.'
+confusedWith: [location-token, monster-token]
+rules: [trail-tokens]
+rulesPage: [11, 18]

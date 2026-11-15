@@ -1,0 +1,8 @@
+name: 'Жетоны локаций'
+kind: token
+count: 18
+icon: token-location.svg
+howToTell: 'Круглые. Рубашка — тип местности (лес, горы или вода), на лице — номер и название локации.'
+confusedWith: [monster-token, trail-token]
+rules: [location-tokens]
+rulesPage: [5, 11]

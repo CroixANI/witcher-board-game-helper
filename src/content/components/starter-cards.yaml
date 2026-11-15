@@ -1,0 +1,9 @@
+name: 'Начальные карты действий'
+kind: card
+count: 10
+perPlayer: true
+icon: card-starter.svg
+howToTell: 'Рубашка такая же, как у обычных карт действий. Отличие — на лице: в правом верхнем углу символ школы.'
+confusedWith: [action-card, witcher-trophy]
+rules: [setup-player-components]
+rulesPage: [5, 8]

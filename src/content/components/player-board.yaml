@@ -1,0 +1,9 @@
+name: 'Планшет игрока'
+kind: board
+count: 1
+perPlayer: true
+icon: player-board.svg
+howToTell: 'Портрет ведьмака, шкалы уровня ведьмака, четырёх навыков и щита, ячейки для ставок.'
+confusedWith: [board]
+rules: [setup-player-components, skills]
+rulesPage: [5, 8, 21]

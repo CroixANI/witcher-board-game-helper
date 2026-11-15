@@ -76,6 +76,7 @@ export function createSchemas<R extends z.ZodType>(ref: (collection: RefCollecti
       name: z.string(),
       kind: z.enum(['card', 'token', 'board', 'misc']),
       count: z.number().int().positive(),
+      countNote: z.string().optional(), // «2 набора по 5», «это те же 18 жетонов локаций»
       perPlayer: z.boolean().default(false), // «в каждом наборе игрока»
       icon: SvgFile, // файл в src/assets/svg/components/
       howToTell: z.string(), // «как отличить»

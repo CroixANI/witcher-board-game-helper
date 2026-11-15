@@ -1,0 +1,9 @@
+name: 'Маркер уровня щита'
+kind: misc
+count: 1
+perPlayer: true
+icon: shield-marker.svg
+howToTell: 'Невысокая шестиугольная «шайба» цвета школы — не куб. Стоит на шкале щита.'
+confusedWith: [cube-marker]
+rules: [defense-shield, setup-player-components]
+rulesPage: [5, 8]

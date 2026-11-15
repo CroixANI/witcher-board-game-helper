@@ -1,0 +1,9 @@
+name: 'Карты исследования города'
+kind: card
+count: 36
+icon: card-back-exploration-city.svg
+howToTell: 'Серая рубашка со зданиями.'
+confusedWith: [exploration-wilds, event-card]
+usedIn: [s05-exploration-events]
+rules: [exploration, setup-exploration-events]
+rulesPage: [4, 6, 16]
