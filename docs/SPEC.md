@@ -380,7 +380,8 @@ const NodeBase = {
 };
 export const WizardNode = z.discriminatedUnion('type', [
   z.object({ ...NodeBase, type: z.literal('step'),
-    checklist: z.array(ChecklistItem).nonempty(), zones: z.array(z.string()).default([]), next: Next }).strict(),
+    checklist: z.array(ChecklistItem).nonempty(), zones: z.array(z.string()).default([]),
+    widget: z.enum(['random-first-player']).optional(), next: Next }).strict(),
   z.object({ ...NodeBase, type: z.literal('info'), body: z.string().optional(), next: Next }).strict(),
   z.object({ ...NodeBase, type: z.literal('choice'), options: z.array(Option).min(2) }).strict(),
   z.object({ ...NodeBase, type: z.literal('question'), question: z.string(),

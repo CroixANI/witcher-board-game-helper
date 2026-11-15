@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { START_RESOURCES, startResources } from '../../src/data/start-resources';
+import { START_RESOURCES, boardPickOrder, startResources } from '../../src/data/start-resources';
 
 // SPEC 7.1 = книга правил, стр. 8: [карты, золото] по местам хода.
 const SPEC_7_1 = {
@@ -53,5 +53,22 @@ describe('startResources', () => {
   it('места вне диапазона — ошибка', () => {
     expect(() => startResources(2, 3)).toThrow(RangeError);
     expect(() => startResources(4, 0)).toThrow(RangeError);
+  });
+});
+
+describe('boardPickOrder (SPEC 7.2, стр. 7)', () => {
+  it('справа от первого и против часовой: места N, N−1, …, 1', () => {
+    expect(boardPickOrder(2)).toEqual([2, 1]);
+    expect(boardPickOrder(3)).toEqual([3, 2, 1]);
+    expect(boardPickOrder(4)).toEqual([4, 3, 2, 1]);
+    expect(boardPickOrder(5)).toEqual([5, 4, 3, 2, 1]);
+  });
+
+  it('первый игрок выбирает последним, каждое место — ровно один раз', () => {
+    for (const players of [2, 3, 4, 5] as const) {
+      const order = boardPickOrder(players);
+      expect(order.at(-1)).toBe(1);
+      expect([...order].sort()).toEqual(START_RESOURCES[players].map((_, i) => i + 1));
+    }
   });
 });

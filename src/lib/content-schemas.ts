@@ -165,6 +165,7 @@ export function createSchemas<RR extends z.ZodType, RC extends z.ZodType>(ref: R
         type: z.literal('step'),
         checklist: z.array(ChecklistItem).nonempty(),
         zones: z.array(z.string()).default([]),
+        widget: z.enum(['random-first-player']).optional(), // интерактивный блок под чек-листом
         next: Next,
       })
       .strict(),

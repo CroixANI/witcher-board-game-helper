@@ -18,3 +18,11 @@ export function startResources(players: PlayerCount, seat: number): StartResourc
   if (!res) throw new RangeError(`Место ${seat} невозможно при ${players} игроках`);
   return res;
 }
+
+/**
+ * Порядок выбора планшетов (SPEC 7.2, стр. 7): места по часовой, 1 — первый игрок.
+ * Выбирают справа от первого и против часовой, то есть N, N−1, …, 1: первый — последним.
+ */
+export function boardPickOrder(players: PlayerCount): number[] {
+  return Array.from({ length: players }, (_, i) => players - i);
+}

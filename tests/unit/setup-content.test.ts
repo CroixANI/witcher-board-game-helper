@@ -104,6 +104,15 @@ describe('узлы подготовки по SPEC 7', () => {
     }
   });
 
+  it('s09 показывает кнопку 🎲, s12 — итог подготовки (R2.4)', () => {
+    expect((byId.get('s09-first-player') as { widget?: string }).widget).toBe(
+      'random-first-player',
+    );
+    const end = byId.get('s12-summary') as { type: string; outcome?: string };
+    expect(end.type).toBe('end');
+    expect(end.outcome).toBe('setup-complete');
+  });
+
   it.each([
     's02-action-row',
     's05-exploration-events',

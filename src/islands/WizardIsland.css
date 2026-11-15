@@ -242,3 +242,61 @@
   display: grid;
   gap: var(--space-2);
 }
+
+.wizard .wizard-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  text-decoration: none;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.wizard-random {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}
+
+/* Live-регион всегда в дереве доступности (не display:none), иначе первый результат не озвучится. */
+.wizard-random p {
+  margin: 0;
+}
+
+.setup-summary {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.setup-summary h3 {
+  margin: 0 0 var(--space-2);
+}
+
+.setup-summary__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.setup-summary__table th,
+.setup-summary__table td {
+  padding: var(--space-2);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.setup-summary__table td {
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.setup-summary__order {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.setup-summary__hint {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}

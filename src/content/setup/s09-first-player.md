@@ -11,6 +11,7 @@ node:
   checklist:
     - text: 'Выберите первого игрока: того, кто недавно читал книгу о ведьмаках, или случайно'
     - text: 'Раздайте каждому 2 памятки: по действиям и по битвам'
+  widget: random-first-player
   next: s10-player-components
 ---
 

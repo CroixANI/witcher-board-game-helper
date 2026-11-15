@@ -26,6 +26,8 @@ export type ViewNode = Omit<WizardNode, 'options' | 'yes' | 'no'> & {
   readonly warning?: string | undefined;
   readonly checklist?: readonly ViewChecklistItem[] | undefined;
   readonly zones?: readonly string[] | undefined;
+  /** Интерактивный блок шага (`step`), например кнопка 🎲 в s09. */
+  readonly widget?: 'random-first-player' | undefined;
   /** Текст `info`-узла. */
   readonly body?: string | undefined;
   /** Подробный текст узла в HTML (тело Markdown-файла подготовки). */
