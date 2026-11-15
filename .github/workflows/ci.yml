@@ -20,4 +20,17 @@ jobs:
       - run: npm run build
       - uses: actions/upload-artifact@v7
         with: { name: dist, path: dist, retention-days: 3 }
-  # job e2e добавляется в M2 (R2.5), см. SPEC 13.4
+  e2e:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version-file: .nvmrc, cache: npm }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run build
+      - run: npm run test:e2e
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with: { name: playwright-report, path: playwright-report, retention-days: 7 }

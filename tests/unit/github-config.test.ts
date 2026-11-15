@@ -4,7 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 
-type Step = { uses?: string; run?: string; with?: Record<string, unknown> };
+type Step = { uses?: string; run?: string; if?: string; with?: Record<string, unknown> };
 type Job = { needs?: string | string[]; steps: Step[]; environment?: { name: string } };
 type Workflow = {
   on: Record<string, unknown>;
@@ -37,8 +37,8 @@ describe('ci.yml', () => {
     expect(ci.on.push).toEqual({ branches: ['main'] });
   });
 
-  it('job называется `check` — это контекст защиты main (R0.4)', () => {
-    expect(Object.keys(ci.jobs)).toEqual(['check']);
+  it('jobs `check` и `e2e` — контексты защиты main (R0.4, R2.5)', () => {
+    expect(Object.keys(ci.jobs)).toEqual(['check', 'e2e']);
   });
 
   it('гоняет весь DoD по порядку: npm ci → lint → check → test → build', () => {
@@ -51,8 +51,28 @@ describe('ci.yml', () => {
     ]);
   });
 
-  it('берёт Node из .nvmrc с кешем npm', () => {
-    const setup = ci.jobs.check!.steps.find((s) => s.uses?.startsWith('actions/setup-node@'));
+  it('e2e идёт после check: браузеры Chromium + WebKit, сборка, Playwright', () => {
+    const e2e = ci.jobs.e2e!;
+    expect(e2e.needs).toBe('check');
+    expect(runsOf(e2e)).toEqual([
+      'npm ci',
+      'npx playwright install --with-deps chromium webkit',
+      'npm run build',
+      'npm run test:e2e',
+    ]);
+  });
+
+  it('отчёт Playwright выгружается артефактом даже при падении', () => {
+    const upload = ci.jobs.e2e!.steps.find((s) => s.uses?.startsWith('actions/upload-artifact@'));
+    expect(upload).toMatchObject({
+      if: 'always()',
+      with: { name: 'playwright-report', path: 'playwright-report' },
+    });
+  });
+
+  it.each(['check', 'e2e'])('%s берёт Node из .nvmrc с кешем npm', (name) => {
+    const steps = ci.jobs[name]!.steps;
+    const setup = steps.find((s) => s.uses?.startsWith('actions/setup-node@'));
     expect(setup?.with).toEqual({ 'node-version-file': '.nvmrc', cache: 'npm' });
   });
 
