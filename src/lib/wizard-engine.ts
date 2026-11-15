@@ -263,7 +263,7 @@ export function sanitizeParams(raw: unknown): Params {
  * State из хранилища. Если формат не тот, граф чужой или узлы неизвестны — новый state с entry;
  * параметры по возможности сохраняются (SPEC 6.5). `sharedParams` — общий ключ `twow:v1:params`:
  * его пишет каждый `saveState`, поэтому он свежее параметров внутри state и целиком их заменяет
- * (новая партия в подготовке → ход берёт новое число игроков). Если параметры изменились,
+ * (новая партия в подготовке → ход берёт новое число игроков). Если изменилось число игроков,
  * state начинается заново: шаги и флаги относились к другой партии.
  */
 export function hydrate(
@@ -278,6 +278,7 @@ export function hydrate(
     isRecord(raw) &&
     raw.v === 1 &&
     raw.graph === graph &&
+    isRecord(raw.params) &&
     known(raw.current) &&
     Array.isArray(raw.history) &&
     raw.history.every(
@@ -289,9 +290,11 @@ export function hydrate(
     isRecordOf(raw.checked, isNumArray) &&
     isNum(raw.updatedAt);
   if (!valid) return initState(g, graph, params);
+  // Шаги и флаги зависят только от числа игроков; школа меняется без сброса прогресса.
   const state = raw as WizardState;
-  const same = params.players === state.params.players && params.school === state.params.school;
-  return same ? state : initState(g, graph, params);
+  return params.players === state.params.players
+    ? { ...state, params }
+    : initState(g, graph, params);
 }
 
 function readJson(storage: SafeStorage, key: string): unknown {

@@ -467,6 +467,8 @@ describe('hydrate (восстановление после битого state)',
     ['чужая версия', { ...good(), v: 2 }],
     ['чужой граф', { ...good(), graph: 'setup' }],
     ['неизвестный current', { ...good(), current: 'nope' }],
+    ['нет params', { ...good(), params: undefined }],
+    ['params не объект', { ...good(), params: 3 }],
     ['битая history', { ...good(), history: [{ id: 'nope', flags: {}, counters: {} }] }],
     ['history не массив', { ...good(), history: 'x' }],
     ['flags не объект', { ...good(), flags: [true] }],
@@ -544,6 +546,17 @@ describe('loadState / saveState', () => {
     saveState(storage, initState(g, 'turn', { players: 3, school: 'wolf' })); // прошлая партия
     saveState(storage, { ...initState(g, 'setup'), params: { players: 5 } }); // новая подготовка
     expect(loadState(g, 'turn', storage).params).toEqual({ players: 5 });
+  });
+
+  it('выбор школы в ходе не сбрасывает подготовку', () => {
+    const storage = memory();
+    const setup = advance(g, initState(g, 'setup', { players: 3, school: 'wolf' }));
+    saveState(storage, { ...setup, params: { players: 3 } }); // подготовка без школы
+    saveState(storage, initState(g, 'turn', { players: 3, school: 'cat' })); // школа выбрана в ходе
+    const s = loadState(g, 'setup', storage);
+    expect(s.current).toBe(setup.current);
+    expect(s.history).toHaveLength(1);
+    expect(s.params).toEqual({ players: 3, school: 'cat' });
   });
 
   it('после restartAll в подготовке ход снова спрашивает параметры', () => {
