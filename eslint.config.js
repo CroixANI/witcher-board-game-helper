@@ -17,7 +17,16 @@ const noRootRelativeLinks = {
 };
 
 export default defineConfig([
-  { ignores: ['dist/', '.astro/', 'node_modules/', 'coverage/'] },
+  {
+    ignores: [
+      'dist/',
+      '.astro/',
+      'node_modules/',
+      'coverage/',
+      'playwright-report/',
+      'test-results/',
+    ],
+  },
   js.configs.recommended,
   tseslint.configs.recommended,
   astro.configs.recommended,

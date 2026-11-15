@@ -16,6 +16,7 @@
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "test": "vitest run && npm run validate:content",
+    "test:e2e": "playwright test",
     "validate:content": "tsx scripts/validate-content.ts",
     "prebuild": "npm run validate:content",
     "optimize:svg": "svgo --config svgo.config.mjs -r -f src/assets/svg -q"
@@ -27,6 +28,7 @@
     "@astrojs/check": "^0.9.12",
     "@astrojs/preact": "^6.1.2",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
     "@testing-library/preact": "^3.2.6",
     "@types/node": "^26.6.6",
     "@vitest/coverage-v8": "^5.1.0",
