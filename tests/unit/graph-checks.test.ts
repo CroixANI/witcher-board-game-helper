@@ -211,7 +211,10 @@ describe('checkDeadEnds (инвариант 3)', () => {
 
   it('выход есть только при части players', () => {
     const nodes: GraphNode[] = [
-      info('a', [{ when: { players: [4, 5] }, to: 'z' }, { when: { players: [2, 3] }, to: 'a' }]),
+      info('a', [
+        { when: { players: [4, 5] }, to: 'z' },
+        { when: { players: [2, 3] }, to: 'a' },
+      ]),
       end('z'),
     ];
     expect(checkDeadEnds('turn', nodes, ['a'])).toEqual([
@@ -315,7 +318,10 @@ describe('checkChoices (инвариант 4)', () => {
         type: 'choice',
         pages: 1,
         showIf: { players: [5] },
-        options: [{ next: 'z', showIf: { players: [5] } }, { next: 'z', showIf: { players: [5] } }],
+        options: [
+          { next: 'z', showIf: { players: [5] } },
+          { next: 'z', showIf: { players: [5] } },
+        ],
       },
     ];
     expect(checkChoices('turn', nodes)).toEqual([]);
@@ -324,13 +330,25 @@ describe('checkChoices (инвариант 4)', () => {
 
 describe('checkLoops (инвариант 6)', () => {
   it('loop с выходом', () => {
-    const l: GraphNode = { id: 'l', type: 'loop', pages: 1, options: [{ next: 'l' }, { next: 'z' }] };
+    const l: GraphNode = {
+      id: 'l',
+      type: 'loop',
+      pages: 1,
+      options: [{ next: 'l' }, { next: 'z' }],
+    };
     expect(checkLoops('turn', [l, info('a', 'a')])).toEqual([]);
   });
 
   it('все варианты loop ведут в себя', () => {
-    const l: GraphNode = { id: 'l', type: 'loop', pages: 1, options: [{ next: 'l' }, { next: 'l' }] };
-    expect(checkLoops('turn', [l])).toEqual(['turn: узел l: у loop нет варианта, ведущего из него']);
+    const l: GraphNode = {
+      id: 'l',
+      type: 'loop',
+      pages: 1,
+      options: [{ next: 'l' }, { next: 'l' }],
+    };
+    expect(checkLoops('turn', [l])).toEqual([
+      'turn: узел l: у loop нет варианта, ведущего из него',
+    ]);
   });
 });
 

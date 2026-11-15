@@ -3,7 +3,13 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { parse as parseYaml } from 'yaml';
 import { graphRoots, setupGraph, turnGraph, type TurnEntry } from '../../src/lib/load-graph';
-import { advance, choose, initState, visibleOptions, type Graph } from '../../src/lib/wizard-engine';
+import {
+  advance,
+  choose,
+  initState,
+  visibleOptions,
+  type Graph,
+} from '../../src/lib/wizard-engine';
 import type { WizardNode } from '../../src/lib/wizard-engine';
 
 const root = (p: string) => fileURLToPath(new URL(`../../${p}`, import.meta.url));

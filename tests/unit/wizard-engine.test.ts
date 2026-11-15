@@ -516,7 +516,7 @@ describe('loadState / saveState', () => {
 
   it('сохраняет state и общие параметры, читает обратно', () => {
     const storage = memory();
-    const s = choose(g, initState(g, 'turn', { players: 2, school: 'wolf' }), 0);
+    const s = advance(g, initState(g, 'turn', { players: 2, school: 'wolf' }));
     saveState(storage, s);
     expect(JSON.parse(storage.get(PARAMS_KEY)!)).toEqual({ players: 2, school: 'wolf' });
     expect(loadState(g, 'turn', storage)).toEqual(s);
