@@ -38,7 +38,7 @@ description: Один цикл обработки открытого PR в witch
 
 ## 4. Исправить одной пачкой
 - Правки с тестами по правилам `/next-task` (шаг 5): новое поведение — новые тесты.
-- `npm run lint && npm run check && npm test && npm run build` один раз на пачку (+ e2e, если затронуты сценарии).
+- `npm run lint && npm run check && npm test && npm run build` один раз на пачку (+ `scripts/session/e2e.sh`, если затронуты сценарии).
 - Если правки существенные (новая логика или > ~50 строк), один раз запустите `code-reviewer` с `rereview: true`.
 - Коммит `fix: <что> (review #N)`, `git push`.
 
