@@ -1,0 +1,151 @@
+---
+// Карточка зоны на `/board/` (SPEC 11.5.3): что здесь лежит, когда используется, правила.
+// Подзоны приходят слотом и вкладываются в родителя.
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import { formatPages } from '../lib/reference';
+import { url } from '../lib/url';
+import type { ZoneUse } from '../lib/zone-index';
+
+interface Props {
+  id: string;
+  data: CollectionEntry<'zones'>['data'];
+  components: CollectionEntry<'components'>[];
+  rules: CollectionEntry<'rules'>[];
+  uses: readonly ZoneUse[];
+  /** Подзона: заголовок `h3`. */
+  nested?: boolean;
+}
+
+const { id, data, components, rules, uses, nested = false } = Astro.props;
+const Heading = nested ? 'h3' : 'h2';
+const usedIn = [
+  { label: 'Подготовка', items: uses.filter((u) => u.graph === 'setup') },
+  { label: 'Ход', items: uses.filter((u) => u.graph === 'turn') },
+].filter((group) => group.items.length > 0);
+---
+
+<section id={id} class:list={['zone-card', { 'zone-card--nested': nested }]}>
+  <div class="zone-card__head">
+    <Heading>
+      <a class="zone-card__anchor" href={`#${id}`}>
+        {data.title}
+      </a>
+    </Heading>
+    <p class="zone-card__pages">{formatPages(data.pages)}</p>
+    <p>{data.summary}</p>
+  </div>
+
+  {components.length > 0 && (
+    <div class="zone-card__block">
+      <p class="zone-card__label">Что здесь лежит</p>
+      <ul class="zone-card__components">
+        {components.map((c) => (
+          <li>
+            <Icon name={`components/${c.data.icon.replace(/\.svg$/, '')}`} size="2rem" decorative />
+            <a href={url(`reference#${c.id}`)}>{c.data.name}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  {usedIn.length > 0 && (
+    <div class="zone-card__block">
+      <p class="zone-card__label">Когда используется</p>
+      <ul>
+        {usedIn.map((group) => (
+          <li>
+            {group.label}: {group.items.map((u) => u.title).join('; ')}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  {rules.length > 0 && (
+    <div class="zone-card__block">
+      <p class="zone-card__label">Правила</p>
+      <ul>
+        {rules.map((r) => (
+          <li>
+            <a href={url(`rules/${r.id}`)}>{r.data.title}</a>{' '}
+            <span class="zone-card__pages">{formatPages(r.data.page)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  <slot />
+</section>
+
+<style>
+  .zone-card {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+    scroll-margin-top: calc(var(--board-sticky-height) + var(--space-3));
+  }
+
+  .zone-card--nested {
+    margin-top: var(--space-2);
+    padding-left: var(--space-3);
+    border-left: 1px solid var(--color-border);
+  }
+
+  .zone-card__head {
+    padding: var(--space-3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .zone-card__head > * {
+    margin: 0;
+  }
+
+  .zone-card__head h2,
+  .zone-card__head h3 {
+    font-size: 1.15rem;
+  }
+
+  .zone-card__anchor {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+    color: var(--color-text);
+  }
+
+  .zone-card__pages {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .zone-card__block ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .zone-card__label {
+    margin: 0 0 var(--space-1);
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+
+  .zone-card__components li {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .zone-card__block a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+</style>

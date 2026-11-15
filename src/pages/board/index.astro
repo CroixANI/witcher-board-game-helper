@@ -1,0 +1,79 @@
+---
+// Страница поля (SPEC 11.5.3): закреплённая схема сверху и карточки зон в порядке подготовки.
+// Якорь `#<zone-id>` без JS прокручивает к карточке и подсвечивает зону (`:target`).
+import { getCollection, getEntries, getEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ZoneCard from '../../components/ZoneCard.astro';
+import { BoardPage } from '../../islands/BoardPage';
+import { BoardSchematic } from '../../islands/BoardSchematic';
+import { BOARD_ZONES, type BoardZone } from '../../data/board-zones';
+import { orderBoardZones, zoneHighlightCss } from '../../lib/board-page';
+import { loadZoneIndex } from '../../lib/zone-index';
+
+const index = await loadZoneIndex();
+const setupOrder = (await getCollection('setup'))
+  .toSorted((a, b) => a.data.order - b.data.order)
+  .map((e) => e.data.node.id);
+const tree = orderBoardZones(BOARD_ZONES, index, setupOrder);
+
+async function cardProps(zone: BoardZone) {
+  const entry = await getEntry('zones', zone.id);
+  if (entry === undefined)
+    throw new Error(`/board/: нет текста зоны ${zone.id} в src/content/zones`);
+  return {
+    id: zone.id,
+    data: entry.data,
+    components: await getEntries(entry.data.components),
+    rules: await getEntries(entry.data.rules),
+    uses: index.get(zone.id) ?? [],
+  };
+}
+
+const cards = await Promise.all(
+  tree.map(async ({ zone, children }) => ({
+    ...(await cardProps(zone)),
+    children: await Promise.all(children.map(cardProps)),
+  })),
+);
+const zoneIds = BOARD_ZONES.map((z) => z.id);
+---
+
+<BaseLayout
+  title="Поле"
+  description="Схема игрового поля: где какие стопки и ячейки, что в них лежит и когда они нужны."
+>
+  <style is:inline set:html={zoneHighlightCss(zoneIds)} />
+  <h1>Поле</h1>
+  <p>Тап по карточке подсвечивает зону на схеме.</p>
+  <BoardPage client:load zoneIds={zoneIds}>
+    <div class="board-sticky">
+      <BoardSchematic zones={[]} latent={zoneIds} />
+    </div>
+    {cards.map(({ children, ...card }) => (
+      <ZoneCard {...card}>
+        {children.map((child) => (
+          <ZoneCard {...child} nested />
+        ))}
+      </ZoneCard>
+    ))}
+  </BoardPage>
+</BaseLayout>
+
+<style>
+  :global(.board-page) {
+    --board-sticky-height: 40svh;
+  }
+
+  /* Схема закреплена и не выше 40 % экрана (SPEC 11.5.3). */
+  .board-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding-block: var(--space-2);
+    background: var(--color-bg);
+  }
+
+  .board-sticky :global(svg) {
+    max-height: calc(var(--board-sticky-height) - 2 * var(--space-2));
+  }
+</style>

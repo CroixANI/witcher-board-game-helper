@@ -25,6 +25,24 @@ describe('<BoardSchematic>', () => {
     expect(html).toContain('<rect x="134.5" y="13.5" width="21" height="84" rx="1.5"></rect>');
   });
 
+  it('latent: скрытые рамки зон без подписи и легенды (подсветку включает CSS страницы)', () => {
+    const html = render({ zones: [], latent: ['z-supply', 'z-action-row-minus1'] });
+    expect(highlighted(html)).toEqual(['z-supply', 'z-action-row-minus1']);
+    expect(html).toContain(
+      'class="board-schematic__zone board-schematic__zone--latent" data-highlight="z-supply"',
+    );
+    expect(html).toContain('aria-label="Схема игрового поля"');
+    expect(html).not.toContain('<figcaption');
+    expect(() => render({ zones: [], latent: ['z-nope'] })).toThrow(/z-nope/);
+  });
+
+  it('legend: false — подсветка и подпись есть, легенды нет', () => {
+    const html = render({ zones: ['z-supply'], legend: false });
+    expect(highlighted(html)).toEqual(['z-supply']);
+    expect(html).toContain('Подсвечено: Золото и кубики');
+    expect(html).not.toContain('<figcaption');
+  });
+
   it('любая зона, включая подзоны, подсвечивается', () => {
     for (const { id } of BOARD_ZONES) expect(highlighted(render({ zones: [id] }))).toEqual([id]);
   });
