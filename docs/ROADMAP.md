@@ -30,7 +30,7 @@
 | R1.4 | done | 2026-11-06 | #13 |
 | R1.5 | done | 2026-11-15 | #14 |
 | R1.6 | done | 2026-11-15 | #15 |
-| R2.1 | todo | | |
+| R2.1 | review | 2026-11-15 | #? |
 | R2.2 | todo | | |
 | R2.3 | todo | | |
 | R2.4 | todo | | |
@@ -233,7 +233,7 @@
 
 ## M2 — Wizard подготовки
 
-### - [ ] R2.1 Движок wizard'а
+### - [x] R2.1 Движок wizard'а
 - **Ветка:** `feat/r2.1-wizard-engine` · `setup-wizard`, `turn-wizard` · M2.
 - **Цель:** `src/lib/wizard-engine.ts` по SPEC 6 — чистый TS, 100 % ветвей покрыто тестами.
 - **Файлы:**
