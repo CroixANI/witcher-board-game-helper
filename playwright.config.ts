@@ -3,6 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 4321;
 const CI = !!process.env.CI;
+// Слеш в конце обязателен: относительные пути (`setup/`) резолвятся внутри base path.
+const BASE_URL = `http://localhost:${PORT}/witcher-board-game-helper/`;
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -12,8 +14,7 @@ export default defineConfig({
   // Отчёт со скриншотами шагов — артефакт CI для ревью.
   reporter: CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: {
-    // Слеш в конце обязателен: относительные пути (`setup/`) резолвятся внутри base path.
-    baseURL: `http://localhost:${PORT}/witcher-board-game-helper/`,
+    baseURL: BASE_URL,
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },
@@ -25,7 +26,7 @@ export default defineConfig({
     // `--ignore-lock`: иначе под AI-агентом (Claude Code и т. п.) Astro сам уводит preview
     // в фон, процесс сразу завершается и Playwright считает сервер упавшим.
     command: `npm run preview -- --port ${PORT} --ignore-lock`,
-    url: `http://localhost:${PORT}/witcher-board-game-helper/`,
+    url: BASE_URL,
     reuseExistingServer: !CI,
   },
 });
