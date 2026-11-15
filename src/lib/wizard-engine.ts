@@ -189,6 +189,15 @@ export function advance(g: Graph, s: WizardState): WizardState {
   return move(g, s, s, resolveNext(node.next, s));
 }
 
+/** Отметить / снять пункт чек-листа узла. `index` — позиция в исходном `checklist` (без фильтра). */
+export function toggleChecked(s: WizardState, nodeId: string, index: number): WizardState {
+  const marks = s.checked[nodeId] ?? [];
+  const next = marks.includes(index)
+    ? marks.filter((i) => i !== index)
+    : [...marks, index].sort((a, b) => a - b);
+  return { ...s, checked: { ...s.checked, [nodeId]: next }, updatedAt: Date.now() };
+}
+
 /** «Назад»: предыдущий узел и флаги/счётчики на момент входа в него. */
 export function back(_g: Graph, s: WizardState): WizardState {
   const prev = s.history.at(-1);
