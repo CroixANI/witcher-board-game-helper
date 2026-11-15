@@ -4,5 +4,6 @@ count: 28
 icon: card-back-elixir.svg
 howToTell: 'Тёмная рубашка с треугольником, внутри которого колба. На лице — название эликсира и его эффект.'
 confusedWith: [action-card]
+usedIn: [s03-elixirs]
 rules: [elixirs, alchemy-elixir]
 rulesPage: [4, 11]

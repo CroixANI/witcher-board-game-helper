@@ -4,5 +4,6 @@ count: 8
 icon: card-back-skill-trophy.svg
 howToTell: 'Коричневая рубашка с четырьмя символами навыков. На лице — навык 5-го уровня, за который дают трофей.'
 confusedWith: [event-card]
+usedIn: [s04-skill-trophies]
 rules: [setup-skill-trophies, meditation, trophies]
 rulesPage: [4, 6, 15]

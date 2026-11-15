@@ -4,5 +4,6 @@ count: 18
 icon: token-location.svg
 howToTell: 'Круглые. Рубашка — тип местности (лес, горы или вода), на лице — номер и название локации.'
 confusedWith: [monster-token, trail-token]
+usedIn: [s07-location-tokens]
 rules: [location-tokens]
 rulesPage: [5, 11]

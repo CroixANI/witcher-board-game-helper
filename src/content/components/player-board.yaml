@@ -5,5 +5,6 @@ perPlayer: true
 icon: player-board.svg
 howToTell: 'Портрет ведьмака, шкалы уровня ведьмака, четырёх навыков и щита, ячейки для ставок.'
 confusedWith: [board]
+usedIn: [s10-player-components]
 rules: [setup-player-components, skills]
 rulesPage: [5, 8, 21]

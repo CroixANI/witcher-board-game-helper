@@ -1,9 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { WizardIsland } from '../../islands/WizardIsland';
+import { loadWizardData } from '../../lib/load-wizard-data';
+
+const data = await loadWizardData('setup');
 ---
 
 <BaseLayout title="Подготовка">
   <h1>Подготовка</h1>
   <p>Пошаговая раскладка поля, карт и жетонов для 2–5 игроков.</p>
-  <p class="stub">Раздел в разработке (ROADMAP, этап M2).</p>
+  <WizardIsland client:load data={data} />
 </BaseLayout>

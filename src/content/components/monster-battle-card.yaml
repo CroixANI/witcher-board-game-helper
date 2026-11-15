@@ -4,5 +4,6 @@ count: 20
 icon: card-back-monster-battle.svg
 howToTell: 'Красная рубашка с рогатым черепом. На лице две атаки: удар и укус.'
 confusedWith: [monster-card]
+usedIn: [s08-monsters]
 rules: [monster-battle-setup, monster-turn, monster-attack-effects]
 rulesPage: [5, 21, 25]

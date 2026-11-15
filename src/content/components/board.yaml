@@ -4,5 +4,6 @@ count: 1
 icon: board.svg
 howToTell: 'Самый большой компонент: карта Континента с локациями, справа — деревянная панель с местами для колод и шкалой трофеев.'
 confusedWith: [player-board]
+usedIn: [s01-board]
 rules: [setup-overview]
 rulesPage: [4, 6]

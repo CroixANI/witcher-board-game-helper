@@ -5,5 +5,6 @@ perPlayer: true
 icon: card-witcher-trophy.svg
 howToTell: 'Тёмно-синяя рубашка с медальоном школы. Лицо светлое, с названием школы. В игру берут столько, сколько у вас соперников.'
 confusedWith: [action-card, starter-cards, reference-card]
+usedIn: [s10-player-components]
 rules: [witcher-trophy, witcher-battle-outcomes]
 rulesPage: [5, 8, 28]

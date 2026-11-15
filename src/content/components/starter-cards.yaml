@@ -5,5 +5,6 @@ perPlayer: true
 icon: card-starter.svg
 howToTell: 'Рубашка такая же, как у обычных карт действий. Отличие — на лице: в правом верхнем углу символ школы.'
 confusedWith: [action-card, witcher-trophy]
+usedIn: [s02-action-row, s10-player-components]
 rules: [setup-player-components]
 rulesPage: [5, 8]
