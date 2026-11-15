@@ -261,15 +261,18 @@ export function sanitizeParams(raw: unknown): Params {
 
 /**
  * State из хранилища. Если формат не тот, граф чужой или узлы неизвестны — новый state с entry;
- * параметры по возможности сохраняются (SPEC 6.5). `fallbackParams` (общий ключ) дополняют их.
+ * параметры по возможности сохраняются (SPEC 6.5). `sharedParams` — общий ключ `twow:v1:params`:
+ * его пишет каждый `saveState`, поэтому он свежее параметров внутри state и целиком их заменяет
+ * (новая партия в подготовке → ход берёт новое число игроков). Если параметры изменились,
+ * state начинается заново: шаги и флаги относились к другой партии.
  */
 export function hydrate(
   g: Graph,
   graph: GraphName,
   raw: unknown,
-  fallbackParams: Params = {},
+  sharedParams?: Params,
 ): WizardState {
-  const params = { ...fallbackParams, ...sanitizeParams(isRecord(raw) ? raw.params : undefined) };
+  const params = sharedParams ?? sanitizeParams(isRecord(raw) ? raw.params : undefined);
   const known = (id: unknown) => typeof id === 'string' && g.nodes.has(id);
   const valid =
     isRecord(raw) &&
@@ -286,7 +289,9 @@ export function hydrate(
     isRecordOf(raw.checked, isNumArray) &&
     isNum(raw.updatedAt);
   if (!valid) return initState(g, graph, params);
-  return { ...(raw as WizardState), params };
+  const state = raw as WizardState;
+  const same = params.players === state.params.players && params.school === state.params.school;
+  return same ? state : initState(g, graph, params);
 }
 
 function readJson(storage: SafeStorage, key: string): unknown {
@@ -300,7 +305,8 @@ function readJson(storage: SafeStorage, key: string): unknown {
 }
 
 export function loadState(g: Graph, graph: GraphName, storage: SafeStorage): WizardState {
-  const params = sanitizeParams(readJson(storage, PARAMS_KEY));
+  const shared = readJson(storage, PARAMS_KEY);
+  const params = isRecord(shared) ? sanitizeParams(shared) : undefined;
   return hydrate(g, graph, readJson(storage, storageKey(graph)), params);
 }
 

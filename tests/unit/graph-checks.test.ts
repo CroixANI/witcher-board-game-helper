@@ -237,6 +237,20 @@ describe('checkDeadEnds (инвариант 3)', () => {
     ]);
   });
 
+  it('условный next без гарантированной ветви', () => {
+    const nodes: GraphNode[] = [
+      info('a', [{ when: { flags: { lostBattle: true } }, to: 'z' }]),
+      info('b', [{ when: { players: [2, 3] }, to: 'z' }]),
+      info('c', [{ when: { players: [4, 5], flags: { x: true } }, to: 'z' }, { to: 'z' }]),
+      end('z'),
+    ];
+    expect(checkDeadEnds('turn', nodes, ['a', 'b', 'c'])).toEqual([
+      'turn: узел a: при 2, 3, 4, 5 игроках next может не найти перехода — нужна ветвь без условий по флагам',
+      'turn: узел b: при 4, 5 игроках next может не найти перехода — нужна ветвь без условий по флагам',
+      'turn: узел b: при 4, 5 игроках из него не дойти до end',
+    ]);
+  });
+
   it('флаги могут быть любыми: условие по флагу — возможный выход', () => {
     const nodes: GraphNode[] = [
       info('a', [{ when: { flags: { x: true } }, to: 'z' }, { to: 'a' }]),

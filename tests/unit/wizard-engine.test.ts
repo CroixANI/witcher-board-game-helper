@@ -491,10 +491,19 @@ describe('hydrate (восстановление после битого state)',
     expect(s.current).toBe('params');
   });
 
-  it('параметры из общего ключа дополняют, но не перекрывают state', () => {
+  it('параметры из общего ключа главнее параметров внутри state', () => {
     expect(hydrate(g, 'turn', undefined, { players: 5 }).params).toEqual({ players: 5 });
     const s = hydrate(g, 'turn', JSON.parse(JSON.stringify(good())), { players: 5 });
-    expect(s.params.players).toBe(3);
+    expect(s.params).toEqual({ players: 5 });
+    expect(s.history).toEqual([]); // другая партия — ход начинается заново
+    expect(s.current).toBe('school');
+    expect(hydrate(g, 'turn', JSON.parse(JSON.stringify(good())), {}).params).toEqual({});
+    const same = hydrate(g, 'turn', JSON.parse(JSON.stringify(good())), {
+      players: 3,
+      school: 'wolf',
+    });
+    expect(same.current).toBe(good().current); // те же параметры — без сброса
+    expect(same.history).toHaveLength(1);
   });
 });
 
@@ -528,6 +537,22 @@ describe('loadState / saveState', () => {
     const s = loadState(g, 'turn', storage);
     expect(s.params).toEqual({ players: 4 });
     expect(s.current).toBe('school');
+  });
+
+  it('новая партия в подготовке → ход берёт новое число игроков', () => {
+    const storage = memory();
+    saveState(storage, initState(g, 'turn', { players: 3, school: 'wolf' })); // прошлая партия
+    saveState(storage, { ...initState(g, 'setup'), params: { players: 5 } }); // новая подготовка
+    expect(loadState(g, 'turn', storage).params).toEqual({ players: 5 });
+  });
+
+  it('после restartAll в подготовке ход снова спрашивает параметры', () => {
+    const storage = memory();
+    saveState(storage, initState(g, 'turn', { players: 3, school: 'wolf' }));
+    saveState(storage, restartAll(g, initState(g, 'setup', { players: 3 })));
+    const s = loadState(g, 'turn', storage);
+    expect(s.params).toEqual({});
+    expect(s.current).toBe('params');
   });
 
   it('битый JSON — начальный state', () => {

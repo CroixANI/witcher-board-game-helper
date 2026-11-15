@@ -198,6 +198,21 @@ export function checkDeadEnds(
   const errors = nodes
     .filter(unskippable)
     .map((n) => `${graph}: узел ${n.id}: есть showIf, но нет однозначного next для пропуска`);
+  // Условный `next` без ветви, которая точно сработает: resolveNext() бросит исключение.
+  for (const node of nodes) {
+    if (node.next === undefined || typeof node.next === 'string') continue;
+    const branches = node.next;
+    const open = PLAYER_COUNTS.filter(
+      (p) =>
+        !branches.some(
+          ({ when }) => !when || (!when.flags && !when.missingParam && playersOk(when, p)),
+        ),
+    );
+    if (open.length)
+      errors.push(
+        `${graph}: узел ${node.id}: при ${playersList(open)} игроках next может не найти перехода — нужна ветвь без условий по флагам`,
+      );
+  }
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const stuck = new Map<string, Players[]>();
   for (const p of PLAYER_COUNTS) {
