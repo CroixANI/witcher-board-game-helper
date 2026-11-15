@@ -32,6 +32,11 @@
   dominant-baseline: central;
 }
 
+/* Показывает правило страницы (`/board/`), см. `zoneHighlightCss`. */
+.board-schematic__zone--latent {
+  display: none;
+}
+
 @keyframes board-schematic-pulse {
   50% {
     fill-opacity: 0.05;

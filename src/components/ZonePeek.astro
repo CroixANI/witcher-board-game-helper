@@ -1,0 +1,14 @@
+---
+// Подключение панели зоны на страницу чтения (SPEC 11.5.4): тексты всех зон — в пропсы острова.
+import { getCollection } from 'astro:content';
+import { ZonePeek, type ZoneText } from '../islands/ZonePeek';
+
+const zones: Record<string, ZoneText> = Object.fromEntries(
+  (await getCollection('zones')).map((e) => [
+    e.id,
+    { title: e.data.title, summary: e.data.summary },
+  ]),
+);
+---
+
+<ZonePeek client:idle zones={zones} />

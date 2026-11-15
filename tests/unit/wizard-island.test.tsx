@@ -184,11 +184,14 @@ describe('<WizardIsland> на демо-графе (все типы узлов)',
     expect(screen.getByText('Только при 4–5 игроках: доп. пункт')).toBeTruthy();
   });
 
-  it('step: схема поля, компоненты, предупреждение, свёрнутые карточки правил (и из чек-листа)', () => {
+  it('step: схема поля и ссылка на /board/, компоненты, предупреждение, свёрнутые карточки правил (и из чек-листа)', () => {
     const { container } = render(<WizardIsland data={demo} storage={memoryStorage()} />);
     click(/^2 игрока/);
     expect(container.querySelector('[data-highlight="z-action-row"]')).toBeTruthy();
     expect(container.querySelector('[data-highlight="z-action-deck"]')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Подробнее о поле →' }).getAttribute('href')).toMatch(
+      /\/board\/#z-action-row$/,
+    );
     expect(screen.getByRole('link', { name: 'Карта действия' }).getAttribute('href')).toMatch(
       /reference\/#action-card$/,
     );

@@ -207,6 +207,12 @@
   border-radius: var(--radius);
 }
 
+.wizard-board-more {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+}
+
 .component-chip {
   display: flex;
   gap: var(--space-3);

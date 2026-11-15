@@ -5,6 +5,7 @@ import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ComponentCard from '../../components/ComponentCard.astro';
 import Icon from '../../components/Icon.astro';
+import ZonePeek from '../../components/ZonePeek.astro';
 import { COMPONENT_CATEGORIES, componentCategory, formatPages } from '../../lib/reference';
 import { url } from '../../lib/url';
 
@@ -44,6 +45,7 @@ const locationActions = await Promise.all(
     <a href="#components">Компоненты</a>
     <a href="#schools">Специализации школ</a>
     <a href="#location-actions">Действия локаций</a>
+    <a href={url('board')}>Поле</a>
   </nav>
 
   <section id="components" class="components" aria-labelledby="components-title">
@@ -120,6 +122,7 @@ const locationActions = await Promise.all(
       ))}
     </ul>
   </section>
+  <ZonePeek />
 </BaseLayout>
 
 <style>

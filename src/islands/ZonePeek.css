@@ -1,0 +1,19 @@
+/* Панель зоны (SPEC 11.5.4). */
+.zone-sheet h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.zone-sheet p {
+  margin: 0;
+}
+
+.zone-sheet__board svg {
+  max-height: 35svh;
+}
+
+.zone-sheet__more {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+}

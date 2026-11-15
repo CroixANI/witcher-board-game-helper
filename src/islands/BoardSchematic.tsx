@@ -27,10 +27,23 @@ interface Props {
   zones: readonly string[];
   /** Подписи зон на схеме (обычно номера шагов), ключ — id зоны. */
   labels?: Readonly<Record<string, string>>;
+  /**
+   * Зоны со скрытой подсветкой: рамка есть в разметке, но показывается только CSS-правилом
+   * страницы (`/board/`: `:target` или `data-current`). Не входят в подпись и легенду.
+   */
+  latent?: readonly string[];
+  /** Легенда под схемой; в компактной панели зоны не нужна. */
+  legend?: boolean;
   class?: string;
 }
 
-export function BoardSchematic({ zones, labels = {}, class: className }: Props) {
+export function BoardSchematic({
+  zones,
+  labels = {},
+  latent = [],
+  legend = true,
+  class: className,
+}: Props) {
   const active = zones.map(zone);
   for (const id of Object.keys(labels)) zone(id);
 
@@ -77,8 +90,17 @@ export function BoardSchematic({ zones, labels = {}, class: className }: Props) 
             </g>
           );
         })}
+        {latent.map(zone).map((z) => (
+          <g
+            key={z.id}
+            class="board-schematic__zone board-schematic__zone--latent"
+            data-highlight={z.id}
+          >
+            <rect x={z.x + 0.5} y={z.y + 0.5} width={z.w - 1} height={z.h - 1} rx="1.5" />
+          </g>
+        ))}
       </svg>
-      {active.length > 0 && (
+      {legend && active.length > 0 && (
         <figcaption>
           <ul class="board-schematic__legend">
             {active.map((z) => (
