@@ -172,8 +172,14 @@ export function choose(g: Graph, s: WizardState, optionIndex: number): WizardSta
     option.increment && node.counterKey
       ? { ...s.counters, [node.counterKey]: (s.counters[node.counterKey] ?? 0) + 1 }
       : s.counters;
+  // Переход узла в самого себя (новая итерация loop) начинает его чек-лист с чистого листа.
+  const checked =
+    option.next === s.current
+      ? Object.fromEntries(Object.entries(s.checked).filter(([id]) => id !== s.current))
+      : s.checked;
   const next: WizardState = {
     ...s,
+    checked,
     flags: option.set ? { ...s.flags, ...option.set } : s.flags,
     params: option.setParam ? applyParam(s.params, option.setParam) : s.params,
     counters,
@@ -187,6 +193,15 @@ export function advance(g: Graph, s: WizardState): WizardState {
   if ((node.type !== 'step' && node.type !== 'info') || node.next === undefined)
     throw new Error(`wizard: узел ${node.id} (${node.type}) — используйте choose()`);
   return move(g, s, s, resolveNext(node.next, s));
+}
+
+/** Отметить / снять пункт чек-листа узла. `index` — позиция в исходном `checklist` (без фильтра). */
+export function toggleChecked(s: WizardState, nodeId: string, index: number): WizardState {
+  const marks = s.checked[nodeId] ?? [];
+  const next = marks.includes(index)
+    ? marks.filter((i) => i !== index)
+    : [...marks, index].sort((a, b) => a - b);
+  return { ...s, checked: { ...s.checked, [nodeId]: next }, updatedAt: Date.now() };
 }
 
 /** «Назад»: предыдущий узел и флаги/счётчики на момент входа в него. */

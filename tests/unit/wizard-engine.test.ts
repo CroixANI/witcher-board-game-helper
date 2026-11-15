@@ -16,6 +16,7 @@ import {
   skipHidden,
   skipTarget,
   storageKey,
+  toggleChecked,
   visibleOptions,
   HISTORY_LIMIT,
   type Graph,
@@ -308,6 +309,14 @@ describe('choose', () => {
     expect(s.current).toBe('done');
   });
 
+  it('loop: новая итерация снимает галочки этого узла, другие узлы и выход из цикла не трогает', () => {
+    let s = state({ current: 'battle', checked: { battle: [0, 1], bets: [2] } });
+    s = choose(g, s, 0);
+    expect(s.checked).toEqual({ bets: [2] });
+    s = choose(g, { ...s, checked: { ...s.checked, battle: [1] } }, 1);
+    expect(s.checked).toEqual({ bets: [2], battle: [1] });
+  });
+
   it('не меняет исходный state', () => {
     const s = state({ current: 'q' });
     const copy = structuredClone(s);
@@ -573,5 +582,22 @@ describe('loadState / saveState', () => {
     storage.set(storageKey('turn'), '{oops');
     storage.set(PARAMS_KEY, 'nope');
     expect(loadState(g, 'turn', storage).current).toBe('params');
+  });
+});
+
+describe('toggleChecked', () => {
+  const g = buildGraph(nodes, 'params');
+  const s0 = initState(g, 'turn');
+
+  it('отмечает и снимает пункт, индексы по возрастанию, другие узлы не трогает', () => {
+    const s1 = toggleChecked(toggleChecked(s0, 'bets', 2), 'bets', 0);
+    expect(s1.checked).toEqual({ bets: [0, 2] });
+    const s2 = toggleChecked(toggleChecked(s1, 'battle', 1), 'bets', 2);
+    expect(s2.checked).toEqual({ bets: [0], battle: [1] });
+  });
+
+  it('не меняет исходный state', () => {
+    toggleChecked(s0, 'bets', 0);
+    expect(s0.checked).toEqual({});
   });
 });
