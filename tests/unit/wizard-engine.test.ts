@@ -5,6 +5,7 @@ import {
   buildGraph,
   choose,
   evaluate,
+  forgetParam,
   hydrate,
   initState,
   loadState,
@@ -458,6 +459,42 @@ describe('resetTurn / restartAll', () => {
   it('restartAll: сбрасывает и параметры', () => {
     const s = restartAll(g, played());
     expect(s).toMatchObject({ current: 'params', params: {}, flags: {}, history: [] });
+  });
+});
+
+describe('forgetParam («Сменить школу / число игроков»)', () => {
+  const played = (): WizardState => {
+    let s = initState(g, 'turn');
+    s = choose(g, s, 1); // players 5
+    s = choose(g, s, 1); // cat → start
+    s = advance(g, s);
+    return choose(g, s, 0); // moved → move
+  };
+
+  it('school: снова спрашивает школу, число игроков сохраняется, ход начинается заново', () => {
+    const s = forgetParam(g, played(), 'school');
+    expect(s).toMatchObject({ current: 'school', params: { players: 5 }, flags: {}, history: [] });
+    expect(s.params).not.toHaveProperty('school');
+    expect(choose(g, s, 0)).toMatchObject({
+      current: 'start',
+      params: { players: 5, school: 'wolf' },
+    });
+  });
+
+  it('players: снова спрашивает число игроков, школа сохраняется и вопрос о ней пропускается', () => {
+    const s = forgetParam(g, played(), 'players');
+    expect(s).toMatchObject({ current: 'params', params: { school: 'cat' }, history: [] });
+    expect(choose(g, s, 0)).toMatchObject({
+      current: 'start',
+      params: { players: 2, school: 'cat' },
+    });
+  });
+
+  it('не меняет исходный state', () => {
+    const before = played();
+    const copy = structuredClone(before);
+    forgetParam(g, before, 'school');
+    expect(before).toEqual(copy);
   });
 });
 

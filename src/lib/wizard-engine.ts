@@ -243,6 +243,16 @@ export function resetTurn(g: Graph, s: WizardState): WizardState {
   return fresh(g, s.graph, s.params, target);
 }
 
+/**
+ * «Сменить школу / число игроков» (ROADMAP R3.1): забыть параметр партии и начать ход заново
+ * с entry — узел-вопрос с `missingParam` снова покажется. Остальные параметры сохраняются.
+ */
+export function forgetParam(g: Graph, s: WizardState, key: keyof Params): WizardState {
+  const params = { ...s.params };
+  delete params[key];
+  return fresh(g, s.graph, params, g.entry);
+}
+
 /** Начать всё заново, включая параметры партии. */
 export function restartAll(g: Graph, s: WizardState): WizardState {
   return fresh(g, s.graph, {}, g.entry);
