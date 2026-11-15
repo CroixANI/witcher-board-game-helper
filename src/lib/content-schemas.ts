@@ -48,7 +48,7 @@ const SvgFile = z.string().regex(/^[a-z0-9-]+\.svg$/);
 
 /** Схемы ссылок по коллекциям: отдельный тип на каждую, чтобы `data.rules` и `data.confusedWith`
  * не сливались в объединение `rules | components`. */
-export type RefSchemas<RR extends z.ZodType, RC extends z.ZodType> = { rules: RR; components: RC };
+type RefSchemas<RR extends z.ZodType, RC extends z.ZodType> = { rules: RR; components: RC };
 
 export function createSchemas<RR extends z.ZodType, RC extends z.ZodType>(ref: RefSchemas<RR, RC>) {
   // ── карточки правил ──────────────────────────────────────

@@ -18,7 +18,7 @@ const headingId = `${entry.id}-title`;
 
 <article class="component" id={entry.id} aria-labelledby={headingId}>
   <div class="head">
-    <Icon name={`components/${icon.slice(0, -'.svg'.length)}`} size="4rem" decorative />
+    <Icon name={`components/${icon.replace(/\.svg$/, '')}`} size="4rem" decorative />
     <div>
       <h3 id={headingId}>{name}</h3>
       <p class="count">Количество: {formatCount(entry.data)}</p>

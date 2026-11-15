@@ -104,11 +104,7 @@ const locationActions = await Promise.all(
       {locationActions.map(({ entry, rule }) => (
         <li class="card" id={`action-${entry.id}`}>
           <h3>
-            <Icon
-              name={`actions/${entry.data.icon.slice(0, -'.svg'.length)}`}
-              size="2em"
-              decorative
-            />
+            <Icon name={`actions/${entry.data.icon.replace(/\.svg$/, '')}`} size="2em" decorative />
             {entry.data.title}
           </h3>
           <p class="hint">На поле: {entry.data.iconHint}</p>
