@@ -1,0 +1,5 @@
+title: 'Колоды исследования и событий'
+summary: 'Три колоды на поле: исследование города, исследование окрестностей и события. Первые две перемешаны, события лежат по номерам.'
+components: [exploration-city, exploration-wilds, event-card]
+rules: [setup-exploration-events, exploration, events]
+pages: [6, 16, 17]

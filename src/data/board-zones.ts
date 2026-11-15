@@ -1,5 +1,6 @@
 /**
- * Зоны схемы игрового поля (SPEC 11.3). Координаты — в единицах viewBox `board-schematic.svg`.
+ * Зоны схемы игрового поля (SPEC 11.3, подзоны — 11.5.1). Единственный источник списка зон:
+ * его используют `BoardSchematic`, валидатор контента и тесты; тексты зон — в `src/content/zones/`. Координаты — в единицах viewBox `board-schematic.svg`.
  * Раскладка повторяет «Пример подготовки вдвоём» (стр. 7) по расположению зон, а не по графике.
  */
 export const BOARD_VIEWBOX = { width: 200, height: 140 } as const;
@@ -14,6 +15,8 @@ export type BoardZone = {
   /** Шаги подготовки / фазы, где зона подсвечивается. */
   readonly steps: string;
   readonly note?: string;
+  /** Родительская зона (только один уровень вложенности). Подсветка подзоны не подсвечивает родителя. */
+  readonly parent?: string;
 };
 
 export const BOARD_ZONES: readonly BoardZone[] = [
@@ -64,6 +67,37 @@ export const BOARD_ZONES: readonly BoardZone[] = [
     steps: '2, фаза III',
     note: 'Верхние 2 ячейки — «левые» (+1 к стоимости), нижняя — «правая» (−1).',
   },
+  // Ячейки ряда (стр. 19): «левые» — у колоды, «правая» — дальняя от неё.
+  {
+    id: 'z-action-row-plus1',
+    parent: 'z-action-row',
+    label: '2 ячейки ряда у колоды (стоимость +1)',
+    x: 134,
+    y: 13,
+    w: 22,
+    h: 28,
+    steps: 'фаза III',
+  },
+  {
+    id: 'z-action-row-base',
+    parent: 'z-action-row',
+    label: '3 средние ячейки ряда (без модификатора)',
+    x: 134,
+    y: 42,
+    w: 22,
+    h: 41,
+    steps: 'фаза III',
+  },
+  {
+    id: 'z-action-row-minus1',
+    parent: 'z-action-row',
+    label: 'Дальняя от колоды ячейка ряда (стоимость −1)',
+    x: 134,
+    y: 84,
+    w: 22,
+    h: 14,
+    steps: 'фаза III',
+  },
   {
     id: 'z-exploration-decks',
     label: 'Исследование города, окрестностей и события (сверху вниз)',
@@ -72,6 +106,37 @@ export const BOARD_ZONES: readonly BoardZone[] = [
     w: 30,
     h: 44,
     steps: '5',
+  },
+  // Колоды сверху вниз, как на фото стр. 7: город (серая), окрестности (зелёная), события.
+  {
+    id: 'z-exploration-city',
+    parent: 'z-exploration-decks',
+    label: 'Колода исследования города',
+    x: 98,
+    y: 54,
+    w: 30,
+    h: 14,
+    steps: '5, фаза II',
+  },
+  {
+    id: 'z-exploration-wilds',
+    parent: 'z-exploration-decks',
+    label: 'Колода исследования окрестностей',
+    x: 98,
+    y: 69,
+    w: 30,
+    h: 14,
+    steps: '5, фаза II',
+  },
+  {
+    id: 'z-event-deck',
+    parent: 'z-exploration-decks',
+    label: 'Колода событий (по порядку номеров)',
+    x: 98,
+    y: 84,
+    w: 30,
+    h: 14,
+    steps: '5, фаза II',
   },
   {
     id: 'z-skill-trophies',

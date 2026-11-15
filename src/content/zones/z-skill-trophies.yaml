@@ -1,0 +1,5 @@
+title: 'Трофеи за навыки'
+summary: 'Колода рядом с полем. При 2–3 игроках в ней по одной карте на навык, при 4–5 — все. Трофей отсюда дают за медитацию.'
+components: [skill-trophy]
+rules: [setup-skill-trophies, meditation]
+pages: [6, 15]

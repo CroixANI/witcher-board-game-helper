@@ -1,0 +1,5 @@
+title: 'Золото и кубики'
+summary: 'Общий запас рядом с полем: жетоны золота и два набора кубиков для покера.'
+components: [gold, poker-dice]
+rules: [gold-reward, poker-rules]
+pages: [6, 14]

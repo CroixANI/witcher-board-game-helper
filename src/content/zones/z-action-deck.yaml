@@ -1,0 +1,5 @@
+title: 'Колода карт действий'
+summary: 'Лежит рядом с рядом карт, у его «левого» конца. Из неё восполняют ряд после того, как оттуда взяли карту.'
+components: [action-card]
+rules: [setup-action-row, row-refill]
+pages: [6, 19]

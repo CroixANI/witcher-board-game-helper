@@ -1,0 +1,5 @@
+title: 'Колода событий'
+summary: 'Пронумерованные карты, не перемешиваются. Карту берут по номеру, на который ссылается задание.'
+components: [event-card]
+rules: [events, quests, setup-exploration-events]
+pages: [6, 17]

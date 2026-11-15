@@ -1,0 +1,14 @@
+title: 'Зона игрока'
+summary: 'Перед каждым игроком: планшет с маркерами, ведьмачьи трофеи, своя колода, сброс, памятки и жетоны следа, если они есть.'
+components:
+  [
+    player-board,
+    starter-cards,
+    cube-marker,
+    shield-marker,
+    witcher-trophy,
+    reference-card,
+    trail-token,
+  ]
+rules: [setup-player-components, setup-start-resources, skills, trail-tokens]
+pages: [7, 8, 11]

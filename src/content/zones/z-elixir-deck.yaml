@@ -1,0 +1,5 @@
+title: 'Колода эликсиров'
+summary: 'Перемешанная колода рядом с полем. Карту отсюда берут, когда растёт навык алхимии, и в некоторых локациях.'
+components: [elixir]
+rules: [elixirs, alchemy-elixir, loc-elixir]
+pages: [6, 11]

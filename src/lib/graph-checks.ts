@@ -84,7 +84,7 @@ export function checkPagesAndRules(
   return errors;
 }
 
-/** 7а. Все `zones` есть в `src/data/board-zones.ts`. */
+/** 7. Все `zones` узлов есть в `src/data/board-zones.ts`. */
 export function checkZones(
   graph: string,
   nodes: readonly GraphNode[],
@@ -97,7 +97,59 @@ export function checkZones(
   );
 }
 
-/** 7б. Все `icon` лежат на диске. `icon` — путь относительно `src/assets/svg/`. */
+/** Геометрия зоны, нужная проверкам (совместима с `BoardZone`). */
+export type ZoneBox = {
+  readonly id: string;
+  readonly x: number;
+  readonly y: number;
+  readonly w: number;
+  readonly h: number;
+  readonly parent?: string | undefined;
+};
+
+/** 7б (код). `parent` существует, сам не подзона, подзона лежит внутри родителя. */
+export function checkZoneTree(zones: readonly ZoneBox[]): string[] {
+  const byId = new Map(zones.map((z) => [z.id, z]));
+  return zones.flatMap((z) => {
+    if (z.parent === undefined) return [];
+    const parent = byId.get(z.parent);
+    if (!parent) return [`board-zones: зона ${z.id}: неизвестный parent ${z.parent}`];
+    if (parent.parent !== undefined)
+      return [`board-zones: зона ${z.id}: parent ${z.parent} сам является подзоной`];
+    const inside =
+      z.x >= parent.x &&
+      z.y >= parent.y &&
+      z.x + z.w <= parent.x + parent.w &&
+      z.y + z.h <= parent.y + parent.h;
+    return inside ? [] : [`board-zones: подзона ${z.id} выходит за родителя ${z.parent}`];
+  });
+}
+
+/** 7б (контент). Файлы `zones/<id>.yaml` и зоны из `board-zones.ts` совпадают 1:1. */
+export function checkZoneFiles(fileIds: readonly string[], zoneIds: ReadonlySet<string>): string[] {
+  const files = new Set(fileIds);
+  return [
+    ...fileIds
+      .filter((id) => !zoneIds.has(id))
+      .map((id) => `zones/${id}.yaml: зоны ${id} нет в src/data/board-zones.ts`),
+    ...[...zoneIds]
+      .filter((id) => !files.has(id))
+      .map((id) => `zones: нет файла zones/${id}.yaml для зоны из board-zones.ts`),
+  ];
+}
+
+/** 7в. Каждый компонент справочника лежит хотя бы в одной зоне (`zones/*.yaml` → `components`). */
+export function checkComponentsPlaced(
+  components: readonly { readonly file: string; readonly id: string }[],
+  zones: readonly { readonly components: readonly string[] }[],
+): string[] {
+  const placed = new Set(zones.flatMap((z) => z.components));
+  return components
+    .filter((c) => !placed.has(c.id))
+    .map((c) => `${c.file}: компонент не лежит ни в одной зоне (src/content/zones/*.yaml)`);
+}
+
+/** 7. Все `icon` лежат на диске. `icon` — путь относительно `src/assets/svg/`. */
 export function checkIcons(
   refs: readonly { readonly source: string; readonly icon: string }[],
   available: ReadonlySet<string>,
