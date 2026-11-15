@@ -2,6 +2,7 @@
 // Одна карточка правила (SPEC 4.1): полный пересказ, «стр. N», связанные правила и компоненты.
 import { getCollection, getEntries, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ZonePeek from '../../components/ZonePeek.astro';
 import { formatPages, ruleGroupLabel } from '../../lib/reference';
 import { url } from '../../lib/url';
 
@@ -61,6 +62,7 @@ const components = (await getCollection('components'))
       </ul>
     </section>
   )}
+  <ZonePeek />
 </BaseLayout>
 
 <style>
