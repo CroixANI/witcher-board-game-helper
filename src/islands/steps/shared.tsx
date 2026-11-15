@@ -62,11 +62,11 @@ export function OptionButtons({
   );
 }
 
-export function NextButton({ act, label = 'Далее →' }: { act: StepActions; label?: string }) {
+export function NextButton({ act }: { act: StepActions }) {
   return (
     <div class="wizard-actions">
       <button type="button" class="wizard-primary" onClick={act.advance}>
-        {label}
+        Далее →
       </button>
     </div>
   );
