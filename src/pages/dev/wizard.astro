@@ -1,15 +1,14 @@
 ---
 // Служебная проверка острова wizard'а (ROADMAP R2.2). Не индексируется.
-// Демо-граф покрывает все 6 типов узлов; ниже — текущий контент подготовки.
+// Демо-граф покрывает все 6 типов узлов. Реальный граф подготовки — на /setup/.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { WizardIsland } from '../../islands/WizardIsland';
 import { DEMO_WIZARD } from '../../data/demo-wizard';
-import { componentIconSvg, loadWizardData, loadWizardRefs } from '../../lib/load-wizard-data';
+import { componentIconSvg, loadWizardRefs } from '../../lib/load-wizard-data';
 import { buildWizardData } from '../../lib/wizard-view';
 
 const [rules, components] = await loadWizardRefs();
 const demo = buildWizardData(DEMO_WIZARD, rules, components, componentIconSvg);
-const setup = await loadWizardData('setup');
 ---
 
 <BaseLayout title="Wizard (dev)" noindex>
@@ -19,13 +18,4 @@ const setup = await loadWizardData('setup');
     wizard хода (<code>twow:v1:turn</code>).
   </p>
   <WizardIsland client:load data={demo} />
-
-  <h2 class="dev-wizard-heading">Подготовка (текущий контент)</h2>
-  <WizardIsland client:visible data={setup} />
 </BaseLayout>
-
-<style>
-  .dev-wizard-heading {
-    margin-top: var(--space-6);
-  }
-</style>

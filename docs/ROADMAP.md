@@ -31,8 +31,8 @@
 | R1.5 | done | 2026-11-15 | #14 |
 | R1.6 | done | 2026-11-15 | #15 |
 | R2.1 | done | 2026-11-15 | #16 |
-| R2.2 | review | 2026-11-15 | #17 |
-| R2.3 | todo | | |
+| R2.2 | done | 2026-11-15 | #17 |
+| R2.3 | review | 2026-11-15 | #18 |
 | R2.4 | todo | | |
 | R2.5 | todo | | |
 | R2.6 | todo | | |
@@ -261,7 +261,7 @@
   - фокус и `aria-live` по SPEC 6.7.
 - **Проверка:** `npm test`; ручная проверка на `/dev/wizard/`.
 
-### - [ ] R2.3 Контент подготовки: 13 узлов
+### - [x] R2.3 Контент подготовки: 13 узлов
 - **Ветка:** `content/r2.3-setup-steps` · `setup-wizard`, `content` · M2.
 - **Цель:** `src/content/setup/s00…s12.md` по таблице SPEC 7, страница `/setup/`.
 - **Файлы:** `src/content/setup/*.md`, `src/pages/setup/index.astro`.

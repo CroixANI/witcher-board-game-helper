@@ -6,7 +6,8 @@ node:
   title: '⑤ Карты исследования и событий'
   phase: setup
   pages: 6
-  components: [exploration-wilds]
+  rules: [setup-exploration-events]
+  components: [event-card, exploration-city, exploration-wilds]
   zones: [z-exploration-decks]
   warning: 'Колоду событий НЕ перемешивать: карты лежат строго по номерам на рубашке.'
   checklist:

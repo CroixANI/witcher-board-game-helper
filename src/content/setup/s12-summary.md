@@ -6,6 +6,7 @@ node:
   title: 'Подготовка завершена'
   phase: setup
   pages: [7, 8]
+  rules: [setup-start-resources]
   note: 'Раздайте стартовые карты и золото по месту хода.'
   outcome: setup-complete
 ---

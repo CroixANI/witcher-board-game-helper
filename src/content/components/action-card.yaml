@@ -4,5 +4,6 @@ count: 90
 icon: card-back-action.svg
 howToTell: 'Тёмно-серая рубашка с бронзовой эмблемой в ромбе. На лице — цветная полоса слева (синяя, красная, зелёная, фиолетовая или жёлтая) и стоимость.'
 confusedWith: [starter-cards, witcher-trophy, elixir]
+usedIn: [s02-action-row]
 rules: [action-card-anatomy, card-colors, card-cost]
 rulesPage: [4, 10]

@@ -5,5 +5,6 @@ perPlayer: true
 icon: token-trophy.svg
 howToTell: 'Круглый тёмный жетон с символом школы. Стоит на шкале трофеев игрового поля, а не на планшете.'
 confusedWith: [gold, closed-tavern]
+usedIn: [s10-player-components]
 rules: [trophies, setup-player-components]
 rulesPage: [5, 7, 29]

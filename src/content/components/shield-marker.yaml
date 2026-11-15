@@ -5,5 +5,6 @@ perPlayer: true
 icon: shield-marker.svg
 howToTell: 'Невысокая шестиугольная «шайба» цвета школы — не куб. Стоит на шкале щита.'
 confusedWith: [cube-marker]
+usedIn: [s10-player-components]
 rules: [defense-shield, setup-player-components]
 rulesPage: [5, 8]
