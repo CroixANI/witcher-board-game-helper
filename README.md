@@ -23,7 +23,21 @@ npm ci
 npm run dev        # http://localhost:4321/witcher-board-game-helper/
 ```
 
-Проверки перед PR: `npm run lint && npm run check && npm test && npm run build`.
+## Тесты
+```bash
+npm run lint                     # ESLint + Prettier
+npm run check                    # astro check (TypeScript strict)
+npm test                         # unit (Vitest) + проверка контента (validate:content)
+npm run build                    # сборка в dist/ (тоже валидирует контент)
+
+# E2E (Playwright, мобильные viewport'ы Pixel 7 и iPhone 14) — проверяют собранный dist/
+npx playwright install chromium webkit   # один раз
+npm run build && npm run test:e2e
+```
+
+Перед PR должны пройти `npm run lint && npm run check && npm test && npm run build` и E2E. CI гоняет то же самое на каждом PR (jobs `check` и `e2e`).
+
+`scripts/session/e2e.sh` запускает E2E в любом окружении. Если браузеры Playwright установлены, он вызывает обычный `npm run test:e2e`. Если их нет — например, в облачной сессии Claude Code, где скачивание браузеров заблокировано, — он берёт уже установленный Chromium и гоняет только Pixel 7. iPhone 14 (WebKit) в этом случае проверяет CI.
 
 ## Как добавить вопрос в FAQ
 - **Если у вас есть доступ к репозиторию:** скопируйте `src/content/faq/_template.md` в новый файл в той же папке (через веб-интерфейс GitHub → *Add file*), заполните, создайте PR. После merge сайт обновится сам.
