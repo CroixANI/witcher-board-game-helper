@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@astrojs/markdown-satteri": "0.4.7",
     "@astrojs/preact": "^6.1.2",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.65.1",
@@ -41,6 +42,7 @@
     "preact-render-to-string": "^6.8.2",
     "prettier": "^3.9.10",
     "prettier-plugin-astro": "^1.1.2",
+    "satteri": "^0.11.7",
     "svgo": "^4.1.0",
     "tsx": "^4.23.15",
     "typescript": "~5.9.3",
