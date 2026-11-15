@@ -1,0 +1,108 @@
+---
+// Одна карточка правила (SPEC 4.1): полный пересказ, «стр. N», связанные правила и компоненты.
+import { getCollection, getEntries, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatPages, ruleGroupLabel } from '../../lib/reference';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const rules = await getCollection('rules');
+  return rules.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}
+
+interface Props {
+  entry: CollectionEntry<'rules'>;
+}
+
+const { entry } = Astro.props;
+const { title, page, summary, important, group } = entry.data;
+const { Content } = await render(entry);
+const related = await getEntries(entry.data.related);
+const components = (await getCollection('components'))
+  .filter((c) => c.data.rules.some((r) => r.id === entry.id))
+  .sort((a, b) => a.data.name.localeCompare(b.data.name, 'ru'));
+---
+
+<BaseLayout title={title} description={summary}>
+  <p class="crumb">
+    <a href={url(`rules#group-${group}`)}>← {ruleGroupLabel(group)}</a>
+  </p>
+  <article class:list={['rule', { important }]}>
+    <h1>{title}</h1>
+    <p class="pages">{formatPages(page)} книги правил</p>
+    {important && <p class="badge">Важно</p>}
+    <p class="summary">{summary}</p>
+    <Content />
+  </article>
+
+  {related.length > 0 && (
+    <section aria-labelledby="related-title">
+      <h2 id="related-title">Связанные правила</h2>
+      <ul>
+        {related.map((r) => (
+          <li>
+            <a href={url(`rules/${r.id}`)}>{r.data.title}</a>{' '}
+            <span class="pages">{formatPages(r.data.page)}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {components.length > 0 && (
+    <section aria-labelledby="components-title">
+      <h2 id="components-title">Компоненты</h2>
+      <ul>
+        {components.map((c) => (
+          <li>
+            <a href={url(`reference#${c.id}`)}>{c.data.name}</a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</BaseLayout>
+
+<style>
+  .crumb a,
+  li a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+
+  .rule.important {
+    padding-left: var(--space-3);
+    border-left: 4px solid var(--color-important);
+  }
+
+  .pages {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .summary {
+    font-style: italic;
+    color: var(--color-text-muted);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0 var(--space-2);
+    color: var(--color-on-accent);
+    background: var(--color-important);
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+
+  section {
+    margin-top: var(--space-6);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

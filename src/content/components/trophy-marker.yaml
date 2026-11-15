@@ -1,0 +1,9 @@
+name: 'Жетон трофеев'
+kind: token
+count: 1
+perPlayer: true
+icon: token-trophy.svg
+howToTell: 'Круглый тёмный жетон с символом школы. Стоит на шкале трофеев игрового поля, а не на планшете.'
+confusedWith: [gold, closed-tavern]
+rules: [trophies, setup-player-components]
+rulesPage: [5, 7, 29]

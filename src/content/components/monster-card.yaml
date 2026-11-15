@@ -1,0 +1,8 @@
+name: 'Карты монстров'
+kind: card
+count: 28
+icon: card-monster.svg
+howToTell: 'Карта с иллюстрацией монстра, его уровнем (I, II или III) и значением жизни. Лежит под локацией, где стоит жетон этого монстра.'
+confusedWith: [monster-battle-card, monster-token]
+rules: [setup-monsters, monster-battle-setup]
+rulesPage: [5, 6, 21]

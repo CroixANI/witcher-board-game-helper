@@ -1,9 +1,72 @@
 ---
+// Все карточки правил по группам (SPEC 4.1, 9.1). Каждая раскрывается без JS и имеет свою страницу.
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import RuleCard from '../../components/RuleCard.astro';
+import { groupRules } from '../../lib/reference';
+
+const groups = groupRules(await getCollection('rules'));
 ---
 
-<BaseLayout title="Правила">
+<BaseLayout title="Правила" description="Карточки правил «Ведьмак: Старый мир» по группам.">
   <h1>Правила</h1>
-  <p>Карточки правил по группам — пересказ со ссылкой на страницу книги.</p>
-  <p class="stub">Раздел в разработке (ROADMAP, задача R1.6).</p>
+  <p>
+    Пересказ правил базовой игры своими словами. У каждой карточки — номер страницы книги правил из
+    коробки. Если карта противоречит правилам, действует карта (золотое правило).
+  </p>
+
+  <nav class="toc" aria-label="Группы правил">
+    <ul>
+      {groups.map((g) => (
+        <li>
+          <a href={`#group-${g.id}`}>
+            {g.label} ({g.rules.length})
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  {groups.map((g) => (
+    <section id={`group-${g.id}`} aria-labelledby={`group-${g.id}-title`}>
+      <h2 id={`group-${g.id}-title`}>{g.label}</h2>
+      <ul class="list">
+        {g.rules.map((entry) => (
+          <li>
+            <RuleCard entry={entry} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
 </BaseLayout>
+
+<style>
+  section {
+    margin-top: var(--space-6);
+    scroll-margin-top: var(--space-4);
+  }
+
+  .toc ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .toc a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+
+  .list {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

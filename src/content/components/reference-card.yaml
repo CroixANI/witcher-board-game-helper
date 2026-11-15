@@ -1,0 +1,8 @@
+name: 'Памятки'
+kind: card
+count: 10
+icon: card-reference.svg
+howToTell: 'Светлые «пергаментные» карты только с текстом, без рубашки-рисунка. У каждого игрока две: по действиям и по битвам.'
+confusedWith: [witcher-trophy]
+rules: [setup-first-player]
+rulesPage: [4, 7]

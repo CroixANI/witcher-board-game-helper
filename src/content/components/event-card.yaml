@@ -1,0 +1,9 @@
+name: 'Карты событий'
+kind: card
+count: 56
+icon: card-back-event.svg
+howToTell: 'Коричневая рубашка с открытой книгой и номером. Колоду не перемешивают: карты лежат по порядку номеров.'
+confusedWith: [exploration-city, exploration-wilds, skill-trophy]
+usedIn: [s05-exploration-events]
+rules: [events, quests, setup-exploration-events]
+rulesPage: [4, 6, 17]

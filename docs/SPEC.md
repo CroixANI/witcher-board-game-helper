@@ -309,6 +309,7 @@ const components = defineCollection({
     name: z.string(),
     kind: z.enum(['card', 'token', 'board', 'misc']),
     count: z.number().int().positive(),
+    countNote: z.string().optional(),        // «2 набора по 5»
     perPlayer: z.boolean().default(false),   // «в каждом наборе игрока»
     icon: z.string().regex(/^[a-z0-9-]+\.svg$/),   // файл в src/assets/svg/components/
     howToTell: z.string(),                   // «как отличить»
@@ -993,8 +994,8 @@ flowchart TD
 | id | Название | kind | Кол-во | Как отличить | Иконка (`src/assets/svg/components/`) | Референс |
 |---|---|---|---|---|---|---|
 | `board` | Игровое поле | board | 1 | Карта Континента + деревянная панель справа | `board.svg` (= уменьшенная схема) | 4, 7 |
-| `action-card` | Карты действий | card | 90 | Тёмно-синяя рубашка с ведьмачьим медальоном | `card-back-action.svg` | 4 |
-| `starter-cards` | Начальные карты действий | card | 10 × 5 | Как карты действий, но **символ школы** в правом верхнем углу лица | `card-starter.svg` | 5, 8 |
+| `action-card` | Карты действий | card | 90 | **Тёмно-серая** рубашка с бронзовой эмблемой в ромбе | `card-back-action.svg` | 4 |
+| `starter-cards` | Начальные карты действий | card | 10 × 5 | Рубашка как у карт действий; отличие — **символ школы** в правом верхнем углу лица | `card-starter.svg` | 5, 8 |
 | `elixir` | Карты эликсиров | card | 28 | Тёмная рубашка с символом колбы-треугольника | `card-back-elixir.svg` | 4 |
 | `exploration-city` | Исследование города | card | 36 | **Серая** рубашка со зданием | `card-back-exploration-city.svg` | 4 |
 | `exploration-wilds` | Исследование окрестностей | card | 36 | **Зелёная** рубашка с пейзажем | `card-back-exploration-wilds.svg` | 4 |
@@ -1009,17 +1010,21 @@ flowchart TD
 | `trail-token` | Жетон следа | token | (из 18) | Это жетон локации **лицом вниз** рядом с игроком | `token-trail.svg` | 11 |
 | `gold` | Золото | token | 35 | Круглые монеты | `token-gold.svg` | 5 |
 | `closed-tavern` | Жетон закрытой корчмы | token | 1 | Маленький тёмно-красный круглый | `token-tavern.svg` | 5, 20 |
-| `poker-dice` | Кубики для покера | misc | 2 × 5 | Кубики с символами вместо точек | `dice.svg` | 5, 14 |
-| `player-board` | Планшет игрока | board | 5 | Портрет + шкалы уровня, 4 навыков и щита + ячейки ставок | `player-board.svg` | 5, 8, 21 |
-| `trophy-marker` | Жетон трофеев | token | 5 | Круглый, символ школы | `token-trophy.svg` | 5 |
-| `figure` | Фигурка ведьмака | misc | 5 | Фигурка + цветная подставка школы | `figure.svg` | 5 |
+| `poker-dice` | Кубики для покера | misc | 10 (2 набора по 5) | Кубики с символами вместо точек | `dice.svg` | 5, 14 |
+| `player-board` | Планшет игрока | board | 1 × 5 | Портрет + шкалы уровня, 4 навыков и щита + ячейки ставок | `player-board.svg` | 5, 8, 21 |
+| `trophy-marker` | Жетон трофеев | token | 1 × 5 | Круглый, символ школы | `token-trophy.svg` | 5 |
+| `figure` | Фигурка ведьмака | misc | 1 × 5 | Фигурка + цветная подставка школы | `figure.svg` | 5 |
 | `cube-marker` | Маркеры-кубы | misc | 5 × 5 | Кубики цвета школы | `cube.svg` | 5, 8 |
-| `shield-marker` | Маркер уровня щита | misc | 5 | Шестиугольная «шайба» цвета школы | `shield-marker.svg` | 5, 8 |
+| `shield-marker` | Маркер уровня щита | misc | 1 × 5 | Шестиугольная «шайба» цвета школы | `shield-marker.svg` | 5, 8 |
 
-`confusedWith` (пары для «Не перепутать»):
-- `exploration-city` ↔ `exploration-wilds` ↔ `event-card`;
-- `location-token` ↔ `monster-token` ↔ `trail-token`;
-- `action-card` ↔ `starter-cards` ↔ `witcher-trophy`.
+Кол-во «N × 5» — `count: N`, `perPlayer: true` (в каждом из 5 наборов игрока). Пояснение к количеству — `countNote` («2 набора по 5», «те же жетоны локаций»).
+
+`confusedWith` (пары для «Не перепутать», связь всегда **взаимная** — проверяет `components-coverage.test.ts`):
+- `exploration-city` ↔ `exploration-wilds` ↔ `event-card`; `event-card` ↔ `skill-trophy` (обе коричневые);
+- `location-token` ↔ `monster-token` ↔ `trail-token`; `monster-token` ↔ `monster-card` ↔ `monster-battle-card`;
+- `action-card` ↔ `starter-cards` ↔ `witcher-trophy`; `action-card` ↔ `elixir` (тёмные рубашки); `witcher-trophy` ↔ `reference-card` (светлое лицо с текстом);
+- `gold` ↔ `closed-tavern` ↔ `trophy-marker` (круглые жетоны); `cube-marker` ↔ `shield-marker`, `cube-marker` ↔ `poker-dice`; `board` ↔ `player-board`.
+- У `figure` пары нет.
 
 ### 9.3 Школы (`schools/*.yaml`, стр. 34–35)
 | id | Школа | Специализация | Когда |

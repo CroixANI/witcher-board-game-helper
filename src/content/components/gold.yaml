@@ -1,0 +1,9 @@
+name: 'Золото'
+kind: token
+count: 35
+icon: token-gold.svg
+howToTell: 'Круглые жетоны-монеты, золотые и серебряные.'
+confusedWith: [closed-tavern, trophy-marker]
+usedIn: [s06-gold-dice]
+rules: [setup-start-resources, gold-reward]
+rulesPage: [5, 8]

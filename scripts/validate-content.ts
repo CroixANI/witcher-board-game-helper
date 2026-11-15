@@ -33,7 +33,7 @@ export { COLLECTIONS };
 export type ValidateOptions = { contentDir: string; svgDir: string };
 export type ValidateResult = { errors: string[]; counts: Record<CollectionName, number> };
 
-type Schemas = ReturnType<typeof createSchemas<z.ZodType<string>>>;
+type Schemas = ReturnType<typeof createSchemas<z.ZodType<string>, z.ZodType<string>>>;
 type Entry<K extends CollectionName> = { file: string; data: z.output<Schemas[K]> };
 type RawEntry = { id: string; file: string; raw: unknown };
 
@@ -105,11 +105,11 @@ export function validateContent({ contentDir, svgDir }: ValidateOptions): Valida
   };
 
   // Ссылка = id существующей записи коллекции (как reference() в Astro).
-  const schemas = createSchemas((collection) =>
+  const refTo = (collection: RefCollection) =>
     Id.refine((v) => known[collection].has(v), {
       error: (iss) => `нет записи ${collection}/${String(iss.input)}`,
-    }),
-  );
+    });
+  const schemas = createSchemas({ rules: refTo('rules'), components: refTo('components') });
 
   const failed = new Set<CollectionName>();
   function parse<K extends CollectionName>(name: K): Entry<K>[] {

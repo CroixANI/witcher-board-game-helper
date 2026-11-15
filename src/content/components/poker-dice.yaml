@@ -1,0 +1,10 @@
+name: 'Кубики для покера'
+kind: misc
+count: 10
+countNote: '2 набора по 5'
+icon: dice.svg
+howToTell: 'Светлые и тёмные кубики с ведьмачьими символами вместо точек. Два набора по 5 штук.'
+confusedWith: [cube-marker]
+usedIn: [s06-gold-dice]
+rules: [poker-rules, poker-witcher]
+rulesPage: [5, 14]

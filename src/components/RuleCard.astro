@@ -1,0 +1,94 @@
+---
+// Свёрнутая карточка правила (SPEC 4.4): заголовок, «стр. N», краткое содержание; раскрывается без JS.
+import { render, type CollectionEntry } from 'astro:content';
+import { formatPages } from '../lib/reference';
+import { url } from '../lib/url';
+
+interface Props {
+  entry: CollectionEntry<'rules'>;
+  open?: boolean;
+}
+
+const { entry, open = false } = Astro.props;
+const { title, page, summary, important } = entry.data;
+const { Content } = await render(entry);
+---
+
+<details class:list={['rule-card', { important }]} id={entry.id} open={open}>
+  <summary>
+    <span class="title">{title}</span>
+    <span class="pages">{formatPages(page)}</span>
+  </summary>
+  <div class="body">
+    {important && <p class="badge">Важно</p>}
+    <p class="summary">{summary}</p>
+    <Content />
+    <p class="permalink">
+      <a href={url(`rules/${entry.id}`)}>Отдельная страница правила</a>
+    </p>
+  </div>
+</details>
+
+<style>
+  .rule-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    scroll-margin-top: var(--space-4);
+  }
+
+  .rule-card.important {
+    border-left: 4px solid var(--color-important);
+  }
+
+  summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
+    align-items: baseline;
+    justify-content: space-between;
+    min-height: var(--tap-min);
+    padding: var(--space-3) var(--space-4);
+    cursor: pointer;
+  }
+
+  .title {
+    font-weight: 600;
+  }
+
+  .pages {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .body {
+    padding: 0 var(--space-4) var(--space-3);
+  }
+
+  .body :global(ol),
+  .body :global(ul) {
+    margin: 0 0 var(--space-4);
+  }
+
+  .summary {
+    font-style: italic;
+    color: var(--color-text-muted);
+  }
+
+  .badge {
+    display: inline-block;
+    margin-bottom: var(--space-2);
+    padding: 0 var(--space-2);
+    color: var(--color-on-accent);
+    background: var(--color-important);
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+
+  .permalink a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+</style>

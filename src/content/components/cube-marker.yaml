@@ -1,0 +1,9 @@
+name: 'Маркеры-кубы'
+kind: misc
+count: 5
+perPlayer: true
+icon: cube.svg
+howToTell: 'Кубики цвета школы. Отмечают уровень ведьмака и четырёх навыков на планшете.'
+confusedWith: [shield-marker, poker-dice]
+rules: [skills, setup-player-components]
+rulesPage: [5, 8]

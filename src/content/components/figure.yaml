@@ -1,0 +1,8 @@
+name: 'Фигурка ведьмака'
+kind: misc
+count: 1
+perPlayer: true
+icon: figure.svg
+howToTell: 'Фигурка на подставке цвета школы. Начинает игру в локации своей школы.'
+rules: [setup-player-components, movement]
+rulesPage: [5, 7]
