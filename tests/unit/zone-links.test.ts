@@ -9,54 +9,57 @@ const root = (p: string) => fileURLToPath(new URL(`../../${p}`, import.meta.url)
 const BASE = '/witcher-board-game-helper';
 const ZONES = new Set(['z-row', 'z-row-minus1']);
 
-async function render(md: string, fileURL?: URL) {
+function render(md: string, fileURL?: URL) {
   const plugin = zoneLinksPlugin({ base: BASE, zoneIds: ZONES });
-  const { html } = await markdownToHtml(md, { mdastPlugins: [plugin], fileURL });
+  const { html } = markdownToHtml(md, {
+    mdastPlugins: [plugin],
+    ...(fileURL && { fileURL }),
+  });
   return html;
 }
 
 describe('zoneLinksPlugin', () => {
-  it('zone:<id> → ссылка на /board/#<id> с base path, class и data-zone', async () => {
-    expect(await render('Смотрите [ряд карт](zone:z-row).')).toBe(
+  it('zone:<id> → ссылка на /board/#<id> с base path, class и data-zone', () => {
+    expect(render('Смотрите [ряд карт](zone:z-row).')).toBe(
       `<p>Смотрите <a href="${BASE}/board/#z-row" class="zone-link" data-zone="z-row">ряд карт</a>.</p>\n`,
     );
   });
 
-  it('подзона работает так же', async () => {
-    const html = await render('[ячейка −1](zone:z-row-minus1)');
+  it('подзона работает так же', () => {
+    const html = render('[ячейка −1](zone:z-row-minus1)');
     expect(html).toContain(`href="${BASE}/board/#z-row-minus1"`);
     expect(html).toContain('data-zone="z-row-minus1"');
   });
 
-  it('base со слешем на конце не даёт двойного слеша', async () => {
+  it('base со слешем на конце не даёт двойного слеша', () => {
     const plugin = zoneLinksPlugin({ base: `${BASE}/`, zoneIds: ZONES });
-    const { html } = await markdownToHtml('[ряд](zone:z-row)', { mdastPlugins: [plugin] });
+    const { html } = markdownToHtml('[ряд](zone:z-row)', { mdastPlugins: [plugin] });
     expect(html).toContain(`href="${BASE}/board/#z-row"`);
   });
 
-  it('обычные ссылки не трогает', async () => {
+  it('обычные ссылки не трогает', () => {
     const md = '[правило](/rules/meditation/) и [сайт](https://example.com) и [якорь](#x)';
-    const plain = (await markdownToHtml(md)).html;
-    expect(await render(md)).toBe(plain);
+    const plain = markdownToHtml(md).html;
+    expect(render(md)).toBe(plain);
   });
 
-  it('по умолчанию берёт зоны из board-zones.ts', async () => {
+  it('по умолчанию берёт зоны из board-zones.ts', () => {
     const plugin = zoneLinksPlugin({ base: BASE });
-    const { html } = await markdownToHtml('[ряд](zone:z-action-row-minus1)', {
+    const { html } = markdownToHtml('[ряд](zone:z-action-row-minus1)', {
       mdastPlugins: [plugin],
     });
     expect(html).toContain('data-zone="z-action-row-minus1"');
   });
 
-  it('неизвестный id ломает рендер: в ошибке файл и id', async () => {
+  it('неизвестный id ломает рендер: в ошибке файл и id', () => {
     const file = pathToFileURL(root('src/content/rules/card-cost.md'));
-    await expect(render('[ряд](zone:z-nope)', file)).rejects.toThrow(
+    expect(() => render('[ряд](zone:z-nope)', file)).toThrow(
       /src\/content\/rules\/card-cost\.md.*zone:z-nope/,
     );
   });
 
-  it('пустой id — тоже ошибка', async () => {
-    await expect(render('[ряд](zone:)')).rejects.toThrow(/zone:/);
+  it('пустой id — тоже ошибка', () => {
+    expect(() => render('[ряд](zone:)')).toThrow(/zone:/);
   });
 });
 
@@ -88,5 +91,16 @@ describe('validate-content: инвариант 7г', () => {
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain('rules/zone-link.md');
     expect(errors[0]).toContain('zone:z-nope');
+  });
+});
+
+describe('astro.config.mjs', () => {
+  it('процессор Markdown — Sätteri с плагином zone-links и base сайта', async () => {
+    const { default: config } = await import('../../astro.config.mjs');
+    const processor = config.markdown?.processor as
+      { name: string; options: { mdastPlugins: { name?: string }[] } } | undefined;
+    expect(processor?.name).toBe('satteri');
+    expect(processor?.options.mdastPlugins.map((p) => p.name)).toContain('zone-links');
+    expect(config.base).toBe(BASE);
   });
 });

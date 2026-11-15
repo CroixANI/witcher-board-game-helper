@@ -5,7 +5,8 @@
  * 1. Каждый файл коллекции проходит Zod-схему; ссылки на rules/components — на существующие id.
  * 2. Граф-инварианты 1–7 (src/lib/graph-checks.ts) для графов setup и turn.
  * 3. `components[].usedIn` ссылаются на существующие узлы.
- * 4. Зоны поля (7б, 7в): дерево `board-zones.ts`; если коллекция `zones` не пуста — файлы и зоны
+ * 4. Ссылки `zone:` в телах Markdown ведут на существующие зоны (7г).
+ * 5. Зоны поля (7б, 7в): дерево `board-zones.ts`; если коллекция `zones` не пуста — файлы и зоны
  *    совпадают 1:1 и каждый компонент лежит хотя бы в одной зоне. Пустую коллекцию допускают
  *    фикстуры; у реального контента её непустоту проверяет content.test.ts.
  */
@@ -35,6 +36,7 @@ import {
   checkZoneTree,
   type GraphNode,
 } from '../src/lib/graph-checks';
+import { findZoneLinks } from '../src/lib/zone-links';
 
 export { COLLECTIONS };
 
@@ -48,7 +50,8 @@ export type ValidateResult = { errors: string[]; counts: Record<CollectionName, 
 
 type Schemas = ReturnType<typeof createSchemas<z.ZodType<string>, z.ZodType<string>>>;
 type Entry<K extends CollectionName> = { id: string; file: string; data: z.output<Schemas[K]> };
-type RawEntry = { id: string; file: string; raw: unknown };
+/** `body` — тело Markdown после frontmatter (у YAML-коллекций его нет). */
+type RawEntry = { id: string; file: string; raw: unknown; body?: string };
 
 const NAMES = Object.keys(COLLECTIONS) as CollectionName[];
 
@@ -63,12 +66,12 @@ function listFiles(dir: string): string[] {
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
 
-function readEntry(path: string, ext: string): unknown {
+function readEntry(path: string, ext: string): { raw: unknown; body?: string } {
   const text = readFileSync(path, 'utf8');
-  if (ext === '.yaml') return parseYaml(text);
+  if (ext === '.yaml') return { raw: parseYaml(text) };
   const match = FRONTMATTER.exec(text);
   if (!match) throw new Error('нет frontmatter (--- … ---)');
-  return parseYaml(match[1] ?? '');
+  return { raw: parseYaml(match[1] ?? ''), body: text.slice(match[0].length) };
 }
 
 function loadRaw(contentDir: string, name: CollectionName, errors: string[]): RawEntry[] {
@@ -81,7 +84,7 @@ function loadRaw(contentDir: string, name: CollectionName, errors: string[]): Ra
       entries.push({
         id: rel.slice(0, -c.ext.length),
         file,
-        raw: readEntry(join(contentDir, file), c.ext),
+        ...readEntry(join(contentDir, file), c.ext),
       });
     } catch (e) {
       errors.push(`${file}: не читается: ${e instanceof Error ? e.message : String(e)}`);
@@ -188,6 +191,12 @@ export function validateContent({
       for (const id of data.usedIn) {
         if (!nodeIds.has(id)) errors.push(`${file}: usedIn: несуществующий узел ${id}`);
       }
+    }
+  }
+
+  for (const { file, body = '' } of NAMES.flatMap((n) => raw[n])) {
+    for (const id of findZoneLinks(body)) {
+      if (!zoneIds.has(id)) errors.push(`${file}: ссылка zone:${id}: неизвестная зона`);
     }
   }
 

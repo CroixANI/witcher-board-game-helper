@@ -1228,7 +1228,7 @@ pdftoppm -r 110 -png -f 35 -l 36 docs/Vedmak_Stary_Mir__pravila_RUS.pdf docs/_re
 #### 11.5.2 Ссылки `zone:` в тексте
 - **Синтаксис** — обычная Markdown-ссылка: `[ряд карт](zone:z-action-row)`, `[ячейка −1](zone:z-action-row-minus1)`.
 - **Где работает:** только тела Markdown-файлов — `rules`, `setup`, `not-my-turn`, `faq`. Строки в YAML (`turn/*.yaml`, `reminders`) остаются простым текстом. Узлы хода показывают место на поле через структурное поле `zones`, так же как узлы подготовки.
-- **Рендер:** remark-плагин `src/lib/remark-zone-links.ts` подключён в `astro.config.mjs` (`markdown.remarkPlugins`). Он:
+- **Рендер:** mdast-плагин `zoneLinksPlugin` из `src/lib/zone-links.ts`. Он подключён в `astro.config.mjs` через `markdown.processor: satteri({ mdastPlugins: […] })`. В Astro 7 Markdown по умолчанию обрабатывает Sätteri, а `markdown.remarkPlugins` устарели и требуют отдельного unified-процессора (решение R2.8). Плагин:
   - заменяет `zone:<id>` на `<base>/board/#<id>`;
   - добавляет `class="zone-link"` и `data-zone="<id>"`;
   - на неизвестном id бросает ошибку, и сборка падает.
@@ -1275,7 +1275,7 @@ pdftoppm -r 110 -png -f 35 -l 36 docs/Vedmak_Stary_Mir__pravila_RUS.pdf docs/_re
 #### 11.5.5 Проверки
 - Инварианты 7б–7г (13.2).
 - Unit:
-  - `remark-zone-links` (base path, атрибуты, неизвестный id);
+  - `zone-links` (base path, атрибуты, неизвестный id, подключение в `astro.config.mjs`);
   - `zone-index` (подзоны, setup и turn);
   - фикстуры в `tests/fixtures/bad/`.
 - E2E `board.spec.ts`:
@@ -1351,6 +1351,7 @@ Node **26 LTS** (`.nvmrc`, `engines`, `node-version` в `deploy.yml`). Мажо�
 ### 12.4 `astro.config.mjs`
 ```js
 import { defineConfig } from 'astro/config';
+import { satteri } from '@astrojs/markdown-satteri';
 import preact from '@astrojs/preact';
 import pagefind from 'astro-pagefind';
 import AstroPWA from '@vite-pwa/astro';
@@ -1360,6 +1361,7 @@ export default defineConfig({
   base: '/witcher-board-game-helper',
   trailingSlash: 'always',
   integrations: [preact(), pagefind(), AstroPWA({ /* см. 12.5 */ })],
+  markdown: { processor: satteri({ mdastPlugins: [zoneLinksPlugin({ base })] }) }, // 11.5.2
 });
 ```
 Все внутренние ссылки строятся через хелпер `url(path)` = `import.meta.env.BASE_URL` + path. Lint-правило запрещает `href="/…"` в `.astro` (ESLint `no-restricted-syntax`) или его проверяет e2e-тест на битые ссылки.
