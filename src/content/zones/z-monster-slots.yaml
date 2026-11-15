@@ -1,0 +1,5 @@
+title: 'Места монстров'
+summary: 'Три места для жетонов локаций с монстрами и под ними — карты этих монстров. При 4–5 игроках рядом лежит доп. стопка монстров I уровня.'
+components: [location-token, monster-card, monster-token]
+rules: [setup-monsters, location-tokens, new-monster, extra-monster-stack]
+pages: [6, 7, 8, 26]

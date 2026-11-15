@@ -1,0 +1,7 @@
+# Компонент, которого нет ни в одной зоне (инвариант 7в).
+name: 'Золото'
+kind: token
+count: 35
+icon: token-gold.svg
+howToTell: 'Монеты.'
+rulesPage: 5

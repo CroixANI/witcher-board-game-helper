@@ -1,0 +1,5 @@
+title: 'Карта Континента'
+summary: 'Локации, соединённые дорогами. Здесь стоят фигурки ведьмаков и жетоны монстров, сюда же кладут жетон закрытой корчмы.'
+components: [figure, monster-token, closed-tavern]
+rules: [movement, adjacency, closed-tavern]
+pages: [7, 12, 20]

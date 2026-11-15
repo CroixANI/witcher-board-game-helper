@@ -1,0 +1,5 @@
+title: 'Стопки жетонов локаций'
+summary: 'Три стопки рядом с полем: лес, горы и вода, лицом вниз. Отсюда берут места для новых монстров и жетоны следа.'
+components: [location-token, trail-token]
+rules: [location-tokens, trail-tokens, loc-hunt]
+pages: [6, 11]

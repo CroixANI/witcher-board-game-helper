@@ -5,13 +5,16 @@
  * 1. Каждый файл коллекции проходит Zod-схему; ссылки на rules/components — на существующие id.
  * 2. Граф-инварианты 1–7 (src/lib/graph-checks.ts) для графов setup и turn.
  * 3. `components[].usedIn` ссылаются на существующие узлы.
+ * 4. Зоны поля (7б, 7в): дерево `board-zones.ts`; если коллекция `zones` не пуста — файлы и зоны
+ *    совпадают 1:1 и каждый компонент лежит хотя бы в одной зоне. Пустую коллекцию допускают
+ *    фикстуры; у реального контента её непустоту проверяет content.test.ts.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'astro/zod';
-import { ZONE_IDS } from '../src/data/board-zones';
+import { BOARD_ZONES, type BoardZone } from '../src/data/board-zones';
 import {
   COLLECTIONS,
   createSchemas,
@@ -22,21 +25,29 @@ import {
 } from '../src/lib/content-schemas';
 import { graphRoots } from '../src/lib/load-graph';
 import {
+  checkComponentsPlaced,
   checkGraphFlow,
   checkGraphRefs,
   checkIcons,
   checkPagesAndRules,
+  checkZoneFiles,
   checkZones,
+  checkZoneTree,
   type GraphNode,
 } from '../src/lib/graph-checks';
 
 export { COLLECTIONS };
 
-export type ValidateOptions = { contentDir: string; svgDir: string };
+export type ValidateOptions = {
+  contentDir: string;
+  svgDir: string;
+  /** Зоны поля; по умолчанию — `BOARD_ZONES` (параметр нужен тестам дерева зон). */
+  boardZones?: readonly BoardZone[];
+};
 export type ValidateResult = { errors: string[]; counts: Record<CollectionName, number> };
 
 type Schemas = ReturnType<typeof createSchemas<z.ZodType<string>, z.ZodType<string>>>;
-type Entry<K extends CollectionName> = { file: string; data: z.output<Schemas[K]> };
+type Entry<K extends CollectionName> = { id: string; file: string; data: z.output<Schemas[K]> };
 type RawEntry = { id: string; file: string; raw: unknown };
 
 const NAMES = Object.keys(COLLECTIONS) as CollectionName[];
@@ -94,8 +105,13 @@ function formatIssue(file: string, value: unknown, issue: z.core.$ZodIssue): str
   return `${file}: ${issue.path.join('.')}: ${missing ? 'обязательное поле не указано' : issue.message}`;
 }
 
-export function validateContent({ contentDir, svgDir }: ValidateOptions): ValidateResult {
-  const errors: string[] = [];
+export function validateContent({
+  contentDir,
+  svgDir,
+  boardZones = BOARD_ZONES,
+}: ValidateOptions): ValidateResult {
+  const errors: string[] = [...checkZoneTree(boardZones)];
+  const zoneIds = new Set(boardZones.map((z) => z.id));
   const raw = Object.fromEntries(NAMES.map((n) => [n, loadRaw(contentDir, n, errors)])) as Record<
     CollectionName,
     RawEntry[]
@@ -116,9 +132,9 @@ export function validateContent({ contentDir, svgDir }: ValidateOptions): Valida
   const failed = new Set<CollectionName>();
   function parse<K extends CollectionName>(name: K): Entry<K>[] {
     const schema: z.ZodType = schemas[name];
-    return raw[name].flatMap(({ file, raw: value }) => {
+    return raw[name].flatMap(({ id, file, raw: value }) => {
       const res = schema.safeParse(value);
-      if (res.success) return [{ file, data: res.data as z.output<Schemas[K]> }];
+      if (res.success) return [{ id, file, data: res.data as z.output<Schemas[K]> }];
       failed.add(name);
       errors.push(...res.error.issues.map((i) => formatIssue(file, value, i)));
       return [];
@@ -129,6 +145,7 @@ export function validateContent({ contentDir, svgDir }: ValidateOptions): Valida
   const locationActions = parse('locationActions');
   const setup = parse('setup');
   const turn = parse('turn');
+  const zones = parse('zones');
   for (const name of ['rules', 'schools', 'reminders', 'notMyTurn', 'faq'] as const) parse(name);
 
   // Граф проверяем, только если все его файлы прошли схему: иначе ошибки каскадом.
@@ -161,7 +178,7 @@ export function validateContent({ contentDir, svgDir }: ValidateOptions): Valida
       // Достижимость и тупики имеют смысл, только если все переходы указывают на узлы.
       ...(refErrors.length ? [] : checkGraphFlow(graph, nodes, roots)),
       ...checkPagesAndRules(graph, nodes, known.rules),
-      ...checkZones(graph, nodes, ZONE_IDS),
+      ...checkZones(graph, nodes, zoneIds),
     );
     for (const n of nodes) nodeIds.add(n.id);
   }
@@ -172,6 +189,22 @@ export function validateContent({ contentDir, svgDir }: ValidateOptions): Valida
         if (!nodeIds.has(id)) errors.push(`${file}: usedIn: несуществующий узел ${id}`);
       }
     }
+  }
+
+  if (raw.zones.length) {
+    errors.push(
+      ...checkZoneFiles(
+        raw.zones.map((e) => e.id),
+        zoneIds,
+      ),
+    );
+    if (!failed.has('zones') && !failed.has('components'))
+      errors.push(
+        ...checkComponentsPlaced(
+          components,
+          zones.map((e) => e.data),
+        ),
+      );
   }
 
   errors.push(

@@ -1,0 +1,5 @@
+title: 'Боевые карты монстров'
+summary: 'Перемешанная колода рядом с полем. Из неё набирают запас жизни монстра в начале битвы.'
+components: [monster-battle-card]
+rules: [monster-battle-setup, monster-turn]
+pages: [7, 21]

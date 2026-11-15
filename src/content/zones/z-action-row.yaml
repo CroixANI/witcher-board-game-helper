@@ -1,0 +1,5 @@
+title: 'Ряд карт действий'
+summary: 'Шесть открытых карт на покупку в фазе III. Стоимость зависит от ячейки: у колоды дороже, в дальней ячейке дешевле.'
+components: [action-card]
+rules: [setup-action-row, card-cost, row-refill]
+pages: [6, 18, 19]

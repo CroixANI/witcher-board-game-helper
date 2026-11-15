@@ -1,0 +1,5 @@
+title: 'Исследование города'
+summary: 'Колода с серой рубашкой. Отсюда тянут карту, когда в фазе II выбирают исследовать город.'
+components: [exploration-city]
+rules: [exploration]
+pages: [6, 16]

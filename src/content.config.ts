@@ -34,4 +34,5 @@ export const collections = {
   reminders: defineCollection({ loader: loader('reminders'), schema: schemas.reminders }),
   notMyTurn: defineCollection({ loader: loader('notMyTurn'), schema: schemas.notMyTurn }),
   faq: defineCollection({ loader: loader('faq'), schema: schemas.faq }),
+  zones: defineCollection({ loader: loader('zones'), schema: schemas.zones }),
 };

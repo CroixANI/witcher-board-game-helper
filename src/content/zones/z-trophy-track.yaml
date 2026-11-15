@@ -1,0 +1,5 @@
+title: 'Шкала трофеев'
+summary: 'Вдоль левого края карты. Жетоны трофеев начинают на нижнем делении; кто первым дойдёт до верхнего, сразу побеждает.'
+components: [trophy-marker]
+rules: [trophies, game-victory, exhaustion]
+pages: [7, 29]

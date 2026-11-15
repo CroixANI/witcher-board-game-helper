@@ -1,0 +1,5 @@
+title: 'Запас монстров'
+summary: 'Рядом с полем: карты монстров по уровням лицом вверх и стопки жетонов монстров I, II и III уровня лицом вниз. Отсюда приходит новый монстр.'
+components: [monster-card, monster-token]
+rules: [setup-monsters, new-monster]
+pages: [6, 26]

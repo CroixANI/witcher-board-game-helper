@@ -40,6 +40,7 @@ export const COLLECTIONS = {
   reminders: { dir: 'reminders', ext: '.yaml' },
   notMyTurn: { dir: 'not-my-turn', ext: '.md' },
   faq: { dir: 'faq', ext: '.md', exclude: ['_template.md'] },
+  zones: { dir: 'zones', ext: '.yaml' },
 } as const satisfies Record<string, CollectionLayout>;
 
 export type CollectionName = keyof typeof COLLECTIONS;
@@ -267,5 +268,27 @@ export function createSchemas<RR extends z.ZodType, RC extends z.ZodType>(ref: R
     .strict()
     .refine((f) => f.source !== 'rulebook' || f.page, { message: 'rulebook → нужен page' });
 
-  return { rules, components, schools, locationActions, setup, turn, reminders, notMyTurn, faq };
+  // ── зоны поля: тексты; геометрия и id — в src/data/board-zones.ts (SPEC 11.5.1) ──
+  const zones = z
+    .object({
+      title: z.string(), // короткое имя: «Ряд карт действий»
+      summary: z.string().max(200), // что здесь и зачем, своими словами
+      components: z.array(ref.components).default([]), // что здесь лежит
+      rules: z.array(ref.rules).default([]),
+      pages: Pages,
+    })
+    .strict();
+
+  return {
+    rules,
+    components,
+    schools,
+    locationActions,
+    setup,
+    turn,
+    reminders,
+    notMyTurn,
+    faq,
+    zones,
+  };
 }

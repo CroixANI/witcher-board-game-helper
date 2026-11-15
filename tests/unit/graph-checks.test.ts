@@ -8,7 +8,10 @@ import {
   checkReachable,
   checkIcons,
   checkPagesAndRules,
+  checkComponentsPlaced,
+  checkZoneFiles,
   checkZones,
+  checkZoneTree,
   nodeTargets,
   type GraphNode,
 } from '../../src/lib/graph-checks';
@@ -379,6 +382,94 @@ describe('checkGraphFlow', () => {
       'turn: узел c недостижим из entry',
       'turn: узел c: при 2, 3, 4, 5 игроках видно меньше 2 вариантов',
       'turn: узел l: у loop нет варианта, ведущего из него',
+    ]);
+  });
+});
+
+const box = (id: string, x: number, y: number, w: number, h: number, parent?: string) => ({
+  id,
+  x,
+  y,
+  w,
+  h,
+  ...(parent === undefined ? {} : { parent }),
+});
+
+describe('checkZoneTree (инвариант 7б: parent)', () => {
+  it('корректное дерево', () => {
+    expect(
+      checkZoneTree([box('z-row', 0, 0, 10, 30), box('z-row-a', 0, 0, 10, 10, 'z-row')]),
+    ).toEqual([]);
+  });
+
+  it('неизвестный parent', () => {
+    expect(checkZoneTree([box('z-a', 0, 0, 1, 1, 'z-nope')])).toEqual([
+      'board-zones: зона z-a: неизвестный parent z-nope',
+    ]);
+  });
+
+  it('parent — сама подзона (вложенность только в один уровень)', () => {
+    expect(
+      checkZoneTree([
+        box('z-a', 0, 0, 10, 10),
+        box('z-b', 0, 0, 5, 5, 'z-a'),
+        box('z-c', 0, 0, 1, 1, 'z-b'),
+      ]),
+    ).toEqual(['board-zones: зона z-c: parent z-b сам является подзоной']);
+  });
+
+  it('подзона выходит за родителя по любой стороне', () => {
+    const parent = box('z-p', 10, 10, 10, 10);
+    expect(
+      checkZoneTree([
+        parent,
+        box('z-left', 9, 10, 2, 2, 'z-p'),
+        box('z-top', 10, 9, 2, 2, 'z-p'),
+        box('z-right', 19, 10, 2, 2, 'z-p'),
+        box('z-bottom', 10, 19, 2, 2, 'z-p'),
+        box('z-inside', 10, 10, 10, 10, 'z-p'),
+      ]),
+    ).toEqual([
+      'board-zones: подзона z-left выходит за родителя z-p',
+      'board-zones: подзона z-top выходит за родителя z-p',
+      'board-zones: подзона z-right выходит за родителя z-p',
+      'board-zones: подзона z-bottom выходит за родителя z-p',
+    ]);
+  });
+});
+
+describe('checkZoneFiles (инвариант 7б: zones/*.yaml ↔ BOARD_ZONES)', () => {
+  const known = new Set(['z-a', 'z-b']);
+
+  it('1:1 — без ошибок', () => {
+    expect(checkZoneFiles(['z-b', 'z-a'], known)).toEqual([]);
+  });
+
+  it('лишний файл и зона без файла', () => {
+    expect(checkZoneFiles(['z-a', 'z-nope'], known)).toEqual([
+      'zones/z-nope.yaml: зоны z-nope нет в src/data/board-zones.ts',
+      'zones: нет файла zones/z-b.yaml для зоны из board-zones.ts',
+    ]);
+  });
+});
+
+describe('checkComponentsPlaced (инвариант 7в)', () => {
+  const components = [
+    { file: 'components/gold.yaml', id: 'gold' },
+    { file: 'components/figure.yaml', id: 'figure' },
+  ];
+
+  it('каждый компонент хотя бы в одной зоне', () => {
+    expect(
+      checkComponentsPlaced(components, [{ components: ['gold'] }, { components: ['figure'] }]),
+    ).toEqual([]);
+  });
+
+  it('компонент без зоны', () => {
+    expect(
+      checkComponentsPlaced(components, [{ components: ['gold'] }, { components: [] }]),
+    ).toEqual([
+      'components/figure.yaml: компонент не лежит ни в одной зоне (src/content/zones/*.yaml)',
     ]);
   });
 });

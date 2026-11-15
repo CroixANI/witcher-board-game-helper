@@ -40,6 +40,7 @@ export function BoardSchematicDemo({ initial = ['z-action-row'] }: { initial?: s
           <label key={z.id}>
             <input type="checkbox" checked={zones.includes(z.id)} onChange={() => toggle(z.id)} />
             <span>
+              {z.parent !== undefined && '↳ '}
               {z.label}
               <code>{z.id}</code>
             </span>
