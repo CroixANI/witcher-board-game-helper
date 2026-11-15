@@ -31,7 +31,7 @@
 | R1.5 | done | 2026-11-15 | #14 |
 | R1.6 | done | 2026-11-15 | #15 |
 | R2.1 | done | 2026-11-15 | #16 |
-| R2.2 | todo | | |
+| R2.2 | review | 2026-11-15 | #? |
 | R2.3 | todo | | |
 | R2.4 | todo | | |
 | R2.5 | todo | | |
@@ -244,7 +244,7 @@
 - **Готово, когда:** все функции SPEC 6.1 реализованы; `vitest --coverage` для `wizard-engine.ts` ≥ 95 % строк; `graph-checks` ловит тупик, сироту и петлю без выхода на фикстурах.
 - **Проверка:** `npx vitest run --coverage`.
 
-### - [ ] R2.2 Остров `WizardIsland`
+### - [x] R2.2 Остров `WizardIsland`
 - **Ветка:** `feat/r2.2-wizard-ui` · `setup-wizard` · M2.
 - **Цель:** UI рендерит любой граф: 6 типов узлов, «Назад», «⟲ Заново», прогресс, сохранение, свёрнутые `RuleCard`, `ComponentChip`, `BoardSchematic` для `zones`.
 - **Файлы:**
