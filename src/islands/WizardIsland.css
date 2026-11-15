@@ -260,8 +260,9 @@
   justify-items: start;
 }
 
-.wizard-random p:empty {
-  display: none;
+/* Live-регион всегда в дереве доступности (не display:none), иначе первый результат не озвучится. */
+.wizard-random p {
+  margin: 0;
 }
 
 .setup-summary {
