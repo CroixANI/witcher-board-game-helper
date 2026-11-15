@@ -1,6 +1,8 @@
 /* Остров wizard'а (SPEC 4.2–4.3): закреплённый верхний бар, узел, крупные кнопки. Mobile-first. */
 .wizard {
   display: grid;
+  /* minmax(0, …): длинные строки без переносов (бар) не раздвигают колонку шире экрана. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
 }
 
@@ -79,6 +81,7 @@
 
 .wizard-node {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
 }
 
