@@ -3,6 +3,7 @@
 // preview отдаёт на неё 404.
 import { readdirSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { BOARD_ZONES } from '../../src/data/board-zones';
 
 const BASE = '/witcher-board-game-helper/';
 const DIST = new URL('../../dist/', import.meta.url);
@@ -51,6 +52,34 @@ test('все страницы dist и их внутренние ссылки о�
     }
     const status = (await request.get(href)).status();
     if (status !== 200) broken.push(`${path} → ${status} ← ${from}`);
+  }
+  expect(broken).toEqual([]);
+});
+
+test('/board/: карточка на каждую зону, все ссылки на якоря зон ведут на карточку', async ({
+  request,
+  baseURL,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'Pixel 7', 'проверяется один раз');
+  const origin = new URL(baseURL!).origin;
+  const board = `${BASE}board/`;
+
+  const ids = new Set(
+    [...(await (await request.get(origin + board)).text()).matchAll(/<section id="([^"]+)"/g)].map(
+      (m) => m[1],
+    ),
+  );
+  expect([...ids].sort()).toEqual(BOARD_ZONES.map((z) => z.id).sort());
+
+  const broken: string[] = [];
+  for (const path of builtPages()) {
+    const html = await (await request.get(origin + path)).text();
+    for (const [, raw = ''] of html.matchAll(LINK_ATTR)) {
+      const target = new URL(raw.replaceAll('&amp;', '&'), origin + path);
+      if (target.pathname !== board || !target.hash.startsWith('#z-')) continue;
+      if (!ids.has(decodeURIComponent(target.hash.slice(1))))
+        broken.push(`${target.hash} ← ${path}`);
+    }
   }
   expect(broken).toEqual([]);
 });
