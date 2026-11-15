@@ -262,7 +262,7 @@ export function restartAll(g: Graph, s: WizardState): WizardState {
 function isPlayers(v: unknown): v is PlayerCount {
   return v === 2 || v === 3 || v === 4 || v === 5;
 }
-function isSchool(v: unknown): v is School {
+export function isSchool(v: unknown): v is School {
   return (SCHOOLS as readonly unknown[]).includes(v);
 }
 function isRecord(v: unknown): v is Record<string, unknown> {

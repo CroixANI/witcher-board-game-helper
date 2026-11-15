@@ -4,15 +4,13 @@
  * и передаёт острову пропсом — в браузере коллекции Astro недоступны.
  */
 import {
-  SCHOOLS,
+  isSchool,
   type Condition,
   type GraphName,
   type Option,
   type School,
   type WizardNode,
 } from './wizard-engine';
-
-const isSchoolId = (id: string): id is School => (SCHOOLS as readonly string[]).includes(id);
 
 export type Pages = number | readonly number[];
 export type Phase = 'setup' | 'phase1' | 'phase2' | 'battle' | 'phase3' | 'general';
@@ -168,7 +166,7 @@ export function buildWizardData(
   return { ...base, rules, components };
 }
 
-type SchoolSource = { id: string; data: Omit<SchoolView, 'id'> & { expansion?: unknown } };
+type SchoolSource = { id: string; data: Omit<SchoolView, 'id'> };
 
 /** Записи коллекции `schools` → словарь для острова. Неизвестный id файла — ошибка сборки. */
 export function toSchoolViews(
@@ -176,7 +174,7 @@ export function toSchoolViews(
 ): Partial<Record<School, SchoolView>> {
   const views: Partial<Record<School, SchoolView>> = {};
   for (const { id, data } of entries) {
-    if (!isSchoolId(id)) throw new Error(`wizard: неизвестная школа ${id}`);
+    if (!isSchool(id)) throw new Error(`wizard: неизвестная школа ${id}`);
     const { name, specialization, timing, effect, page, color } = data;
     views[id] = { id, name, specialization, timing, effect, page, color };
   }
