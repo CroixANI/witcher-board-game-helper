@@ -71,6 +71,14 @@ describe('validate-content: битые фикстуры (tests/fixtures/bad)', (
     ]);
   });
 
+  it('тупик и сирота в графе (инварианты 2, 3)', () => {
+    expect(bad('dead-end').errors).toEqual([
+      'setup: узел s12-summary недостижим из entry',
+      'setup: узел s01-board: при 2, 3, 4, 5 игроках из него не дойти до end',
+      'setup: узел s02-loop: при 2, 3, 4, 5 игроках из него не дойти до end',
+    ]);
+  });
+
   it('несуществующая папка контента — пустой результат, а не исключение', () => {
     const result = validateContent({ contentDir: root('tests/fixtures/none'), svgDir });
     expect(result.errors).toEqual([]);

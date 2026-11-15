@@ -3,7 +3,7 @@
  * Запуск: `npm run validate:content` (входит в `npm test` и `prebuild`).
  *
  * 1. Каждый файл коллекции проходит Zod-схему; ссылки на rules/components — на существующие id.
- * 2. Граф-инварианты 1, 5, 7 (src/lib/graph-checks.ts) для графов setup и turn.
+ * 2. Граф-инварианты 1–7 (src/lib/graph-checks.ts) для графов setup и turn.
  * 3. `components[].usedIn` ссылаются на существующие узлы.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -20,7 +20,9 @@ import {
   type CollectionName,
   type RefCollection,
 } from '../src/lib/content-schemas';
+import { graphRoots } from '../src/lib/load-graph';
 import {
+  checkGraphFlow,
   checkGraphRefs,
   checkIcons,
   checkPagesAndRules,
@@ -130,15 +132,34 @@ export function validateContent({ contentDir, svgDir }: ValidateOptions): Valida
   for (const name of ['rules', 'schools', 'reminders', 'notMyTurn', 'faq'] as const) parse(name);
 
   // Граф проверяем, только если все его файлы прошли схему: иначе ошибки каскадом.
-  const graphs: ['setup' | 'turn', GraphNode[], string[]][] = [
-    ['setup', setup.map((e) => e.data.node), []],
-    ['turn', turn.flatMap((e) => e.data.nodes), turn.map((e) => e.data.entry)],
+  const graphs: ['setup' | 'turn', GraphNode[], string[], string[]][] = [
+    [
+      'setup',
+      setup.map((e) => e.data.node),
+      [],
+      graphRoots(
+        'setup',
+        setup.map((e) => e.data),
+      ),
+    ],
+    [
+      'turn',
+      turn.flatMap((e) => e.data.nodes),
+      turn.map((e) => e.data.entry),
+      graphRoots(
+        'turn',
+        turn.map((e) => e.data),
+      ),
+    ],
   ];
   const nodeIds = new Set<string>();
-  for (const [graph, nodes, entries] of graphs) {
+  for (const [graph, nodes, entries, roots] of graphs) {
     if (failed.has(graph)) continue;
+    const refErrors = checkGraphRefs(graph, nodes, entries);
     errors.push(
-      ...checkGraphRefs(graph, nodes, entries),
+      ...refErrors,
+      // Достижимость и тупики имеют смысл, только если все переходы указывают на узлы.
+      ...(refErrors.length ? [] : checkGraphFlow(graph, nodes, roots)),
       ...checkPagesAndRules(graph, nodes, known.rules),
       ...checkZones(graph, nodes, ZONE_IDS),
     );

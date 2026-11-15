@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  checkChoices,
+  checkDeadEnds,
+  checkGraphFlow,
   checkGraphRefs,
+  checkLoops,
+  checkReachable,
   checkIcons,
   checkPagesAndRules,
   checkZones,
@@ -127,5 +132,253 @@ describe('checkIcons (инвариант 7)', () => {
         available,
       ),
     ).toEqual(['components/b.yaml: нет файла иконки src/assets/svg/components/b.svg']);
+  });
+});
+
+// ── инварианты 2, 3, 4, 6 ───────────────────────────────────
+const info = (id: string, next: GraphNode['next'], extra: Partial<GraphNode> = {}): GraphNode => ({
+  id,
+  type: 'info',
+  pages: 1,
+  next,
+  ...extra,
+});
+const end = (id: string): GraphNode => ({ id, type: 'end', pages: 1 });
+
+describe('checkReachable (инвариант 2)', () => {
+  it('все узлы достижимы, в т. ч. через условные переходы и варианты', () => {
+    const nodes: GraphNode[] = [
+      info('a', [{ when: { players: [5] }, to: 'b' }, { to: 'c' }]),
+      { id: 'b', type: 'choice', pages: 1, options: [{ next: 'c' }, { next: 'd' }] },
+      info('c', 'd'),
+      end('d'),
+    ];
+    expect(checkReachable('turn', nodes, ['a'])).toEqual([]);
+  });
+
+  it('сирота', () => {
+    expect(checkReachable('setup', [info('a', 'b'), end('b'), info('x', 'b')], ['a'])).toEqual([
+      'setup: узел x недостижим из entry',
+    ]);
+  });
+
+  it('несколько корней', () => {
+    expect(checkReachable('turn', [info('a', 'b'), end('b'), info('x', 'b')], ['a', 'x'])).toEqual(
+      [],
+    );
+  });
+});
+
+describe('checkDeadEnds (инвариант 3)', () => {
+  it('линейный граф и цикл с выходом — без ошибок', () => {
+    const nodes: GraphNode[] = [
+      info('a', 'loop'),
+      {
+        id: 'loop',
+        type: 'loop',
+        pages: 1,
+        options: [{ next: 'loop' }, { next: 'z' }],
+      },
+      end('z'),
+    ];
+    expect(checkDeadEnds('turn', nodes, ['a'])).toEqual([]);
+  });
+
+  it('тупик: step без выхода к end', () => {
+    // b ведёт в c, c — в b: замкнутый цикл без выхода
+    const nodes = [info('a', 'b'), info('b', 'c'), info('c', 'b'), end('z')];
+    expect(checkDeadEnds('turn', nodes, ['a'])).toEqual([
+      'turn: узел a: при 2, 3, 4, 5 игроках из него не дойти до end',
+      'turn: узел b: при 2, 3, 4, 5 игроках из него не дойти до end',
+      'turn: узел c: при 2, 3, 4, 5 игроках из него не дойти до end',
+    ]);
+  });
+
+  it('петля loop без выхода', () => {
+    const nodes: GraphNode[] = [
+      {
+        id: 'loop',
+        type: 'loop',
+        pages: 1,
+        options: [{ next: 'loop' }, { next: 'loop' }],
+      },
+      end('z'),
+    ];
+    expect(checkDeadEnds('turn', nodes, ['loop'])).toEqual([
+      'turn: узел loop: при 2, 3, 4, 5 игроках из него не дойти до end',
+    ]);
+  });
+
+  it('выход есть только при части players', () => {
+    const nodes: GraphNode[] = [
+      info('a', [
+        { when: { players: [4, 5] }, to: 'z' },
+        { when: { players: [2, 3] }, to: 'a' },
+      ]),
+      end('z'),
+    ];
+    expect(checkDeadEnds('turn', nodes, ['a'])).toEqual([
+      'turn: узел a: при 2, 3 игроках из него не дойти до end',
+    ]);
+  });
+
+  it('вариант, скрытый по players, не считается выходом', () => {
+    const nodes: GraphNode[] = [
+      {
+        id: 'c',
+        type: 'choice',
+        pages: 1,
+        options: [{ next: 'c' }, { next: 'z', showIf: { players: [5] } }],
+      },
+      end('z'),
+    ];
+    expect(checkDeadEnds('turn', nodes, ['c'])).toEqual([
+      'turn: узел c: при 2, 3, 4 игроках из него не дойти до end',
+    ]);
+  });
+
+  it('условный next без гарантированной ветви', () => {
+    const nodes: GraphNode[] = [
+      info('a', [{ when: { flags: { lostBattle: true } }, to: 'z' }]),
+      info('b', [{ when: { players: [2, 3] }, to: 'z' }]),
+      info('c', [{ when: { players: [4, 5], flags: { x: true } }, to: 'z' }, { to: 'z' }]),
+      end('z'),
+    ];
+    expect(checkDeadEnds('turn', nodes, ['a', 'b', 'c'])).toEqual([
+      'turn: узел a: при 2, 3, 4, 5 игроках next может не найти перехода — нужна ветвь без условий по флагам',
+      'turn: узел b: при 4, 5 игроках next может не найти перехода — нужна ветвь без условий по флагам',
+      'turn: узел b: при 4, 5 игроках из него не дойти до end',
+    ]);
+  });
+
+  it('флаги могут быть любыми: условие по флагу — возможный выход', () => {
+    const nodes: GraphNode[] = [
+      info('a', [{ when: { flags: { x: true } }, to: 'z' }, { to: 'a' }]),
+      end('z'),
+    ];
+    expect(checkDeadEnds('turn', nodes, ['a'])).toEqual([]);
+  });
+
+  it('скрытый по players узел пропускается по next', () => {
+    const nodes: GraphNode[] = [
+      info('a', 'b'),
+      info('b', 'z', { showIf: { players: [4, 5] } }),
+      end('z'),
+    ];
+    expect(checkDeadEnds('setup', nodes, ['a'])).toEqual([]);
+  });
+
+  it('скрытый узел без однозначного next для пропуска', () => {
+    const nodes: GraphNode[] = [
+      {
+        id: 'c',
+        type: 'choice',
+        pages: 1,
+        showIf: { missingParam: 'school' },
+        options: [{ next: 'x' }, { next: 'z' }],
+      },
+      info('x', 'z'),
+      end('z'),
+    ];
+    expect(checkDeadEnds('turn', nodes, ['c'])).toEqual([
+      'turn: узел c: есть showIf, но нет однозначного next для пропуска',
+    ]);
+  });
+
+  it('недостижимые при этом числе игроков узлы не проверяются', () => {
+    const nodes: GraphNode[] = [
+      info('a', [{ when: { players: [5] }, to: 'b' }, { to: 'z' }]),
+      info('b', [{ when: { players: [5] }, to: 'z' }, { to: 'b' }]),
+      end('z'),
+    ];
+    expect(checkDeadEnds('turn', nodes, ['a'])).toEqual([]);
+  });
+});
+
+describe('checkChoices (инвариант 4)', () => {
+  it('≥ 2 видимых варианта при каждом числе игроков', () => {
+    const c: GraphNode = {
+      id: 'c',
+      type: 'choice',
+      pages: 1,
+      options: [{ next: 'z' }, { next: 'z', showIf: { players: [4, 5] } }, { next: 'z' }],
+    };
+    expect(checkChoices('turn', [c])).toEqual([]);
+  });
+
+  it('меньше 2 вариантов при части players', () => {
+    const c: GraphNode = {
+      id: 'c',
+      type: 'choice',
+      pages: 1,
+      options: [{ next: 'z' }, { next: 'z', showIf: { players: [4, 5] } }],
+    };
+    expect(checkChoices('turn', [c])).toEqual([
+      'turn: узел c: при 2, 3 игроках видно меньше 2 вариантов',
+    ]);
+  });
+
+  it('узел, скрытый при этом числе игроков или по missingParam, не проверяется', () => {
+    const nodes: GraphNode[] = [
+      {
+        id: 'p',
+        type: 'choice',
+        pages: 1,
+        showIf: { missingParam: 'players' },
+        options: [{ next: 'z', showIf: { players: [5] } }, { next: 'z' }],
+      },
+      {
+        id: 'q',
+        type: 'choice',
+        pages: 1,
+        showIf: { players: [5] },
+        options: [
+          { next: 'z', showIf: { players: [5] } },
+          { next: 'z', showIf: { players: [5] } },
+        ],
+      },
+    ];
+    expect(checkChoices('turn', nodes)).toEqual([]);
+  });
+});
+
+describe('checkLoops (инвариант 6)', () => {
+  it('loop с выходом', () => {
+    const l: GraphNode = {
+      id: 'l',
+      type: 'loop',
+      pages: 1,
+      options: [{ next: 'l' }, { next: 'z' }],
+    };
+    expect(checkLoops('turn', [l, info('a', 'a')])).toEqual([]);
+  });
+
+  it('все варианты loop ведут в себя', () => {
+    const l: GraphNode = {
+      id: 'l',
+      type: 'loop',
+      pages: 1,
+      options: [{ next: 'l' }, { next: 'l' }],
+    };
+    expect(checkLoops('turn', [l])).toEqual([
+      'turn: узел l: у loop нет варианта, ведущего из него',
+    ]);
+  });
+});
+
+describe('checkGraphFlow', () => {
+  it('объединяет инварианты 2, 3, 4, 6', () => {
+    const nodes: GraphNode[] = [
+      info('a', 'z'),
+      end('z'),
+      { id: 'l', type: 'loop', pages: 1, options: [{ next: 'l' }, { next: 'l' }] },
+      { id: 'c', type: 'choice', pages: 1, options: [{ next: 'z' }] },
+    ];
+    expect(checkGraphFlow('turn', nodes, ['a'])).toEqual([
+      'turn: узел l недостижим из entry',
+      'turn: узел c недостижим из entry',
+      'turn: узел c: при 2, 3, 4, 5 игроках видно меньше 2 вариантов',
+      'turn: узел l: у loop нет варианта, ведущего из него',
+    ]);
   });
 });
