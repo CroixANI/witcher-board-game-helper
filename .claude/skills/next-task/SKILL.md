@@ -86,7 +86,7 @@ Agent `subagent_type: "simplifier"`, prompt: `task: <ID>; base: origin/main`. Е
 ## 7. Проверки
 ```bash
 npm run lint && npm run check && npm test && npm run build
-npm run test:e2e        # с R2.5
+scripts/session/e2e.sh  # с R2.5; в облаке — только Chromium (Pixel 7), WebKit проверит CI
 ```
 Плюс команды из пункта «Проверка» задачи. Красное — исправить и запустить снова. **Не больше 2 циклов исправлений**, дальше стоп и эскалация пользователю с логом ошибки. До R0.2 шаг пропускается.
 
