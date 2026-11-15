@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { COLLECTIONS, validateContent } from '../../scripts/validate-content';
+import { BOARD_ZONES } from '../../src/data/board-zones';
 
 const root = (p: string) => fileURLToPath(new URL(`../../${p}`, import.meta.url));
 const svgDir = root('src/assets/svg');
@@ -77,6 +78,32 @@ describe('validate-content: битые фикстуры (tests/fixtures/bad)', (
       'setup: узел s01-board: при 2, 3, 4, 5 игроках из него не дойти до end',
       'setup: узел s02-loop: при 2, 3, 4, 5 игроках из него не дойти до end',
     ]);
+  });
+
+  it('лишний файл зоны; при непустой коллекции zones нужны файлы всех зон (инвариант 7б)', () => {
+    const { errors } = bad('zone-extra-file');
+    expect(errors).toContain('zones/z-nope.yaml: зоны z-nope нет в src/data/board-zones.ts');
+    expect(errors.filter((e) => e.startsWith('zones: нет файла'))).toHaveLength(BOARD_ZONES.length);
+  });
+
+  it('компонент не лежит ни в одной зоне (инвариант 7в)', () => {
+    const { errors } = bad('component-without-zone');
+    expect(errors).toContain(
+      'components/gold.yaml: компонент не лежит ни в одной зоне (src/content/zones/*.yaml)',
+    );
+  });
+
+  it('подзона с неизвестным parent в board-zones (инвариант 7б)', () => {
+    const boardZones = [
+      ...BOARD_ZONES,
+      { id: 'z-orphan', label: 'Сирота', x: 0, y: 0, w: 1, h: 1, steps: '—', parent: 'z-nope' },
+    ];
+    const { errors } = validateContent({
+      contentDir: root('tests/fixtures/none'),
+      svgDir,
+      boardZones,
+    });
+    expect(errors).toEqual(['board-zones: зона z-orphan: неизвестный parent z-nope']);
   });
 
   it('несуществующая папка контента — пустой результат, а не исключение', () => {

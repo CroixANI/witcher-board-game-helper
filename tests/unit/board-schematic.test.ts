@@ -25,8 +25,14 @@ describe('<BoardSchematic>', () => {
     expect(html).toContain('<rect x="134.5" y="13.5" width="21" height="84" rx="1.5"></rect>');
   });
 
-  it('любая из 14 зон подсвечивается', () => {
+  it('любая зона, включая подзоны, подсвечивается', () => {
     for (const { id } of BOARD_ZONES) expect(highlighted(render({ zones: [id] }))).toEqual([id]);
+  });
+
+  it('подзона подсвечивается отдельно от родителя', () => {
+    expect(highlighted(render({ zones: ['z-action-row-minus1'] }))).toEqual([
+      'z-action-row-minus1',
+    ]);
   });
 
   it('подписи — бейджи на схеме и в легенде; note зоны попадает в легенду', () => {

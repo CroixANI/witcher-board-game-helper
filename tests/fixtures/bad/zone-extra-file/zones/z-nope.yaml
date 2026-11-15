@@ -1,0 +1,4 @@
+# Лишний файл: зоны z-nope нет в src/data/board-zones.ts.
+title: 'Несуществующая зона'
+summary: 'Фикстура для инварианта 7б.'
+pages: 7

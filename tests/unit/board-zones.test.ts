@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { BOARD_VIEWBOX, BOARD_ZONES, ZONE_IDS } from '../../src/data/board-zones';
 
 describe('BOARD_ZONES (SPEC 11.3)', () => {
-  it('все 14 зон из таблицы, id уникальны', () => {
-    expect(BOARD_ZONES).toHaveLength(14);
+  it('14 зон SPEC 11.3 + 6 подзон SPEC 11.5.1, id уникальны', () => {
+    expect(BOARD_ZONES).toHaveLength(20);
     expect(ZONE_IDS.size).toBe(BOARD_ZONES.length);
     for (const id of ['z-board', 'z-action-row', 'z-monster-slots', 'z-player-area']) {
       expect(ZONE_IDS.has(id), id).toBe(true);
@@ -22,6 +22,47 @@ describe('BOARD_ZONES (SPEC 11.3)', () => {
       expect(z.h, z.id).toBeGreaterThan(0);
       expect(z.x + z.w, z.id).toBeLessThanOrEqual(BOARD_VIEWBOX.width);
       expect(z.y + z.h, z.id).toBeLessThanOrEqual(BOARD_VIEWBOX.height);
+    }
+  });
+
+  it('подзоны: родитель существует и сам не подзона, подзона лежит внутри родителя', () => {
+    const byId = new Map(BOARD_ZONES.map((z) => [z.id, z]));
+    const subzones = BOARD_ZONES.filter((z) => z.parent !== undefined);
+    expect(Object.fromEntries(subzones.map((z) => [z.id, z.parent]))).toEqual({
+      'z-action-row-plus1': 'z-action-row',
+      'z-action-row-base': 'z-action-row',
+      'z-action-row-minus1': 'z-action-row',
+      'z-exploration-city': 'z-exploration-decks',
+      'z-exploration-wilds': 'z-exploration-decks',
+      'z-event-deck': 'z-exploration-decks',
+    });
+    for (const z of subzones) {
+      const parent = byId.get(z.parent ?? '');
+      expect(parent, z.id).toBeDefined();
+      expect(parent?.parent, z.id).toBeUndefined();
+      if (!parent) continue;
+      expect(z.x, z.id).toBeGreaterThanOrEqual(parent.x);
+      expect(z.y, z.id).toBeGreaterThanOrEqual(parent.y);
+      expect(z.x + z.w, z.id).toBeLessThanOrEqual(parent.x + parent.w);
+      expect(z.y + z.h, z.id).toBeLessThanOrEqual(parent.y + parent.h);
+    }
+  });
+
+  it('подзоны идут сразу после родителя', () => {
+    BOARD_ZONES.forEach((z, i) => {
+      if (z.parent === undefined) return;
+      const prev = BOARD_ZONES[i - 1];
+      expect([prev?.id, prev?.parent], z.id).toContain(z.parent);
+    });
+  });
+
+  it('ячейки ряда: 2 у колоды (+1), 3 без модификатора, дальняя (−1) — подзоны не пересекаются', () => {
+    const row = ['z-action-row-plus1', 'z-action-row-base', 'z-action-row-minus1'].map((id) =>
+      BOARD_ZONES.find((z) => z.id === id),
+    );
+    for (let i = 1; i < row.length; i++) {
+      const [a, b] = [row[i - 1], row[i]];
+      expect(a && b && a.y + a.h <= b.y, b?.id).toBe(true);
     }
   });
 
@@ -62,6 +103,13 @@ describe('board-schematic.svg (SPEC 11.2, 11.3)', () => {
       h: num(attrs ?? '', 'height'),
     };
     expect(frame).toEqual({ x: zone.x, y: zone.y, w: zone.w, h: zone.h });
+  });
+
+  it('рамка подзоны невидима: рисунок ячеек остаётся в группе родителя', () => {
+    for (const z of BOARD_ZONES.filter((zone) => zone.parent !== undefined)) {
+      const group = new RegExp(`<g id="${z.id}"[^>]*>([\\s\\S]*?)</g>`).exec(svg)?.[1] ?? '';
+      expect(group, z.id).toMatch(/^<rect\b[^>]*\sstroke="none"[^>]*\/>$/);
+    }
   });
 
   it('у ряда карт подписи «у колоды +1» и «дальняя −1» (стр. 19)', () => {
