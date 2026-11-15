@@ -3,7 +3,16 @@
  * в сериализуемом виде. Страница собирает их на этапе сборки (Markdown правил уже в HTML)
  * и передаёт острову пропсом — в браузере коллекции Astro недоступны.
  */
-import type { Condition, GraphName, Option, WizardNode } from './wizard-engine';
+import {
+  SCHOOLS,
+  type Condition,
+  type GraphName,
+  type Option,
+  type School,
+  type WizardNode,
+} from './wizard-engine';
+
+const isSchoolId = (id: string): id is School => (SCHOOLS as readonly string[]).includes(id);
 
 export type Pages = number | readonly number[];
 export type Phase = 'setup' | 'phase1' | 'phase2' | 'battle' | 'phase3' | 'general';
@@ -57,6 +66,17 @@ export type ComponentView = {
   readonly howToTell: string;
 };
 
+/** Специализация школы для `SchoolBadge` (SPEC 9.3). */
+export type SchoolView = {
+  readonly id: School;
+  readonly name: string;
+  readonly specialization: string;
+  readonly timing: string;
+  readonly effect: string;
+  readonly page: Pages;
+  readonly color: string;
+};
+
 export type WizardData = {
   readonly graph: GraphName;
   /** Заголовок wizard'а в верхнем баре («Подготовка»). */
@@ -67,6 +87,8 @@ export type WizardData = {
   readonly progress?: readonly string[] | undefined;
   readonly rules: Readonly<Record<string, RuleView>>;
   readonly components: Readonly<Record<string, ComponentView>>;
+  /** Школы для бейджа специализации — только у графа хода. */
+  readonly schools?: Readonly<Partial<Record<School, SchoolView>>> | undefined;
 };
 
 /** Ссылка коллекции: в Astro — `{ collection, id }`, в валидаторе без Astro — строка. */
@@ -144,4 +166,19 @@ export function buildWizardData(
     }
   }
   return { ...base, rules, components };
+}
+
+type SchoolSource = { id: string; data: Omit<SchoolView, 'id'> & { expansion?: unknown } };
+
+/** Записи коллекции `schools` → словарь для острова. Неизвестный id файла — ошибка сборки. */
+export function toSchoolViews(
+  entries: readonly SchoolSource[],
+): Partial<Record<School, SchoolView>> {
+  const views: Partial<Record<School, SchoolView>> = {};
+  for (const { id, data } of entries) {
+    if (!isSchoolId(id)) throw new Error(`wizard: неизвестная школа ${id}`);
+    const { name, specialization, timing, effect, page, color } = data;
+    views[id] = { id, name, specialization, timing, effect, page, color };
+  }
+  return views;
 }

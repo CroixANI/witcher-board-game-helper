@@ -9,6 +9,7 @@ import {
   back,
   buildGraph,
   choose,
+  forgetParam,
   initState,
   loadState,
   resetTurn,
@@ -16,11 +17,13 @@ import {
   saveState,
   toggleChecked,
   type Graph,
+  type Params,
   type WizardState,
 } from '../lib/wizard-engine';
 import { nodeRuleIds, type Phase, type ViewNode, type WizardData } from '../lib/wizard-view';
 import { ComponentChip } from './ComponentChip';
 import { RuleCard } from './RuleCard';
+import { SchoolBadge } from './SchoolBadge';
 import { ChecklistStep } from './steps/ChecklistStep';
 import { ChoiceStep } from './steps/ChoiceStep';
 import { EndStep } from './steps/EndStep';
@@ -69,6 +72,7 @@ export function WizardIsland({ data, storage: injected }: Props) {
   const [announcement, setAnnouncement] = useState('');
   const heading = useRef<HTMLHeadingElement>(null);
   const restartButton = useRef<HTMLButtonElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const confirmButton = useRef<HTMLButtonElement>(null);
   /** Последний показанный шаг (`узел#глубина истории`): его смена — переход, а не загрузка. */
   const shownStep = useRef<string | undefined>(undefined);
@@ -113,6 +117,7 @@ export function WizardIsland({ data, storage: injected }: Props) {
   const node = graph.nodes.get(state.current)!;
   const update = (fn: (g: Graph, s: WizardState) => WizardState) => {
     setConfirming(false);
+    setMenuOpen(false);
     setState((s) => fn(graph, s));
   };
   const act: StepActions = {
@@ -125,6 +130,7 @@ export function WizardIsland({ data, storage: injected }: Props) {
     resetTurn: () => update(resetTurn),
     restartAll: () => update(restartAll),
   };
+  const changeParam = (key: keyof Params) => update((g, s) => forgetParam(g, s, key));
   const restart = () => {
     focusAfterRestart.current = true;
     update(data.graph === 'setup' ? restartAll : resetTurn);
@@ -140,6 +146,7 @@ export function WizardIsland({ data, storage: injected }: Props) {
   const rules = nodeRuleIds(node).flatMap((id) => data.rules[id] ?? []);
   const components = (node.components ?? []).flatMap((id) => data.components[id] ?? []);
   const Step = STEPS[node.type];
+  const school = state.params.school && data.schools?.[state.params.school];
 
   return (
     <section class="wizard" aria-label={data.title}>
@@ -165,6 +172,39 @@ export function WizardIsland({ data, storage: injected }: Props) {
         >
           ⟲ <span class="visually-hidden">Начать </span>Заново
         </button>
+        {data.graph === 'turn' && (
+          <div class="wizard-menu">
+            <button
+              type="button"
+              class="wizard-bar__button"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-expanded={menuOpen}
+              aria-controls="wizard-menu-panel"
+            >
+              ☰<span class="visually-hidden"> Параметры партии</span>
+            </button>
+            {menuOpen && (
+              <div id="wizard-menu-panel" class="wizard-menu__panel">
+                <p class="wizard-menu__hint">Текущий ход начнётся заново.</p>
+                <button
+                  type="button"
+                  onClick={() => changeParam('school')}
+                  disabled={!state.params.school}
+                >
+                  Сменить школу
+                </button>
+                <button
+                  type="button"
+                  onClick={() => changeParam('players')}
+                  disabled={!state.params.players}
+                >
+                  Сменить число игроков
+                  {state.params.players && ` (сейчас ${state.params.players})`}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {confirming && (
@@ -194,6 +234,8 @@ export function WizardIsland({ data, storage: injected }: Props) {
       {total > 0 && (
         <progress class="wizard-progress" max={total} value={position} aria-label="Прогресс" />
       )}
+
+      {school && <SchoolBadge school={school} />}
 
       <p class="visually-hidden" aria-live="polite">
         {announcement}

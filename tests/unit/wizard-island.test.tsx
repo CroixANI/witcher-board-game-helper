@@ -355,3 +355,150 @@ describe('<WizardIsland>: сохранение, хранилище, доступ
     expect(screen.getAllByRole('checkbox')).toHaveLength(3);
   });
 });
+
+describe('<WizardIsland> графа хода: школа и параметры партии (R3.1)', () => {
+  const turnNodes: ViewNode[] = [
+    {
+      id: 't-params',
+      type: 'choice',
+      title: 'Сколько игроков?',
+      phase: 'general',
+      pages: 9,
+      showIf: { missingParam: 'players' },
+      options: [
+        { label: '2 игрока', next: 't-school', setParam: { key: 'players', value: 2 } },
+        { label: '4 игрока', next: 't-school', setParam: { key: 'players', value: 4 } },
+      ],
+    },
+    {
+      id: 't-school',
+      type: 'choice',
+      title: 'Ваша школа?',
+      phase: 'general',
+      pages: 34,
+      showIf: { missingParam: 'school' },
+      options: [
+        { label: 'Медведь', next: 't-start', setParam: { key: 'school', value: 'bear' } },
+        { label: 'Кот', next: 't-start', setParam: { key: 'school', value: 'cat' } },
+      ],
+    },
+    { id: 't-start', type: 'info', title: 'Ваш ход', phase: 'general', pages: 12, next: 'p3' },
+    { id: 'p3', type: 'info', title: 'Фаза III', phase: 'phase3', pages: 18, next: 'end' },
+    {
+      id: 'end',
+      type: 'end',
+      title: 'Ход завершён',
+      phase: 'phase3',
+      pages: 12,
+      outcome: 'turn-complete',
+      resetTo: 't-start',
+    },
+  ];
+  const school = (id: 'bear' | 'cat', name: string, specialization: string) => ({
+    id,
+    name,
+    specialization,
+    timing: `Когда срабатывает ${specialization}`,
+    effect: `Эффект ${specialization}`,
+    page: 34,
+    color: '#3d6fb6',
+  });
+  const turn: WizardData = {
+    graph: 'turn',
+    title: 'Ход',
+    entry: 't-params',
+    nodes: turnNodes,
+    rules: {},
+    components: {},
+    schools: {
+      bear: school('bear', 'Школа Медведя', 'Доспехи'),
+      cat: school('cat', 'Школа Кота', 'Прыть'),
+    },
+  };
+  const badge = () => document.querySelector('details.school-badge');
+  const menuButton = () => screen.getByRole('button', { name: /Параметры партии/ });
+  const openMenu = () => fireEvent.click(menuButton());
+
+  it('пустые params: оба вопроса, затем бейдж школы виден на каждом шаге', () => {
+    render(<WizardIsland data={turn} storage={memoryStorage()} />);
+    expect(heading().textContent).toBe('Сколько игроков?');
+    expect(badge()).toBeNull();
+    click(/^4 игрока/);
+    expect(heading().textContent).toBe('Ваша школа?');
+    click(/^Медведь/);
+    expect(heading().textContent).toBe('Ваш ход');
+    for (const title of ['Ваш ход', 'Фаза III', 'Ход завершён']) {
+      expect(heading().textContent).toBe(title);
+      expect(badge()?.textContent).toContain('Школа Медведя');
+      expect(badge()?.textContent).toContain('Доспехи');
+      if (title !== 'Ход завершён') click('Далее →');
+    }
+  });
+
+  it('бейдж раскрывается: условие, эффект, «только текущий уровень», страница', () => {
+    const storage = memoryStorage();
+    storage.set(PARAMS_KEY, JSON.stringify({ players: 2, school: 'cat' }));
+    render(<WizardIsland data={turn} storage={storage} />);
+    expect(heading().textContent).toBe('Ваш ход');
+    const details = badge() as HTMLDetailsElement;
+    expect(details.open).toBe(false);
+    expect(details.textContent).toContain('Когда срабатывает Прыть');
+    expect(details.textContent).toContain('Эффект Прыть');
+    expect(details.textContent).toMatch(/только эффект текущего уровня/);
+    expect(details.textContent).toContain('стр. 34');
+  });
+
+  it('заданные params (из подготовки) — сразу «Ваш ход»', () => {
+    const storage = memoryStorage();
+    storage.set(PARAMS_KEY, JSON.stringify({ players: 4, school: 'bear' }));
+    render(<WizardIsland data={turn} storage={storage} />);
+    expect(heading().textContent).toBe('Ваш ход');
+    expect(backButton().hasAttribute('disabled')).toBe(true);
+  });
+
+  it('меню: «Сменить школу» спрашивает школу заново, число игроков сохраняется', () => {
+    const storage = memoryStorage();
+    storage.set(PARAMS_KEY, JSON.stringify({ players: 4, school: 'bear' }));
+    render(<WizardIsland data={turn} storage={storage} />);
+    click('Далее →');
+    expect(heading().textContent).toBe('Фаза III');
+
+    expect(screen.queryByRole('button', { name: 'Сменить школу' })).toBeNull();
+    openMenu();
+    click('Сменить школу');
+    expect(menuButton().getAttribute('aria-expanded')).toBe('false');
+    expect(screen.queryByRole('button', { name: 'Сменить школу' })).toBeNull();
+    expect(heading().textContent).toBe('Ваша школа?');
+    expect(badge()).toBeNull();
+    expect(saved(storage)?.params).toEqual({ players: 4 });
+    expect(document.activeElement).toBe(heading());
+
+    click(/^Кот/);
+    expect(heading().textContent).toBe('Ваш ход');
+    expect(badge()?.textContent).toContain('Школа Кота');
+    expect(JSON.parse(storage.get(PARAMS_KEY) ?? '{}')).toEqual({ players: 4, school: 'cat' });
+  });
+
+  it('меню: «Сменить число игроков» показывает текущее и спрашивает только его', () => {
+    const storage = memoryStorage();
+    storage.set(PARAMS_KEY, JSON.stringify({ players: 4, school: 'bear' }));
+    render(<WizardIsland data={turn} storage={storage} />);
+    openMenu();
+    click('Сменить число игроков (сейчас 4)');
+    expect(heading().textContent).toBe('Сколько игроков?');
+    click(/^2 игрока/);
+    expect(heading().textContent).toBe('Ваш ход');
+    expect(saved(storage)?.params).toEqual({ players: 2, school: 'bear' });
+  });
+
+  it('меню есть только у хода; пункт для незаданного параметра недоступен', () => {
+    render(<WizardIsland data={turn} storage={memoryStorage()} />);
+    openMenu();
+    expect(screen.getByRole('button', { name: 'Сменить школу' }).hasAttribute('disabled')).toBe(
+      true,
+    );
+    cleanup();
+    render(<WizardIsland data={setup} storage={memoryStorage()} />);
+    expect(screen.queryByRole('button', { name: /Параметры партии/ })).toBeNull();
+  });
+});

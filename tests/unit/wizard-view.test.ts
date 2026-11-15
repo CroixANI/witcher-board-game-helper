@@ -4,6 +4,7 @@ import {
   buildWizardData,
   nodeRuleIds,
   refId,
+  toSchoolViews,
   toViewNode,
   type ViewNode,
 } from '../../src/lib/wizard-view';
@@ -94,5 +95,38 @@ describe('buildWizardData', () => {
     expect(() => buildWizardData(DEMO_WIZARD, rules, [], iconSvg)).toThrow(
       /неизвестный компонент action-card/,
     );
+  });
+});
+
+describe('toSchoolViews', () => {
+  const school = (id: string) => ({
+    id,
+    data: {
+      name: `Школа ${id}`,
+      specialization: 'Спец',
+      timing: 'Когда',
+      effect: 'Эффект',
+      page: 34,
+      color: '#123456',
+      expansion: 'base',
+    },
+  });
+
+  it('записи коллекции → словарь по id без лишних полей', () => {
+    const views = toSchoolViews([school('wolf'), school('viper')]);
+    expect(Object.keys(views)).toEqual(['wolf', 'viper']);
+    expect(views.wolf).toEqual({
+      id: 'wolf',
+      name: 'Школа wolf',
+      specialization: 'Спец',
+      timing: 'Когда',
+      effect: 'Эффект',
+      page: 34,
+      color: '#123456',
+    });
+  });
+
+  it('неизвестная школа — ошибка сборки', () => {
+    expect(() => toSchoolViews([school('manticore')])).toThrow(/неизвестная школа manticore/);
   });
 });
