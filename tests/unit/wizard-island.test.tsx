@@ -126,13 +126,47 @@ describe('<WizardIsland> на графе из 4 узлов (подготовка
     click('Далее →');
     click('⟲ Начать Заново');
     const dialog = screen.getByRole('alertdialog');
+    expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: 'Да, заново' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Отмена' }));
     expect(screen.queryByRole('alertdialog')).toBeNull();
     expect(heading().textContent).toBe('Пояснение');
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: '⟲ Начать Заново' }));
 
     click('⟲ Начать Заново');
     click('Да, заново');
     expect(heading().textContent).toBe('Поле');
+  });
+  it('«Да, заново» на первом шаге: галочки сброшены, фокус на заголовке', () => {
+    const storage = memoryStorage();
+    render(<WizardIsland data={setup} storage={storage} />);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Разложите поле' }));
+    click('⟲ Начать Заново');
+    click('Да, заново');
+    expect(heading().textContent).toBe('Поле');
+    expect(document.activeElement).toBe(heading());
+    expect(saved(storage, 'setup')?.checked).toEqual({});
+  });
+
+  it('клик по галочке закрывает открытое подтверждение', () => {
+    render(<WizardIsland data={setup} storage={memoryStorage()} />);
+    click('⟲ Начать Заново');
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Разложите поле' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+  });
+
+  it('тело Markdown узла — в свёрнутом блоке «Подробнее»', () => {
+    const nodes = setupNodes.map((n) =>
+      n.id === 'a' ? { ...n, detailsHtml: '<p>Подробный <em>текст</em></p>' } : n,
+    );
+    const { container } = render(
+      <WizardIsland data={{ ...setup, nodes }} storage={memoryStorage()} />,
+    );
+    const details = container.querySelector('details.wizard-details');
+    expect(details?.querySelector('summary')?.textContent).toBe('Подробнее');
+    expect(details?.hasAttribute('open')).toBe(false);
+    expect(details?.innerHTML).toContain('<p>Подробный <em>текст</em></p>');
+    click('Далее →');
+    expect(container.querySelector('details.wizard-details')).toBeNull();
   });
 });
 
@@ -197,15 +231,21 @@ describe('<WizardIsland> на демо-графе (все типы узлов)',
     expect(saved(storage)?.flags).toEqual({});
   });
 
-  it('loop: счётчик «Ход N» и «Ходит: …», цикл и выход', () => {
-    render(<WizardIsland data={demo} storage={memoryStorage()} />);
+  it('loop: счётчик «Ход N» и «Ходит: …», новая итерация — чистый чек-лист, фокус, объявление', () => {
+    const { container } = render(<WizardIsland data={demo} storage={memoryStorage()} />);
     click(/^2 игрока/);
     click('Далее →');
     click(/^Да/);
     expect(screen.getByText('Ход 1')).toBeTruthy();
     expect(screen.getByText('Ходит: вы')).toBeTruthy();
+    const box = () =>
+      screen.getByRole('checkbox', { name: 'Сыграйте комбинацию' }) as HTMLInputElement;
+    fireEvent.click(box());
     click(/Следующий ход/);
     expect(screen.getByText('Ход 2')).toBeTruthy();
+    expect(box().checked).toBe(false);
+    expect(document.activeElement).toBe(heading());
+    expect(container.querySelector('[aria-live="polite"]')?.textContent).toBe('Шаг: Битва, ход 2');
     fireEvent.click(backButton());
     expect(screen.getByText('Ход 1')).toBeTruthy();
     click(/Битва окончена/);
@@ -286,6 +326,9 @@ describe('<WizardIsland>: сохранение, хранилище, доступ
     expect(heading().getAttribute('tabindex')).toBe('-1');
     expect(document.activeElement).toBe(heading());
     expect(live?.textContent).toBe('Шаг: Ряд карт действий');
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Разложите ряд из 6 карт' }));
+    expect(live?.textContent).toBe('Шаг: Ряд карт действий');
   });
 
   it('восстановление после перезагрузки не уводит фокус', () => {
@@ -296,6 +339,10 @@ describe('<WizardIsland>: сохранение, хранилище, доступ
     render(<WizardIsland data={demo} storage={storage} />);
     expect(heading().textContent).toBe('Ряд карт действий');
     expect(document.activeElement).not.toBe(heading());
+    const live = document.querySelector('[aria-live="polite"]');
+    expect(live?.textContent).toBe('');
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Разложите ряд из 6 карт' }));
+    expect(live?.textContent).toBe('');
   });
 
   it('варианты — кнопки, чек-лист — нативные чекбоксы', () => {

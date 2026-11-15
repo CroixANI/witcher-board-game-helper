@@ -27,7 +27,7 @@ import { EndStep } from './steps/EndStep';
 import { InfoStep } from './steps/InfoStep';
 import { LoopStep } from './steps/LoopStep';
 import { QuestionStep } from './steps/QuestionStep';
-import type { StepActions, StepProps } from './steps/shared';
+import { loopTurn, type StepActions, type StepProps } from './steps/shared';
 import './WizardIsland.css';
 
 const STEPS: Record<ViewNode['type'], ComponentType<StepProps>> = {
@@ -66,9 +66,14 @@ export function WizardIsland({ data, storage: injected }: Props) {
   const [persistent, setPersistent] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const storage = useRef<SafeStorage | undefined>(injected);
+  const [announcement, setAnnouncement] = useState('');
   const heading = useRef<HTMLHeadingElement>(null);
-  /** Узел, который пользователь уже видел: смена узла после него — переход, а не загрузка. */
-  const shownNode = useRef<string | undefined>(undefined);
+  const restartButton = useRef<HTMLButtonElement>(null);
+  const confirmButton = useRef<HTMLButtonElement>(null);
+  /** Последний показанный шаг (`узел#глубина истории`): его смена — переход, а не загрузка. */
+  const shownStep = useRef<string | undefined>(undefined);
+  /** «Да, заново» на том же шаге: шаг не меняется, но фокус должен вернуться к заголовку. */
+  const focusAfterRestart = useRef(false);
 
   useEffect(() => {
     const s = (storage.current ??= createSafeStorage());
@@ -85,14 +90,25 @@ export function WizardIsland({ data, storage: injected }: Props) {
     setPersistent(s.persistent);
   }, [state, ready]);
 
-  // Переход на новый узел: фокус на заголовок (SPEC 6.7). Восстановление после загрузки — без фокуса.
+  // Переход (в том числе новая итерация loop и «Назад»): фокус на заголовок и объявление
+  // через aria-live (SPEC 6.7). Восстановление после загрузки и галочки — без фокуса.
   useEffect(() => {
     if (!ready) return;
-    if (shownNode.current !== undefined && shownNode.current !== state.current) {
+    const step = `${state.current}#${state.history.length}`;
+    if (
+      shownStep.current !== undefined &&
+      (shownStep.current !== step || focusAfterRestart.current)
+    ) {
       heading.current?.focus();
+      setAnnouncement(stepAnnouncement(graph.nodes.get(state.current)!, state));
     }
-    shownNode.current = state.current;
-  }, [state.current, ready]);
+    shownStep.current = step;
+    focusAfterRestart.current = false;
+  }, [state, ready, graph]);
+
+  useEffect(() => {
+    if (confirming) confirmButton.current?.focus();
+  }, [confirming]);
 
   const node = graph.nodes.get(state.current)!;
   const update = (fn: (g: Graph, s: WizardState) => WizardState) => {
@@ -102,11 +118,21 @@ export function WizardIsland({ data, storage: injected }: Props) {
   const act: StepActions = {
     advance: () => update(advance),
     choose: (i) => update((g, s) => choose(g, s, i)),
-    toggle: (i) => setState((s) => toggleChecked(s, s.current, i)),
+    toggle: (i) => {
+      setConfirming(false);
+      setState((s) => toggleChecked(s, s.current, i));
+    },
     resetTurn: () => update(resetTurn),
     restartAll: () => update(restartAll),
   };
-  const restart = () => update(data.graph === 'setup' ? restartAll : resetTurn);
+  const restart = () => {
+    focusAfterRestart.current = true;
+    update(data.graph === 'setup' ? restartAll : resetTurn);
+  };
+  const cancelRestart = () => {
+    setConfirming(false);
+    restartButton.current?.focus();
+  };
 
   const position = data.progress ? data.progress.indexOf(node.id) + 1 : 0;
   const total = data.progress?.length ?? 0;
@@ -132,6 +158,7 @@ export function WizardIsland({ data, storage: injected }: Props) {
         </span>
         <button
           type="button"
+          ref={restartButton}
           class="wizard-bar__button"
           onClick={() => setConfirming(true)}
           aria-expanded={confirming}
@@ -148,10 +175,10 @@ export function WizardIsland({ data, storage: injected }: Props) {
               : 'Начать ход заново? Школа и число игроков сохранятся.'}
           </p>
           <div class="wizard-confirm__actions">
-            <button type="button" class="wizard-primary" onClick={restart}>
+            <button ref={confirmButton} type="button" class="wizard-primary" onClick={restart}>
               Да, заново
             </button>
-            <button type="button" onClick={() => setConfirming(false)}>
+            <button type="button" onClick={cancelRestart}>
               Отмена
             </button>
           </div>
@@ -169,7 +196,7 @@ export function WizardIsland({ data, storage: injected }: Props) {
       )}
 
       <p class="visually-hidden" aria-live="polite">
-        {shownNode.current === undefined ? '' : `Шаг: ${node.title}`}
+        {announcement}
       </p>
 
       <article class="wizard-node" key={node.id}>
@@ -213,4 +240,9 @@ export function WizardIsland({ data, storage: injected }: Props) {
       </article>
     </section>
   );
+}
+
+function stepAnnouncement(node: ViewNode, state: WizardState): string {
+  const turn = loopTurn(node, state);
+  return turn > 0 ? `Шаг: ${node.title}, ход ${turn}` : `Шаг: ${node.title}`;
 }

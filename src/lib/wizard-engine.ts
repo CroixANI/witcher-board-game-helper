@@ -172,8 +172,14 @@ export function choose(g: Graph, s: WizardState, optionIndex: number): WizardSta
     option.increment && node.counterKey
       ? { ...s.counters, [node.counterKey]: (s.counters[node.counterKey] ?? 0) + 1 }
       : s.counters;
+  // Переход узла в самого себя (новая итерация loop) начинает его чек-лист с чистого листа.
+  const checked =
+    option.next === s.current
+      ? Object.fromEntries(Object.entries(s.checked).filter(([id]) => id !== s.current))
+      : s.checked;
   const next: WizardState = {
     ...s,
+    checked,
     flags: option.set ? { ...s.flags, ...option.set } : s.flags,
     params: option.setParam ? applyParam(s.params, option.setParam) : s.params,
     counters,

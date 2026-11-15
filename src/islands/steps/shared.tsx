@@ -13,6 +13,12 @@ export type StepActions = {
 
 export type StepProps = { node: ViewNode; state: WizardState; act: StepActions };
 
+/** Номер итерации `loop`-узла («Ход N»), с 1; для других узлов — 0. */
+export function loopTurn(node: ViewNode, state: WizardState): number {
+  if (node.type !== 'loop' || !node.counterKey) return 0;
+  return (state.counters[node.counterKey] ?? 0) + 1;
+}
+
 /** Нативные чекбоксы (SPEC 6.7); скрытые по `showIf` пункты не показываются, индексы — исходные. */
 export function Checklist({ node, state, act }: StepProps) {
   const marks = state.checked[node.id] ?? [];

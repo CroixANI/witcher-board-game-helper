@@ -309,6 +309,14 @@ describe('choose', () => {
     expect(s.current).toBe('done');
   });
 
+  it('loop: новая итерация снимает галочки этого узла, другие узлы и выход из цикла не трогает', () => {
+    let s = state({ current: 'battle', checked: { battle: [0, 1], bets: [2] } });
+    s = choose(g, s, 0);
+    expect(s.checked).toEqual({ bets: [2] });
+    s = choose(g, { ...s, checked: { ...s.checked, battle: [1] } }, 1);
+    expect(s.checked).toEqual({ bets: [2], battle: [1] });
+  });
+
   it('не меняет исходный state', () => {
     const s = state({ current: 'q' });
     const copy = structuredClone(s);
