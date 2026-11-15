@@ -36,8 +36,8 @@
 | R2.4 | done | 2026-11-15 | #19 |
 | R2.5 | done | 2026-11-15 | #20 |
 | R2.6 | done | 2026-11-15 | #21 |
-| R2.7 | review | 2026-11-15 | #22 |
-| R2.8 | todo | | |
+| R2.7 | done | 2026-11-15 | #22 |
+| R2.8 | review | 2026-11-15 | #24 |
 | R2.9 | todo | | |
 | R3.1 | todo | | |
 | R3.2 | todo | | |
@@ -332,13 +332,13 @@
   - `/dev/board/` подсвечивает и подзоны.
 - **Проверка:** `npm test`; `/dev/board/` на 360 px.
 
-### - [ ] R2.8 Ссылки `zone:` в Markdown
+### - [x] R2.8 Ссылки `zone:` в Markdown
 - **Ветка:** `feat/r2.8-zone-links` · `content`, `infra` · M2.
 - **Цель:** `[текст](zone:<id>)` в телах Markdown превращается в ссылку на `/board/#<id>`, битая ссылка ломает сборку (SPEC 11.5.2).
 - **Файлы:**
-  - `src/lib/remark-zone-links.ts`, `astro.config.mjs` (`markdown.remarkPlugins`);
+  - `src/lib/zone-links.ts` (mdast-плагин Sätteri, а не remark — см. SPEC 11.5.2), `astro.config.mjs` (`markdown.processor`);
   - `scripts/validate-content.ts` (инвариант 7г);
-  - `tests/unit/remark-zone-links.test.ts`, фикстура `tests/fixtures/bad/zone-link.md`;
+  - `tests/unit/zone-links.test.ts`, фикстура `tests/fixtures/bad/zone-link/`;
   - CONTRIBUTING: синтаксис `zone:`.
 - **Ссылки в реальном контенте** появляются в R2.9 вместе со страницей `/board/`, иначе `links.spec` упадёт на 404.
 - **Готово, когда:**
