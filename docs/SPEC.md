@@ -1226,7 +1226,7 @@ pdftoppm -r 110 -png -f 35 -l 36 docs/Vedmak_Stary_Mir__pravila_RUS.pdf docs/_re
 - Поле `usedIn` у компонентов не меняется.
 
 #### 11.5.2 Ссылки `zone:` в тексте
-- **Синтаксис** — обычная Markdown-ссылка: `[ряд карт](zone:z-action-row)`, `[ячейка −1](zone:z-action-row-minus1)`.
+- **Синтаксис** — обычная inline Markdown-ссылка: `[ряд карт](zone:z-action-row)`, `[ячейка −1](zone:z-action-row-minus1)`. Reference-стиль (`[r]: zone:…`) запрещён: к такой ссылке не добавить `class` и `data-zone`, поэтому и плагин, и валидатор считают его ошибкой.
 - **Где работает:** только тела Markdown-файлов — `rules`, `setup`, `not-my-turn`, `faq`. Строки в YAML (`turn/*.yaml`, `reminders`) остаются простым текстом. Узлы хода показывают место на поле через структурное поле `zones`, так же как узлы подготовки.
 - **Рендер:** mdast-плагин `zoneLinksPlugin` из `src/lib/zone-links.ts`. Он подключён в `astro.config.mjs` через `markdown.processor: satteri({ mdastPlugins: […] })`. В Astro 7 Markdown по умолчанию обрабатывает Sätteri, а `markdown.remarkPlugins` устарели и требуют отдельного unified-процессора (решение R2.8). Плагин:
   - заменяет `zone:<id>` на `<base>/board/#<id>`;

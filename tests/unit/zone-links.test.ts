@@ -3,7 +3,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { markdownToHtml } from 'satteri';
 import { describe, expect, it } from 'vitest';
 import { validateContent } from '../../scripts/validate-content';
-import { findZoneLinks, zoneLinksPlugin } from '../../src/lib/zone-links';
+import { findZoneLinks, hasZoneReference, zoneLinksPlugin } from '../../src/lib/zone-links';
 
 const root = (p: string) => fileURLToPath(new URL(`../../${p}`, import.meta.url));
 const BASE = '/witcher-board-game-helper';
@@ -58,6 +58,10 @@ describe('zoneLinksPlugin', () => {
     );
   });
 
+  it('ссылка zone: в reference-стиле — ошибка (атрибуты к ней не добавить)', () => {
+    expect(() => render('[ряд][r]\n\n[r]: zone:z-row')).toThrow(/reference-стиле/);
+  });
+
   it('пустой id — тоже ошибка', () => {
     expect(() => render('[ряд](zone:)')).toThrow(/zone:/);
   });
@@ -77,8 +81,20 @@ describe('findZoneLinks', () => {
     expect(findZoneLinks('[ряд](zone:)')).toEqual(['']);
   });
 
+  it('id в угловых скобках: [x](<zone:id>)', () => {
+    expect(findZoneLinks('[ряд](<zone:z-row>)')).toEqual(['z-row']);
+  });
+
   it('без ссылок — пустой массив', () => {
     expect(findZoneLinks('просто текст, zone:z-row без скобок')).toEqual([]);
+  });
+});
+
+describe('hasZoneReference', () => {
+  it('находит определение [r]: zone:…, inline-ссылки не считает', () => {
+    expect(hasZoneReference('[ряд][r]\n\n[r]: zone:z-row')).toBe(true);
+    expect(hasZoneReference('  [r]: <zone:z-row> "t"')).toBe(true);
+    expect(hasZoneReference('[ряд](zone:z-row)')).toBe(false);
   });
 });
 
@@ -102,5 +118,17 @@ describe('astro.config.mjs', () => {
     expect(processor?.name).toBe('satteri');
     expect(processor?.options.mdastPlugins.map((p) => p.name)).toContain('zone-links');
     expect(config.base).toBe(BASE);
+  });
+});
+
+describe('validate-content: zone: в reference-стиле', () => {
+  it('одна ошибка с файлом', () => {
+    const { errors } = validateContent({
+      contentDir: root('tests/fixtures/bad/zone-reference'),
+      svgDir: root('src/assets/svg'),
+    });
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain('rules/zone-reference.md');
+    expect(errors[0]).toContain('reference-стиле');
   });
 });

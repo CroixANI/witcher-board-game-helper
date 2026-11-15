@@ -5,7 +5,7 @@
  * 1. Каждый файл коллекции проходит Zod-схему; ссылки на rules/components — на существующие id.
  * 2. Граф-инварианты 1–7 (src/lib/graph-checks.ts) для графов setup и turn.
  * 3. `components[].usedIn` ссылаются на существующие узлы.
- * 4. Ссылки `zone:` в телах Markdown ведут на существующие зоны (7г).
+ * 4. Ссылки `zone:` в телах Markdown ведут на существующие зоны (7г), только inline.
  * 5. Зоны поля (7б, 7в): дерево `board-zones.ts`; если коллекция `zones` не пуста — файлы и зоны
  *    совпадают 1:1 и каждый компонент лежит хотя бы в одной зоне. Пустую коллекцию допускают
  *    фикстуры; у реального контента её непустоту проверяет content.test.ts.
@@ -36,7 +36,7 @@ import {
   checkZoneTree,
   type GraphNode,
 } from '../src/lib/graph-checks';
-import { findZoneLinks } from '../src/lib/zone-links';
+import { findZoneLinks, hasZoneReference, ZONE_REFERENCE_ERROR } from '../src/lib/zone-links';
 
 export { COLLECTIONS };
 
@@ -198,6 +198,7 @@ export function validateContent({
     for (const id of findZoneLinks(body)) {
       if (!zoneIds.has(id)) errors.push(`${file}: ссылка zone:${id}: неизвестная зона`);
     }
+    if (hasZoneReference(body)) errors.push(`${file}: ${ZONE_REFERENCE_ERROR}`);
   }
 
   if (raw.zones.length) {

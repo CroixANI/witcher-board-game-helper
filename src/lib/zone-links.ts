@@ -14,10 +14,22 @@ import { joinBase } from './url';
 
 const PREFIX = 'zone:';
 
-/** `](zone:<id>` — id до пробела (title ссылки) или `)`. */
-const ZONE_LINK = /\]\(zone:([^\s)]*)/g;
+/** `](zone:<id>` или `](<zone:<id>>` — id до пробела (title ссылки), `)` или `>`. */
+const ZONE_LINK = /\]\(<?zone:([^\s)>]*)/g;
 
-/** id из всех ссылок `zone:` в тексте Markdown, по порядку, с повторами. */
+/** Определение ссылки `[r]: zone:…` (reference-стиль). */
+const ZONE_REFERENCE = /^ {0,3}\[[^\]]+\]:\s*<?zone:/m;
+
+/** Ссылки `zone:` только inline: к reference-ссылке плагин не может добавить class и data-zone. */
+export const ZONE_REFERENCE_ERROR =
+  'ссылка zone: в reference-стиле не поддерживается, пишите [текст](zone:<id>)';
+
+/** Есть ли в тексте определение ссылки `[r]: zone:…`. */
+export function hasZoneReference(markdown: string): boolean {
+  return ZONE_REFERENCE.test(markdown);
+}
+
+/** id из всех inline-ссылок `zone:` в тексте Markdown, по порядку, с повторами. */
 export function findZoneLinks(markdown: string): string[] {
   return [...markdown.matchAll(ZONE_LINK)].map((m) => m[1] ?? '');
 }
@@ -36,6 +48,11 @@ function where(fileURL: URL | undefined): string {
 export function zoneLinksPlugin({ base, zoneIds = ZONE_IDS }: ZoneLinksOptions) {
   return {
     name: 'zone-links',
+    definition(node, ctx) {
+      if (node.url.startsWith(PREFIX)) {
+        throw new Error(`${where(ctx.fileURL)}: ${ZONE_REFERENCE_ERROR}`);
+      }
+    },
     link(node, ctx) {
       if (!node.url.startsWith(PREFIX)) return;
       const id = node.url.slice(PREFIX.length);
