@@ -142,7 +142,7 @@ function unskippable(node: GraphNode): boolean {
 
 /** Возможные переходы из узла при `p` игроках (как в движке, `resetTo` — не переход). */
 function edgesAt(node: GraphNode, p: Players): string[] {
-  const skip = node.next !== undefined ? nextTargets(node, p) : [...new Set(answerTargets(node))];
+  const v = visibility(node, p);
   const shown =
     node.type === 'end'
       ? []
@@ -151,10 +151,13 @@ function edgesAt(node: GraphNode, p: Players): string[] {
           ...(node.options ?? []).filter((o) => playersOk(o.showIf, p)).map((o) => o.next),
           ...[node.yes?.next, node.no?.next].filter((t): t is string => t !== undefined),
         ];
-  const v = visibility(node, p);
   if (v === 'shown') return shown;
-  const skipEdges = unskippable(node) ? [] : skip;
-  return v === 'hidden' ? skipEdges : [...shown, ...skipEdges];
+  const skip = unskippable(node)
+    ? []
+    : node.next !== undefined
+      ? nextTargets(node, p)
+      : answerTargets(node);
+  return v === 'hidden' ? skip : [...shown, ...skip];
 }
 
 function reach(roots: readonly string[], edges: (id: string) => readonly string[]): Set<string> {
