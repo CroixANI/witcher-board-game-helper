@@ -5,7 +5,7 @@
 export function formatPages(page: number | readonly number[]): string {
   const pages = [...new Set([page].flat())].sort((a, b) => a - b);
   const parts: string[] = [];
-  for (let i = 0; i < pages.length; ) {
+  for (let i = 0; i < pages.length;) {
     let j = i;
     while (j + 1 < pages.length && pages[j + 1] === pages[j]! + 1) j++;
     // Две соседние страницы — через запятую («10, 11»), три и больше — диапазоном.
@@ -39,7 +39,11 @@ export function componentCategory(kind: ComponentKind): ComponentCategory {
 }
 
 /** «90», «10 в каждом наборе игрока», «10 — 2 набора по 5». */
-export function formatCount(c: { count: number; perPlayer?: boolean; countNote?: string }): string {
+export function formatCount(c: {
+  count: number;
+  perPlayer?: boolean | undefined;
+  countNote?: string | undefined;
+}): string {
   const base = c.perPlayer ? `${c.count} в каждом наборе игрока` : String(c.count);
   return c.countNote ? `${base} — ${c.countNote}` : base;
 }

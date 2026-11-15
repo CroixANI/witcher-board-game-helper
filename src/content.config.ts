@@ -11,25 +11,27 @@ import {
 
 export { Condition, Expansion, Id, Page, Pages, Phase, PlayerCount } from './lib/content-schemas';
 
-const schemas = createSchemas(reference);
+const schemas = createSchemas({ rules: reference('rules'), components: reference('components') });
 
-function collection<K extends CollectionName>(name: K) {
+/** Glob-loader по раскладке коллекции. Коллекции объявлены явно (без обобщённого хелпера),
+ * чтобы Astro вывел конкретный тип `data` для каждой коллекции. */
+function loader(name: CollectionName) {
   const c: CollectionLayout = COLLECTIONS[name];
   const pattern = [`**/*${c.ext}`, ...(c.exclude ?? []).map((f) => `!${f}`)];
-  return defineCollection({
-    loader: glob({ pattern, base: `./src/content/${c.dir}` }),
-    schema: schemas[name],
-  });
+  return glob({ pattern, base: `./src/content/${c.dir}` });
 }
 
 export const collections = {
-  rules: collection('rules'),
-  components: collection('components'),
-  schools: collection('schools'),
-  locationActions: collection('locationActions'),
-  setup: collection('setup'),
-  turn: collection('turn'),
-  reminders: collection('reminders'),
-  notMyTurn: collection('notMyTurn'),
-  faq: collection('faq'),
+  rules: defineCollection({ loader: loader('rules'), schema: schemas.rules }),
+  components: defineCollection({ loader: loader('components'), schema: schemas.components }),
+  schools: defineCollection({ loader: loader('schools'), schema: schemas.schools }),
+  locationActions: defineCollection({
+    loader: loader('locationActions'),
+    schema: schemas.locationActions,
+  }),
+  setup: defineCollection({ loader: loader('setup'), schema: schemas.setup }),
+  turn: defineCollection({ loader: loader('turn'), schema: schemas.turn }),
+  reminders: defineCollection({ loader: loader('reminders'), schema: schemas.reminders }),
+  notMyTurn: defineCollection({ loader: loader('notMyTurn'), schema: schemas.notMyTurn }),
+  faq: defineCollection({ loader: loader('faq'), schema: schemas.faq }),
 };

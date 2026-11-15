@@ -3,7 +3,7 @@
  *
  * Схемы не зависят от `astro:content`, чтобы ими пользовались и Astro (`src/content.config.ts`),
  * и `scripts/validate-content.ts` (tsx / Vitest). Ссылки на другие коллекции передаются
- * фабрикой `ref`: Astro подставляет `reference()`, валидатор — проверку по реальным id.
+ * объектом `ref` ({ rules, components }): Astro подставляет `reference()`, валидатор — проверку по реальным id.
  */
 import { z } from 'astro/zod';
 
@@ -46,7 +46,11 @@ export type CollectionName = keyof typeof COLLECTIONS;
 
 const SvgFile = z.string().regex(/^[a-z0-9-]+\.svg$/);
 
-export function createSchemas<R extends z.ZodType>(ref: (collection: RefCollection) => R) {
+/** Схемы ссылок по коллекциям: отдельный тип на каждую, чтобы `data.rules` и `data.confusedWith`
+ * не сливались в объединение `rules | components`. */
+export type RefSchemas<RR extends z.ZodType, RC extends z.ZodType> = { rules: RR; components: RC };
+
+export function createSchemas<RR extends z.ZodType, RC extends z.ZodType>(ref: RefSchemas<RR, RC>) {
   // ── карточки правил ──────────────────────────────────────
   const rules = z
     .object({
@@ -65,7 +69,7 @@ export function createSchemas<R extends z.ZodType>(ref: (collection: RefCollecti
       ]),
       summary: z.string().max(200), // 1 строка для свёрнутого состояния
       important: z.boolean().default(false), // красный блок «Важно» в книге
-      related: z.array(ref('rules')).default([]),
+      related: z.array(ref.rules).default([]),
       expansion: Expansion,
     })
     .strict();
@@ -80,9 +84,9 @@ export function createSchemas<R extends z.ZodType>(ref: (collection: RefCollecti
       perPlayer: z.boolean().default(false), // «в каждом наборе игрока»
       icon: SvgFile, // файл в src/assets/svg/components/
       howToTell: z.string(), // «как отличить»
-      confusedWith: z.array(ref('components')).default([]),
+      confusedWith: z.array(ref.components).default([]),
       usedIn: z.array(Id).default([]), // id узлов setup/turn — проверяет validate-content
-      rules: z.array(ref('rules')).default([]),
+      rules: z.array(ref.rules).default([]),
       rulesPage: Pages,
       expansion: Expansion,
     })
@@ -108,7 +112,7 @@ export function createSchemas<R extends z.ZodType>(ref: (collection: RefCollecti
       iconHint: z.string(), // как выглядит символ на поле (словами)
       icon: SvgFile, // файл в src/assets/svg/actions/
       steps: z.array(z.string()).nonempty(),
-      rule: ref('rules'),
+      rule: ref.rules,
       page: Pages,
     })
     .strict();
@@ -139,7 +143,7 @@ export function createSchemas<R extends z.ZodType>(ref: (collection: RefCollecti
     .object({
       text: z.string(),
       showIf: Condition.optional(),
-      rule: ref('rules').optional(),
+      rule: ref.rules.optional(),
     })
     .strict();
   const NodeBase = {
@@ -147,8 +151,8 @@ export function createSchemas<R extends z.ZodType>(ref: (collection: RefCollecti
     title: z.string(),
     phase: Phase,
     pages: Pages, // ОБЯЗАТЕЛЬНО: стр. правил
-    rules: z.array(ref('rules')).default([]),
-    components: z.array(ref('components')).default([]),
+    rules: z.array(ref.rules).default([]),
+    components: z.array(ref.components).default([]),
     note: z.string().optional(), // короткий подзаголовок
     warning: z.string().optional(), // «⚠ Не перепутать»
     showIf: Condition.optional(), // узел пропускается, если false
@@ -227,7 +231,7 @@ export function createSchemas<R extends z.ZodType>(ref: (collection: RefCollecti
     .object({
       text: z.string(),
       order: z.number(),
-      rule: ref('rules'),
+      rule: ref.rules,
       page: Pages,
       phases: z.array(Phase).default(['general']),
     })
@@ -240,7 +244,7 @@ export function createSchemas<R extends z.ZodType>(ref: (collection: RefCollecti
       order: z.number(),
       trigger: z.string(),
       showIf: Condition.optional(),
-      rules: z.array(ref('rules')).nonempty(),
+      rules: z.array(ref.rules).nonempty(),
       pages: Pages,
     })
     .strict();
@@ -255,7 +259,7 @@ export function createSchemas<R extends z.ZodType>(ref: (collection: RefCollecti
       page: Page.optional(),
       sourceRef: z.string().optional(), // «Офиц. FAQ, Базовая игра, п. 8»
       sourceUrl: z.url().optional(),
-      rules: z.array(ref('rules')).default([]),
+      rules: z.array(ref.rules).default([]),
       updated: z.coerce.date(),
       expansion: Expansion,
     })

@@ -1,0 +1,114 @@
+---
+// Карточка компонента справочника (SPEC 9.2): иконка, количество, «как отличить», «не путать с», правила.
+import { getEntries, type CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import { formatCount, formatPages } from '../lib/reference';
+import { url } from '../lib/url';
+
+interface Props {
+  entry: CollectionEntry<'components'>;
+}
+
+const { entry } = Astro.props;
+const { name, icon, howToTell, rulesPage } = entry.data;
+const confused = await getEntries(entry.data.confusedWith);
+const rules = await getEntries(entry.data.rules);
+const headingId = `${entry.id}-title`;
+---
+
+<article class="component" id={entry.id} aria-labelledby={headingId}>
+  <div class="head">
+    <Icon name={`components/${icon.slice(0, -'.svg'.length)}`} size="4rem" decorative />
+    <div>
+      <h3 id={headingId}>{name}</h3>
+      <p class="count">Количество: {formatCount(entry.data)}</p>
+    </div>
+  </div>
+  <p>
+    <strong>Как отличить.</strong> {howToTell}
+  </p>
+  {confused.length > 0 && (
+    <p class="confused">
+      <strong>⚠ Не путать с:</strong>{' '}
+      {confused.map((c, i) => (
+        <>
+          {i > 0 && ', '}
+          <a href={url(`reference#${c.id}`)}>{c.data.name}</a>
+        </>
+      ))}
+    </p>
+  )}
+  <p class="rules">
+    {rules.length > 0 && (
+      <>
+        Правила:{' '}
+        {rules.map((r, i) => (
+          <>
+            {i > 0 && ', '}
+            <a href={url(`rules/${r.id}`)}>{r.data.title}</a>
+          </>
+        ))}
+        {' · '}
+      </>
+    )}
+    <span class="pages">{formatPages(rulesPage)}</span>
+  </p>
+</article>
+
+<style>
+  .component {
+    height: 100%;
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    scroll-margin-top: var(--space-4);
+  }
+
+  .component:target {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .head {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    margin-bottom: var(--space-3);
+  }
+
+  h3 {
+    margin: 0 0 var(--space-1);
+    font-size: 1.25rem;
+  }
+
+  .count,
+  .rules {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .count {
+    margin: 0;
+  }
+
+  .confused {
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface-raised);
+    border-left: 4px solid var(--color-important);
+    border-radius: 4px;
+  }
+
+  .rules {
+    margin: 0;
+  }
+
+  .pages {
+    white-space: nowrap;
+  }
+
+  a {
+    display: inline-block;
+    padding-block: var(--space-1);
+  }
+</style>

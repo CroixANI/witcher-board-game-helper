@@ -1,9 +1,239 @@
 ---
+// Справочник (SPEC 4.1, 9.2–9.3): компоненты с фильтром «Карты / Жетоны / Прочее» (radio + CSS :has(),
+// работает без JS), специализации школ, действия локаций.
+import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ComponentCard from '../../components/ComponentCard.astro';
+import Icon from '../../components/Icon.astro';
+import { COMPONENT_CATEGORIES, componentCategory, formatPages } from '../../lib/reference';
+import { url } from '../../lib/url';
+
+const categoryOrder: string[] = COMPONENT_CATEGORIES.map((c) => c.id);
+const components = (await getCollection('components'))
+  .map((entry) => ({ entry, category: componentCategory(entry.data.kind) }))
+  .sort(
+    (a, b) =>
+      categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category) ||
+      a.entry.data.name.localeCompare(b.entry.data.name, 'ru'),
+  );
+
+const filters = [{ id: 'all', label: 'Все' }, ...COMPONENT_CATEGORIES];
+
+const schools = (await getCollection('schools')).sort((a, b) =>
+  a.data.name.localeCompare(b.data.name, 'ru'),
+);
+
+const locationActions = await Promise.all(
+  (await getCollection('locationActions'))
+    .sort((a, b) => a.data.title.localeCompare(b.data.title, 'ru'))
+    .map(async (entry) => ({ entry, rule: await getEntry(entry.data.rule) })),
+);
 ---
 
-<BaseLayout title="Справочник">
+<BaseLayout
+  title="Справочник"
+  description="Компоненты игры, специализации школ и действия локаций."
+>
   <h1>Справочник</h1>
-  <p>Компоненты игры, специализации школ и действия локаций.</p>
-  <p class="stub">Раздел в разработке (ROADMAP, задача R1.6).</p>
+  <p>
+    Как выглядят и чем отличаются компоненты игры, специализации школ и действия локаций. Все
+    карточки правил — в разделе <a href={url('rules')}>«Правила»</a>.
+  </p>
+
+  <nav class="toc" aria-label="Разделы справочника">
+    <a href="#components">Компоненты</a>
+    <a href="#schools">Специализации школ</a>
+    <a href="#location-actions">Действия локаций</a>
+  </nav>
+
+  <section id="components" class="components" aria-labelledby="components-title">
+    <h2 id="components-title">Компоненты</h2>
+    <fieldset class="filter">
+      <legend>Показать</legend>
+      {filters.map((f) => (
+        <label>
+          <input
+            class="visually-hidden"
+            type="radio"
+            name="component-filter"
+            value={f.id}
+            checked={f.id === 'all'}
+          />
+          <span>{f.label}</span>
+        </label>
+      ))}
+    </fieldset>
+    <ul class="gallery">
+      {components.map(({ entry, category }) => (
+        <li data-category={category}>
+          <ComponentCard entry={entry} />
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section id="schools" aria-labelledby="schools-title">
+    <h2 id="schools-title">Специализации школ</h2>
+    <p>
+      Значение эффекта зависит от уровня специализации на планшете: применяйте только эффект
+      текущего уровня.
+    </p>
+    <ul class="cards">
+      {schools.map((s) => (
+        <li class="card" id={`school-${s.id}`} style={`--school-color: ${s.data.color}`}>
+          <h3>
+            <Icon name={`icons/school-${s.id}`} size="1.5em" decorative />
+            {s.data.name}: {s.data.specialization}
+          </h3>
+          <p>
+            <strong>Когда.</strong> {s.data.timing}
+          </p>
+          <p>
+            <strong>Эффект.</strong> {s.data.effect}
+          </p>
+          <p class="pages">{formatPages(s.data.page)}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section id="location-actions" aria-labelledby="location-actions-title">
+    <h2 id="location-actions-title">Действия локаций</h2>
+    <p>Действие локации доступно в фазе I после перемещения, один раз за ход в каждой локации.</p>
+    <ul class="cards">
+      {locationActions.map(({ entry, rule }) => (
+        <li class="card" id={`action-${entry.id}`}>
+          <h3>
+            <Icon
+              name={`actions/${entry.data.icon.slice(0, -'.svg'.length)}`}
+              size="2em"
+              decorative
+            />
+            {entry.data.title}
+          </h3>
+          <p class="hint">На поле: {entry.data.iconHint}</p>
+          <ol>
+            {entry.data.steps.map((step) => (
+              <li>{step}</li>
+            ))}
+          </ol>
+          <p class="pages">
+            <a href={url(`rules/${rule.id}`)}>{rule.data.title}</a> · {formatPages(entry.data.page)}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </section>
 </BaseLayout>
+
+<style>
+  section {
+    margin-top: var(--space-6);
+    scroll-margin-top: var(--space-4);
+  }
+
+  .toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .toc a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-4);
+    padding: 0;
+    border: 0;
+  }
+
+  .filter legend {
+    margin-bottom: var(--space-2);
+    padding: 0;
+    color: var(--color-text-muted);
+  }
+
+  .filter label span {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+    padding: 0 var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+
+  .filter input:checked + span {
+    color: var(--color-on-accent);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .filter input:focus-visible + span {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .gallery,
+  .cards {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Фильтр без JS: выбранный radio скрывает компоненты других категорий. */
+  .components:has(input[value='cards']:checked) .gallery > li:not([data-category='cards']),
+  .components:has(input[value='tokens']:checked) .gallery > li:not([data-category='tokens']),
+  .components:has(input[value='other']:checked) .gallery > li:not([data-category='other']) {
+    display: none;
+  }
+
+  .card {
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    scroll-margin-top: var(--space-4);
+  }
+
+  .card[style] {
+    border-left: 4px solid var(--school-color);
+  }
+
+  .card h3 {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    font-size: 1.25rem;
+  }
+
+  .card ol {
+    margin: 0 0 var(--space-3);
+    padding-left: var(--space-5);
+  }
+
+  .hint,
+  .pages {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .pages {
+    margin: 0;
+  }
+
+  .pages a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+</style>

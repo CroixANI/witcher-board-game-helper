@@ -50,7 +50,11 @@ describe('formatCount', () => {
 });
 
 describe('groupRules', () => {
-  const rule = (id: string, group: (typeof RULE_GROUPS)[number]['id'], page: number | number[]) => ({
+  const rule = (
+    id: string,
+    group: (typeof RULE_GROUPS)[number]['id'],
+    page: number | number[],
+  ) => ({
     id,
     data: { group, title: id, page },
   });
