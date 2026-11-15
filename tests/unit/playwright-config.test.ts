@@ -1,10 +1,10 @@
 // Конфиг E2E: в облачной сессии — предустановленный Chromium без WebKit (scripts/session/e2e.sh).
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-async function load(executable?: string) {
+/** Свежий импорт конфига при заданном `PW_CHROMIUM_EXECUTABLE` (пустая строка = не задан). */
+async function load(executable = '') {
   vi.resetModules();
-  vi.stubEnv('PW_CHROMIUM_EXECUTABLE', executable ?? '');
-  if (executable === undefined) delete process.env.PW_CHROMIUM_EXECUTABLE;
+  vi.stubEnv('PW_CHROMIUM_EXECUTABLE', executable);
   return (await import('../../playwright.config')).default;
 }
 
