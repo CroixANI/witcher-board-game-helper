@@ -1,12 +1,195 @@
-# Временная заглушка (R3.2): граф хода должен быть связным. Фазу II заменит R3.3, битву — R4.1–R4.2.
+# Фаза II: битва, медитация или исследование (SPEC 8.3). Сверено с книгой правил, стр. 15–18, 26–29.
+# Битва пока заглушка b-target (R3.3): её заменят R4.1–R4.2 (подграфы battle-monster / battle-witcher).
 subgraph: phase2
 entry: p2-choose
 nodes:
   - id: p2-choose
-    type: info
-    title: 'Фаза II — в разработке'
+    type: choice
+    title: 'Фаза II: одно действие'
     phase: phase2
     pages: 15
     rules: [phase2-overview]
-    body: 'Подсказки для битвы, медитации и исследования появятся в следующих версиях. Пока выполните одно из этих действий по правилам ниже и переходите к фазе III.'
+    warning: 'Выбрав действие, другие действия в этот ход уже не выполнить.'
+    options:
+      - label: 'Битва'
+        hint: 'С монстром или ведьмаком в вашей локации'
+        next: b-target
+      - label: 'Медитация'
+        hint: 'Трофей за навык 5-го уровня'
+        next: p2-med-check
+      - label: 'Исследование'
+        hint: 'Города или его окрестностей — доступно в любой локации'
+        next: p2-explore-where
+
+  # ── Битва: временная заглушка до R4.1–R4.2 ───────────────
+  - id: b-target
+    type: choice
+    title: 'Битва — подсказки в разработке'
+    phase: battle
+    pages: [15, 20]
+    rules: [battle-targets, battle-end]
+    note: 'Проведите битву по правилам (стр. 20–28) и выберите, чем она закончилась.'
+    options:
+      - label: 'Битва окончена, я не проиграл'
+        hint: 'Победа над монстром или ведьмаком, монстр прогнан или вы защищались'
+        next: p3-discard
+        set: { afterBattle: true }
+      - label: 'Я проиграл битву'
+        hint: 'Монстр остался в локации или напавший ведьмак проиграл'
+        next: p3-discard
+        set: { afterBattle: true, lostBattle: true }
+      - label: 'Победа в игре'
+        hint: 'Трофей за битву поднял жетон на верхнее деление шкалы'
+        next: game-won
+      - label: 'Передумал — другое действие'
+        hint: 'Битва ещё не началась'
+        next: p2-choose
+
+  # ── Медитация ─────────────────────────────────────────────
+  - id: p2-med-check
+    type: question
+    title: 'Медитация'
+    phase: phase2
+    pages: 15
+    rules: [meditation]
+    components: [skill-trophy]
+    question: 'Выполнены все три условия? ① Один из ваших навыков на 5-м уровне. ② В колоде трофеев за навыки есть трофей за этот навык. ③ Такого трофея у вас ещё нет.'
+    yes:
+      label: 'Да, медитирую'
+      next: p2-med-last-q
+    no:
+      label: 'Нет — выбрать другое действие'
+      next: p2-choose
+
+  - id: p2-med-last-q
+    type: question
+    title: 'Последний трофей?'
+    phase: phase2
+    pages: [15, 29]
+    rules: [last-trophy-meditation]
+    question: 'После этого трофея у вас хватит трофеев для победы?'
+    yes:
+      label: 'Да, он был бы победным'
+      next: p2-med-last
+    no:
+      label: 'Нет'
+      next: p2-med-do
+
+  - id: p2-med-last
+    type: step
+    title: 'Трофей без продвижения'
+    phase: phase2
+    pages: [15, 29]
+    rules: [last-trophy-meditation, game-victory]
+    components: [skill-trophy]
+    warning: 'Победить медитацией нельзя: победный трофей добывается только в битве.'
+    zones: [z-skill-trophies]
+    checklist:
+      - text: 'Возьмите трофей за навык и положите его лицом вверх под нижний край своего планшета — его эффект работает'
+      - text: 'Жетон трофеев не двигайте и истощение не испытывайте'
+      - text: 'Игра продолжается'
+    next: p3-discard
+
+  - id: p2-med-do
+    type: step
+    title: 'Получите трофей за навык'
+    phase: phase2
+    pages: [15, 29]
+    rules: [meditation, trophies]
+    components: [skill-trophy, trophy-marker]
+    note: 'За одну медитацию — трофей только за один навык.'
+    zones: [z-skill-trophies, z-trophy-track]
+    checklist:
+      - text: 'Зачитайте трофей вслух и положите его лицом вверх под нижний край своего планшета: эффект должен быть виден всем'
+      - text: 'Поднимите жетон трофеев на 1 деление шкалы'
+    next: p2-med-exhaust
+
+  - id: p2-med-exhaust
+    type: step
+    title: 'Истощение'
+    phase: phase2
+    pages: 29
+    rules: [exhaustion, remove-from-game]
+    components: [action-card]
+    zones: [z-trophy-track]
+    checklist:
+      - text: 'Число истощения — значение у деления шкалы, на которое вы только что поднялись'
+      - text: 'Просмотрите руку, колоду и сброс и уберите из игры (в коробку) ровно столько карт действий'
+      - text: 'Перемешайте все свои карты действий в новую колоду'
+    next: p3-discard
+
+  # ── Исследование ──────────────────────────────────────────
+  - id: p2-explore-where
+    type: choice
+    title: 'Что исследуете?'
+    phase: phase2
+    pages: 16
+    rules: [exploration]
+    note: 'Исследовать можно в любой локации без условий.'
+    options:
+      - label: 'Город'
+        hint: 'Улицы и жители — колода с серой рубашкой'
+        next: p2-explore-read
+      - label: 'Окрестности'
+        hint: 'Земли, деревни и звери вокруг — колода с зелёной рубашкой'
+        next: p2-explore-read
+
+  - id: p2-explore-read
+    type: step
+    title: 'Карту читает игрок справа'
+    phase: phase2
+    pages: 16
+    rules: [exploration]
+    components: [exploration-city, exploration-wilds]
+    warning: 'Последствия невыбранного варианта не читайте и не обсуждайте.'
+    zones: [z-exploration-city, z-exploration-wilds]
+    checklist:
+      - text: 'Игрок справа берёт верхнюю карту выбранной колоды'
+      - text: 'Он читает вслух вступление и два варианта, но не последствия'
+      - text: 'Выберите вариант. Если у варианта есть стоимость, выбрать его можно, только если вы оплатите её полностью'
+      - text: 'Игрок справа читает последствия только выбранного варианта'
+    next: p2-explore-result
+
+  - id: p2-explore-result
+    type: choice
+    title: 'Что в последствиях?'
+    phase: phase2
+    pages: 16
+    rules: [exploration, quests]
+    options:
+      - label: 'Немедленный эффект'
+        hint: 'В тексте нет слова «Задание»'
+        next: p2-explore-effect
+      - label: 'Задание'
+        hint: 'В тексте есть слово «Задание»'
+        next: p2-explore-quest
+
+  - id: p2-explore-effect
+    type: step
+    title: 'Выполните эффект'
+    phase: phase2
+    pages: [16, 18]
+    rules: [exploration]
+    components: [exploration-city, exploration-wilds]
+    checklist:
+      - text: 'Эффект действует только на вас, если на карте не сказано иное'
+      - text: 'Не можете получить или потерять всё — выполните, сколько получится'
+      - text: 'Карту уберите в коробку. Совет книги: прочитанные за партию карты держите отдельно, чтобы в следующих партиях встречались новые'
+    next: p3-discard
+
+  - id: p2-explore-quest
+    type: step
+    title: 'Новое задание'
+    phase: phase2
+    pages: [16, 17]
+    rules: [quests]
+    components: [exploration-city, exploration-wilds, location-token]
+    note: 'Заданий может быть сколько угодно. Выполнять их не обязательно, штрафов нет.'
+    zones: [z-location-stacks]
+    checklist:
+      - text: 'Положите карту лицом вверх рядом со своим планшетом'
+      - text: 'Указана конкретная локация — выполнять задание нужно в ней'
+      - text: 'Указан тип местности — положите на карту случайный жетон локации этого типа лицом вверх: выполнять нужно там'
+      - text: 'Жетонов этого типа нет — возьмите жетон другого типа. Нет никаких жетонов — задание не начинается, карту сбросьте'
+      - text: 'Выполнить задание можно в фазе I одного из следующих ходов'
     next: p3-discard
