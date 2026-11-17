@@ -1,0 +1,5 @@
+text: '«Убрать из игры» — это в коробку до конца партии, а не в сброс.'
+order: 90
+rule: remove-from-game
+page: [10, 29]
+phases: [general]

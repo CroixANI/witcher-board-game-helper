@@ -1,0 +1,5 @@
+text: 'Жетонов следа — не больше одного на каждый тип местности.'
+order: 100
+rule: trail-tokens
+page: 11
+phases: [general]

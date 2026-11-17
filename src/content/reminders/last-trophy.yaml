@@ -1,0 +1,5 @@
+text: 'Последний, победный трофей медитацией не получить — только в битве.'
+order: 110
+rule: last-trophy-meditation
+page: [15, 29]
+phases: [phase2]

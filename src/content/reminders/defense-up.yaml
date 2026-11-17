@@ -1,0 +1,5 @@
+text: 'Навык защиты вырос — тут же поднимите щит на 1.'
+order: 30
+rule: defense-shield
+page: 10
+phases: [phase1, phase2, battle]

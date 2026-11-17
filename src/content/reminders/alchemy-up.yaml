@@ -1,0 +1,5 @@
+text: 'Навык алхимии вырос — тут же возьмите 1 эликсир.'
+order: 40
+rule: alchemy-elixir
+page: 10
+phases: [phase1, phase2, battle]
