@@ -502,3 +502,61 @@ describe('<WizardIsland> графа хода: школа и параметры �
     expect(screen.queryByRole('button', { name: /Параметры партии/ })).toBeNull();
   });
 });
+
+describe('<WizardIsland>: иконки вариантов и пунктов чек-листа (R3.2)', () => {
+  const nodes: ViewNode[] = [
+    {
+      id: 'move',
+      type: 'step',
+      title: 'Перемещение',
+      phase: 'phase1',
+      pages: 12,
+      checklist: [
+        { text: '1 карта местности', iconSvg: '<svg data-icon="move-terrain"></svg>' },
+        { text: '2 любые карты' },
+      ],
+      next: 'where',
+    },
+    {
+      id: 'where',
+      type: 'choice',
+      title: 'Какое действие?',
+      phase: 'phase1',
+      pages: 35,
+      options: [
+        { label: 'Эликсир', iconSvg: '<svg data-icon="loc-elixir"></svg>', next: 'end' },
+        { label: 'Без иконки', next: 'end' },
+      ],
+    },
+    {
+      id: 'end',
+      type: 'end',
+      title: 'Конец',
+      phase: 'phase3',
+      pages: 12,
+      outcome: 'turn-complete',
+    },
+  ];
+  const data: WizardData = {
+    graph: 'turn',
+    title: 'Ход',
+    entry: 'move',
+    nodes,
+    rules: {},
+    components: {},
+    schools: {},
+  };
+
+  it('иконка декоративная, подпись — текст пункта или варианта', () => {
+    const { container } = render(<WizardIsland data={data} storage={memoryStorage()} />);
+    const terrain = container.querySelector('[data-icon="move-terrain"]');
+    expect(terrain?.closest('.wizard-icon')?.getAttribute('aria-hidden')).toBe('true');
+    expect(screen.getByRole('checkbox', { name: '1 карта местности' })).toBeTruthy();
+    expect(container.querySelectorAll('.wizard-checklist .wizard-icon')).toHaveLength(1);
+
+    click('Далее →');
+    expect(screen.getByRole('button', { name: 'Эликсир' })).toBeTruthy();
+    expect(container.querySelector('.wizard-option [data-icon="loc-elixir"]')).toBeTruthy();
+    expect(container.querySelectorAll('.wizard-option .wizard-icon')).toHaveLength(1);
+  });
+});

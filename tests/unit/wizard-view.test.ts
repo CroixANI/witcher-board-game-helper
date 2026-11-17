@@ -18,7 +18,8 @@ const component = (id: string) => ({
   id,
   data: { name: `Компонент ${id}`, icon: `${id}.svg`, howToTell: 'Так' },
 });
-const iconSvg = (file: string) => `<svg data-file="${file}"></svg>`;
+/** Иконка по имени (путь от src/assets/svg/ без .svg), как `renderIcon`. */
+const iconSvg = (name: string) => `<svg data-icon="${name}"></svg>`;
 
 describe('refId / toViewNode', () => {
   it('ссылка Astro и строка дают id', () => {
@@ -76,16 +77,94 @@ describe('buildWizardData', () => {
       'action-card': {
         id: 'action-card',
         name: 'Компонент action-card',
-        iconSvg: '<svg data-file="action-card.svg"></svg>',
+        iconSvg: '<svg data-icon="components/action-card"></svg>',
         howToTell: 'Так',
       },
     });
-    expect(data.nodes).toBe(DEMO_WIZARD.nodes);
+    expect(data.nodes).toEqual(DEMO_WIZARD.nodes);
   });
 
   it('данные сериализуются в JSON без потерь (пропс острова)', () => {
     const data = buildWizardData(DEMO_WIZARD, rules, components, iconSvg);
     expect(JSON.parse(JSON.stringify(data))).toEqual(data);
+  });
+
+  const base = (nodes: ViewNode[]) => ({ graph: 'turn' as const, title: 'Ход', entry: 'a', nodes });
+  const action = (id: string) => ({
+    id,
+    data: { title: `Действие ${id}`, steps: ['Шаг 1', 'Шаг 2'] },
+  });
+
+  it('иконки вариантов и пунктов чек-листа — готовая разметка SVG', () => {
+    const nodes = [
+      {
+        id: 'a',
+        type: 'choice',
+        title: 'Выбор',
+        phase: 'phase1',
+        pages: 12,
+        options: [
+          { label: 'С иконкой', icon: 'actions/move-joker', next: 'b' },
+          { label: 'Без', next: 'b' },
+        ],
+      },
+      {
+        id: 'b',
+        type: 'step',
+        title: 'Шаг',
+        phase: 'phase1',
+        pages: 12,
+        checklist: [{ text: 'С иконкой', icon: 'actions/move-terrain' }, { text: 'Без' }],
+        next: 'a',
+      },
+    ] as ViewNode[];
+    const data = buildWizardData(base(nodes), rules, components, iconSvg);
+    expect(data.nodes[0]?.options).toEqual([
+      {
+        label: 'С иконкой',
+        icon: 'actions/move-joker',
+        iconSvg: '<svg data-icon="actions/move-joker"></svg>',
+        next: 'b',
+      },
+      { label: 'Без', next: 'b' },
+    ]);
+    expect(data.nodes[1]?.checklist).toEqual([
+      {
+        text: 'С иконкой',
+        icon: 'actions/move-terrain',
+        iconSvg: '<svg data-icon="actions/move-terrain"></svg>',
+      },
+      { text: 'Без' },
+    ]);
+  });
+
+  it('шаг действия локации: шаги из коллекции location-actions идут первыми в чек-листе', () => {
+    const node = {
+      id: 'la-hunt',
+      type: 'step',
+      title: 'Выслеживание',
+      phase: 'phase1',
+      pages: 36,
+      locationAction: 'hunt',
+      checklist: [{ text: 'Своё' }],
+      next: 'a',
+    } as ViewNode;
+    const data = buildWizardData(base([node]), rules, components, iconSvg, [
+      action('hunt'),
+      action('elixir'),
+    ]);
+    expect(data.nodes[0]?.checklist).toEqual([
+      { text: 'Шаг 1' },
+      { text: 'Шаг 2' },
+      { text: 'Своё' },
+    ]);
+  });
+
+  it('неизвестное действие локации — ошибка', () => {
+    const node = { id: 'la-x', type: 'step', locationAction: 'nope' } as unknown as ViewNode;
+    expect(() => buildWizardData(base([node]), rules, components, iconSvg, [])).toThrow(
+      /узел la-x ссылается на неизвестное действие локации nope/,
+    );
   });
 
   it('неизвестное правило или компонент — ошибка', () => {

@@ -15,11 +15,19 @@ export type GraphNode = {
   readonly pages?: number | readonly number[] | undefined;
   readonly rules?: readonly string[] | undefined;
   readonly zones?: readonly string[] | undefined;
-  readonly checklist?: readonly { readonly rule?: string | undefined }[] | undefined;
+  readonly locationAction?: string | undefined;
+  readonly checklist?:
+    | readonly { readonly rule?: string | undefined; readonly icon?: string | undefined }[]
+    | undefined;
   readonly next?:
     string | readonly { readonly to: string; readonly when?: Condition | undefined }[] | undefined;
   readonly options?:
-    readonly { readonly next: string; readonly showIf?: Condition | undefined }[] | undefined;
+    | readonly {
+        readonly next: string;
+        readonly showIf?: Condition | undefined;
+        readonly icon?: string | undefined;
+      }[]
+    | undefined;
   readonly yes?: { readonly next: string } | undefined;
   readonly no?: { readonly next: string } | undefined;
   readonly resetTo?: string | undefined;
@@ -94,6 +102,24 @@ export function checkZones(
     (node.zones ?? [])
       .filter((zone) => !zoneIds.has(zone))
       .map((zone) => `${graph}: узел ${node.id}: неизвестная зона ${zone}`),
+  );
+}
+
+/** `locationAction` шагов — существующие записи коллекции `location-actions`. */
+export function checkLocationActions(
+  graph: string,
+  nodes: readonly GraphNode[],
+  actionIds: ReadonlySet<string>,
+): string[] {
+  return nodes
+    .filter((n) => n.locationAction !== undefined && !actionIds.has(n.locationAction))
+    .map((n) => `${graph}: узел ${n.id}: неизвестное действие локации ${n.locationAction}`);
+}
+
+/** Иконки вариантов и пунктов чек-листа (имена без `.svg`) — для `checkIcons`. */
+export function nodeIcons(nodes: readonly GraphNode[]): string[] {
+  return nodes.flatMap((n) =>
+    [...(n.options ?? []), ...(n.checklist ?? [])].flatMap((x) => (x.icon ? [x.icon] : [])),
   );
 }
 

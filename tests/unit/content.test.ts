@@ -72,6 +72,14 @@ describe('validate-content: битые фикстуры (tests/fixtures/bad)', (
     ]);
   });
 
+  it('иконки вариантов и пунктов чек-листа без файла; неизвестное действие локации', () => {
+    expect(bad('node-icons').errors).toEqual([
+      'turn: узел b: неизвестное действие локации no-such-action',
+      'turn/start.yaml: нет файла иконки src/assets/svg/actions/no-such-move.svg',
+      'turn/start.yaml: нет файла иконки src/assets/svg/icons/no-such-icon.svg',
+    ]);
+  });
+
   it('тупик и сирота в графе (инварианты 2, 3)', () => {
     expect(bad('dead-end').errors).toEqual([
       'setup: узел s12-summary недостижим из entry',
