@@ -19,6 +19,14 @@ export function loopTurn(node: ViewNode, state: WizardState): number {
   return (state.counters[node.counterKey] ?? 0) + 1;
 }
 
+/** Декоративная иконка варианта или пункта: подпись — текст рядом (SPEC 6.7). */
+function ItemIcon({ svg }: { svg: string | undefined }) {
+  if (svg === undefined) return null;
+  return (
+    <span class="icon wizard-icon" aria-hidden="true" dangerouslySetInnerHTML={{ __html: svg }} />
+  );
+}
+
 /** Нативные чекбоксы (SPEC 6.7); скрытые по `showIf` пункты не показываются, индексы — исходные. */
 export function Checklist({ node, state, act }: StepProps) {
   const marks = state.checked[node.id] ?? [];
@@ -35,7 +43,8 @@ export function Checklist({ node, state, act }: StepProps) {
               checked={marks.includes(index)}
               onChange={() => act.toggle(index)}
             />
-            <span>{item.text}</span>
+            <ItemIcon svg={item.iconSvg} />
+            <span class="wizard-checklist__text">{item.text}</span>
           </label>
         </li>
       ))}
@@ -57,9 +66,10 @@ export function OptionButtons({
         <button
           key={option.next + i}
           type="button"
-          class="wizard-option"
+          class={option.iconSvg ? 'wizard-option wizard-option--icon' : 'wizard-option'}
           onClick={() => act.choose(i)}
         >
+          <ItemIcon svg={option.iconSvg} />
           <span class="wizard-option__label">{option.label}</span>
           {option.hint && <span class="wizard-option__hint">{option.hint}</span>}
         </button>

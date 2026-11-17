@@ -20,9 +20,8 @@ export async function loadWizardRefs() {
   return Promise.all([getCollection('rules'), getCollection('components')]);
 }
 
-/** Декоративная иконка компонента (название стоит рядом текстом). */
-export const componentIconSvg = (file: string): string =>
-  renderIcon(`components/${file.replace(/\.svg$/, '')}`, { decorative: true });
+/** Декоративная иконка по имени (`components/token-gold`): название стоит рядом текстом. */
+export const iconSvg = (name: string): string => renderIcon(name, { decorative: true });
 
 export async function loadWizardData(graph: GraphName): Promise<WizardData> {
   let entry: string;
@@ -45,6 +44,7 @@ export async function loadWizardData(graph: GraphName): Promise<WizardData> {
     { graph, title: TITLES[graph], entry, nodes, progress, schools },
     rules,
     components,
-    componentIconSvg,
+    iconSvg,
+    await getCollection('locationActions'),
   );
 }

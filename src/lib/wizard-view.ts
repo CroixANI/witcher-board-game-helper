@@ -15,12 +15,15 @@ import {
 export type Pages = number | readonly number[];
 export type Phase = 'setup' | 'phase1' | 'phase2' | 'battle' | 'phase3' | 'general';
 
-export type ViewChecklistItem = {
+/** Иконка из контента (`actions/move-joker`) и её готовая разметка: реестр SVG не попадает в JS острова. */
+type WithIcon = { readonly icon?: string | undefined; readonly iconSvg?: string | undefined };
+
+export type ViewChecklistItem = WithIcon & {
   readonly text: string;
   readonly showIf?: Condition | undefined;
   readonly rule?: string | undefined;
 };
-export type ViewOption = Option & { readonly hint?: string | undefined };
+export type ViewOption = Option & WithIcon & { readonly hint?: string | undefined };
 
 /** Узел wizard'а для UI: ссылки на правила и компоненты — строковые id. */
 export type ViewNode = Omit<WizardNode, 'options' | 'yes' | 'no'> & {
@@ -33,6 +36,8 @@ export type ViewNode = Omit<WizardNode, 'options' | 'yes' | 'no'> & {
   readonly warning?: string | undefined;
   readonly checklist?: readonly ViewChecklistItem[] | undefined;
   readonly zones?: readonly string[] | undefined;
+  /** Действие локации (`la-*`): его шаги из коллекции `location-actions` идут в начало чек-листа. */
+  readonly locationAction?: string | undefined;
   /** Интерактивный блок шага (`step`), например кнопка 🎲 в s09. */
   readonly widget?: 'random-first-player' | undefined;
   /** Текст `info`-узла. */
@@ -130,6 +135,12 @@ type RuleSource = {
   rendered?: { html: string } | undefined;
 };
 type ComponentSource = { id: string; data: { name: string; icon: string; howToTell: string } };
+type LocationActionSource = { id: string; data: { steps: readonly string[] } };
+
+/** Добавить готовую разметку иконки, если она указана. */
+function withIconSvg<T extends WithIcon>(item: T, iconSvg: (name: string) => string): T {
+  return item.icon === undefined ? item : { ...item, iconSvg: iconSvg(item.icon) };
+}
 
 /**
  * Собрать данные острова: оставить только правила и компоненты, на которые ссылаются узлы.
@@ -140,11 +151,30 @@ export function buildWizardData(
   base: Omit<WizardData, 'rules' | 'components'>,
   ruleEntries: readonly RuleSource[],
   componentEntries: readonly ComponentSource[],
-  /** Inline-SVG иконки по имени файла (`renderIcon`): реестр иконок не попадает в JS острова. */
-  iconSvg: (file: string) => string,
+  /** Inline-SVG иконки по имени (`components/token-gold`, `renderIcon`): реестр не попадает в JS острова. */
+  iconSvg: (name: string) => string,
+  locationActionEntries: readonly LocationActionSource[] = [],
 ): WizardData {
   const allRules = new Map(ruleEntries.map((e) => [e.id, e]));
   const allComponents = new Map(componentEntries.map((e) => [e.id, e]));
+  const allActions = new Map(locationActionEntries.map((e) => [e.id, e]));
+
+  const nodes = base.nodes.map((node): ViewNode => {
+    let checklist = node.checklist;
+    if (node.locationAction !== undefined) {
+      const action = allActions.get(node.locationAction);
+      if (!action)
+        throw new Error(
+          `wizard: узел ${node.id} ссылается на неизвестное действие локации ${node.locationAction}`,
+        );
+      checklist = [...action.data.steps.map((text) => ({ text })), ...(checklist ?? [])];
+    }
+    return {
+      ...node,
+      ...(checklist && { checklist: checklist.map((i) => withIconSvg(i, iconSvg)) }),
+      ...(node.options && { options: node.options.map((o) => withIconSvg(o, iconSvg)) }),
+    };
+  });
 
   const rules: Record<string, RuleView> = {};
   const components: Record<string, ComponentView> = {};
@@ -160,10 +190,15 @@ export function buildWizardData(
       if (!entry)
         throw new Error(`wizard: узел ${node.id} ссылается на неизвестный компонент ${id}`);
       const { name, icon, howToTell } = entry.data;
-      components[id] = { id, name, iconSvg: iconSvg(icon), howToTell };
+      components[id] = {
+        id,
+        name,
+        iconSvg: iconSvg(`components/${icon.replace(/\.svg$/, '')}`),
+        howToTell,
+      };
     }
   }
-  return { ...base, rules, components };
+  return { ...base, nodes, rules, components };
 }
 
 type SchoolSource = { id: string; data: Omit<SchoolView, 'id'> };

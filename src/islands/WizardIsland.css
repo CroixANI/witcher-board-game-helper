@@ -140,7 +140,7 @@
   accent-color: var(--color-accent-light);
 }
 
-.wizard-checklist input:checked + span {
+.wizard-checklist input:checked ~ .wizard-checklist__text {
   color: var(--color-text-muted);
   text-decoration: line-through;
 }
@@ -165,6 +165,29 @@
 
 .wizard-option__label {
   font-weight: 600;
+}
+
+/* Иконка слева на всю высоту варианта, подпись и подсказка — справа. */
+.wizard .wizard-option--icon {
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-3);
+  align-items: center;
+}
+
+.wizard-option--icon .wizard-icon {
+  grid-row: span 2;
+}
+
+.wizard-option--icon .wizard-option__label,
+.wizard-option--icon .wizard-option__hint {
+  grid-column: 2;
+}
+
+.wizard-icon {
+  --icon-size: 2rem;
+
+  flex: none;
+  color: var(--color-accent-light);
 }
 
 .wizard-option__hint {

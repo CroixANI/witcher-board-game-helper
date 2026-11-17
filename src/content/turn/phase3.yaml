@@ -1,3 +1,6 @@
+# Фаза III и конец хода (SPEC 8.7). Сверено с книгой правил, стр. 9–10, 12, 18–19, 26–29.
+# Флаги: afterBattle — после битвы все карты замешаны в колоду, рука пуста (стр. 27–28);
+# lostBattle — поражение от монстра или проигрыш напавшего ведьмака: добор на 1 меньше (стр. 26–27).
 subgraph: phase3
 entry: p3-discard
 nodes:
@@ -6,17 +9,21 @@ nodes:
     title: 'Фаза III: сбросьте лишнее'
     phase: phase3
     pages: 18
+    rules: [phase3-draw]
     checklist:
       - text: 'Сбросьте карты из руки, чтобы осталось 3 или меньше (сбросить можно и больше)'
-      - text: 'После битвы рука пуста — сбрасывать нечего'
+        showIf: { flags: { afterBattle: false } }
+      - text: 'После битвы все карты замешаны в колоду, рука пуста — сбрасывать нечего'
         showIf: { flags: { afterBattle: true } }
     next: p3-draw
+
   - id: p3-draw
     type: step
     title: 'Доберите до трёх'
     phase: phase3
     pages: [9, 10, 18]
-    rules: [hand-limit]
+    rules: [phase3-draw, hand-limit, deck-empty]
+    components: [action-card]
     checklist:
       - text: 'Если в руке меньше 3 карт, доберите недостающие из своей колоды (эффекты могут менять это число)'
       - text: 'Вы проиграли битву в этот ход — доберите на 1 карту меньше'
@@ -24,32 +31,52 @@ nodes:
       - text: 'В руке не больше 7 карт'
         rule: hand-limit
       - text: 'Колода кончилась — перемешайте свой сброс в новую колоду'
+        rule: deck-empty
     next: p3-buy
+
   - id: p3-buy
     type: step
     title: 'Возьмите карту из ряда'
     phase: phase3
     pages: [18, 19]
-    note: 'Обязательно, если можете оплатить; не больше одной карты.'
+    rules: [card-cost]
+    components: [action-card]
+    note: 'Обязательно, если можете оплатить хоть одну карту; не больше одной.'
+    zones: [z-action-row-plus1, z-action-row-minus1]
     checklist:
-      - text: 'Выберите 1 карту из ряда и сбросьте из руки столько карт, сколько она стоит'
-      - text: 'Крайняя правая ячейка — стоимость −1 (не ниже 0), две крайние левые — +1'
+      - text: 'Выберите 1 карту из ряда и сбросьте из руки столько карт, сколько она стоит (стоимость — в правом нижнем углу)'
+      - text: 'Две ячейки у колоды — стоимость +1, дальняя от колоды ячейка — −1 (не ниже 0)'
       - text: 'Новая карта сразу идёт в руку'
     next: p3-refill
+
   - id: p3-refill
     type: step
     title: 'Восполните ряд'
     phase: phase3
     pages: 19
+    rules: [row-refill]
+    components: [action-card]
+    zones: [z-action-row-plus1, z-action-row-minus1, z-action-deck]
     checklist:
-      - text: 'Сдвиньте карты ряда вправо, чтобы пустой осталась крайняя левая ячейка'
+      - text: 'Сдвиньте карты ряда от колоды, чтобы пустой осталась ячейка у колоды'
       - text: 'Откройте верхнюю карту колоды действий и положите её в пустую ячейку'
     next: turn-end
+
   - id: turn-end
     type: end
     title: 'Ход завершён'
     phase: phase3
     pages: 12
+    rules: [turn-structure]
     note: 'Ход переходит по часовой стрелке. Следующий игрок может начинать, пока вы заканчиваете фазу III.'
     outcome: turn-complete
     resetTo: t-start
+
+  - id: game-won
+    type: end
+    title: 'Победа!'
+    phase: general
+    pages: 29
+    rules: [game-victory]
+    note: 'Ваш жетон трофеев на верхнем делении шкалы — вы сразу побеждаете в игре.'
+    outcome: game-won

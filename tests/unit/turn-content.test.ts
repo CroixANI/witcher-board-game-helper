@@ -74,7 +74,11 @@ describe('граф хода: старт', () => {
     let s = start({ players: 4, school: 'wolf' });
     for (let guard = 0; node(s.current).type !== 'end'; guard++) {
       expect(guard).toBeLessThan(20);
-      s = advance(g, s);
+      // Фаза I (R3.2): на вопросах — последний вариант («Нет, сразу к фазе II»).
+      s =
+        node(s.current).type === 'choice'
+          ? choose(g, s, visibleOptions(node(s.current), s).length - 1)
+          : advance(g, s);
     }
     expect(s.current).toBe('turn-end');
     expect(resetTurn(g, s)).toMatchObject({
