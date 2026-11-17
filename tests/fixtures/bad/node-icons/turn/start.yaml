@@ -1,0 +1,31 @@
+# Фикстура: иконки вариантов и пунктов чек-листа без файлов, неизвестное действие локации.
+subgraph: start
+entry: a
+nodes:
+  - id: a
+    type: choice
+    title: 'Выбор'
+    phase: phase1
+    pages: 12
+    options:
+      - label: 'С иконкой'
+        icon: actions/no-such-move
+        next: b
+      - label: 'Без иконки'
+        next: b
+  - id: b
+    type: step
+    title: 'Шаг'
+    phase: phase1
+    pages: 35
+    locationAction: no-such-action
+    checklist:
+      - text: 'Пункт'
+        icon: icons/no-such-icon
+    next: c
+  - id: c
+    type: end
+    title: 'Конец'
+    phase: phase3
+    pages: 12
+    outcome: turn-complete

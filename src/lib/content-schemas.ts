@@ -46,6 +46,8 @@ export const COLLECTIONS = {
 export type CollectionName = keyof typeof COLLECTIONS;
 
 const SvgFile = z.string().regex(/^[a-z0-9-]+\.svg$/);
+/** Иконка варианта или пункта чек-листа: путь от `src/assets/svg/` без `.svg` (`actions/move-joker`). */
+const IconName = z.string().regex(/^(components|actions|icons)\/[a-z0-9-]+$/);
 
 /** Схемы ссылок по коллекциям: отдельный тип на каждую, чтобы `data.rules` и `data.confusedWith`
  * не сливались в объединение `rules | components`. */
@@ -127,6 +129,7 @@ export function createSchemas<RR extends z.ZodType, RC extends z.ZodType>(ref: R
     .object({
       label: z.string(),
       hint: z.string().optional(),
+      icon: IconName.optional(),
       next: Id,
       showIf: Condition.optional(),
       set: z.record(z.string(), z.boolean()).optional(), // установить флаги хода
@@ -143,6 +146,7 @@ export function createSchemas<RR extends z.ZodType, RC extends z.ZodType>(ref: R
   const ChecklistItem = z
     .object({
       text: z.string(),
+      icon: IconName.optional(),
       showIf: Condition.optional(),
       rule: ref.rules.optional(),
     })
@@ -167,6 +171,8 @@ export function createSchemas<RR extends z.ZodType, RC extends z.ZodType>(ref: R
         checklist: z.array(ChecklistItem).nonempty(),
         zones: z.array(z.string()).default([]),
         widget: z.enum(['random-first-player']).optional(), // интерактивный блок под чек-листом
+        // id записи location-actions: её шаги идут в начало чек-листа (SPEC 8.4)
+        locationAction: Id.optional(),
         next: Next,
       })
       .strict(),

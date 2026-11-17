@@ -30,10 +30,12 @@ import {
   checkGraphFlow,
   checkGraphRefs,
   checkIcons,
+  checkLocationActions,
   checkPagesAndRules,
   checkZoneFiles,
   checkZones,
   checkZoneTree,
+  nodeIcons,
   type GraphNode,
 } from '../src/lib/graph-checks';
 import { findZoneLinks, hasZoneReference, ZONE_REFERENCE_ERROR } from '../src/lib/zone-links';
@@ -173,6 +175,7 @@ export function validateContent({
     ],
   ];
   const nodeIds = new Set<string>();
+  const actionIds = new Set(raw.locationActions.map((e) => e.id));
   for (const [graph, nodes, entries, roots] of graphs) {
     if (failed.has(graph)) continue;
     const refErrors = checkGraphRefs(graph, nodes, entries);
@@ -182,6 +185,7 @@ export function validateContent({
       ...(refErrors.length ? [] : checkGraphFlow(graph, nodes, roots)),
       ...checkPagesAndRules(graph, nodes, known.rules),
       ...checkZones(graph, nodes, zoneIds),
+      ...checkLocationActions(graph, nodes, actionIds),
     );
     for (const n of nodes) nodeIds.add(n.id);
   }
@@ -222,6 +226,12 @@ export function validateContent({
       [
         ...components.map((e) => ({ source: e.file, icon: `components/${e.data.icon}` })),
         ...locationActions.map((e) => ({ source: e.file, icon: `actions/${e.data.icon}` })),
+        ...[
+          ...setup.map((e) => ({ file: e.file, nodes: [e.data.node] })),
+          ...turn.map((e) => ({ file: e.file, nodes: e.data.nodes })),
+        ].flatMap(({ file, nodes }) =>
+          nodeIcons(nodes).map((icon) => ({ source: file, icon: `${icon}.svg` })),
+        ),
       ],
       new Set(listFiles(svgDir)),
     ),
