@@ -155,10 +155,6 @@ describe('граф хода: фаза I', () => {
     expect(node('la-elixir').zones).toContain('z-elixir-deck');
   });
 
-  it('p2-choose пока заглушка: info → фаза III', () => {
-    expect(node('p2-choose')).toMatchObject({ type: 'info', next: 'p3-discard' });
-  });
-
   it('пример хода стр. 30–32, шаги 1–9 SPEC 17.1: до фазы II', () => {
     let s = turn(); // 1. t-start → p1-move-q
     s = advance(g, pick(s, /^Да/)); // 2. водная карта → Бан Ард

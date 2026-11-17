@@ -41,5 +41,5 @@ test('фаза I: перемещение с иконками, выслежива
 
   await expect(heading(page)).toHaveText('Вы в новой локации');
   await button(page, /^Закончить фазу I/).click();
-  await expect(heading(page)).toHaveText('Фаза II — в разработке');
+  await expect(heading(page)).toHaveText('Фаза II: одно действие');
 });
