@@ -22,7 +22,7 @@
     "optimize:svg": "svgo --config svgo.config.mjs -r -f src/assets/svg -q"
   },
   "dependencies": {
-    "preact": "^11.1.1"
+    "preact": "^11.2.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
