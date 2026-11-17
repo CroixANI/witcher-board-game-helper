@@ -1,12 +1,154 @@
-# Временная заглушка (R3.1): граф хода должен быть связным. Фазу I заменит R3.2, фазу II — R3.3.
+# Фаза I: перемещения и действия (SPEC 8.2). Сверено с книгой правил, стр. 12–14, 17.
+# Флаг moved ставят варианты, ведущие к перемещению; pokerPlayed — согласие на покер.
 subgraph: phase1
 entry: p1-move-q
 nodes:
   - id: p1-move-q
-    type: info
-    title: 'Фазы I и II — в разработке'
+    type: choice
+    title: 'Фаза I. Перемещаетесь?'
     phase: phase1
-    pages: [12, 15]
-    rules: [phase1-overview, phase2-overview]
-    body: 'Подсказки для перемещений, действий, битвы, медитации и исследования появятся в следующих версиях. Пока сыграйте эти фазы по правилам ниже и переходите к фазе III.'
-    next: p3-discard
+    pages: 12
+    rules: [phase1-overview, phase1-actions-after-move]
+    note: 'Фазу I можно пропустить целиком. Но действовать в локации можно только после перемещения.'
+    options:
+      - label: 'Да, перемещаюсь'
+        hint: 'Сбросить карты и перейти в соседнюю локацию'
+        next: p1-move-how
+        set: { moved: true }
+      - label: 'Нет, сразу к фазе II'
+        hint: 'Карты останутся в руке для следующих фаз'
+        next: p2-choose
+
+  - id: p1-move-how
+    type: step
+    title: 'Перемещение в соседнюю локацию'
+    phase: phase1
+    pages: 12
+    rules: [movement, adjacency]
+    components: [action-card, gold, figure]
+    note: 'Соседние локации соединены дорогой или морским пунктиром. Выберите один способ.'
+    zones: [z-map]
+    checklist:
+      - text: '1 карта с тем же символом местности, что у локации, куда идёте'
+        icon: actions/move-terrain
+      - text: 'или 2 любые карты'
+        icon: actions/move-two-cards
+      - text: 'или 1 любая карта и 1 золото в запас'
+        icon: actions/move-card-gold
+      - text: 'или 1 карта-джокер (тройной символ местности)'
+        icon: actions/move-joker
+      - text: 'Сбросьте карты и передвиньте фигурку в соседнюю локацию'
+    next: p1-arrived
+
+  - id: p1-arrived
+    type: choice
+    title: 'Вы в новой локации'
+    phase: phase1
+    pages: 13
+    rules: [phase1-location-actions, phase1-next]
+    note: 'Всё необязательно и в любом порядке. Монстр и другие ведьмаки в локации не мешают действиям.'
+    options:
+      - label: 'Действие локации'
+        hint: 'Один раз за ход для каждой локации, даже если вернулись в неё'
+        next: p1-loc-action
+      - label: 'Покер с ведьмаком'
+        hint: 'С ведьмаком в этой локации; у обоих есть хотя бы 1 золото'
+        next: p1-poker-check
+      - label: 'Выполнить задание'
+        hint: 'Если у вас есть задание в этой локации'
+        next: p1-quest
+      - label: 'Переместиться ещё'
+        hint: 'Если хватает карт или золота'
+        next: p1-move-how
+        set: { moved: true }
+      - label: 'Закончить фазу I'
+        hint: 'Обязательно, если перемещаться больше нечем'
+        next: p2-choose
+
+  - id: p1-loc-action
+    type: choice
+    title: 'Какой символ действия под локацией?'
+    phase: phase1
+    pages: [35, 36]
+    rules: [location-actions]
+    note: 'Символ нарисован на поле под названием локации.'
+    options:
+      - label: 'Повышение навыка'
+        hint: 'Символ навыка, «≤ уровень» и «+»'
+        icon: actions/loc-skill-raise
+        next: la-skill
+      - label: 'Покер с горожанами'
+        hint: 'Пять игральных кубиков'
+        icon: actions/loc-poker-town
+        next: la-poker-town
+      - label: 'Обмен карты'
+        hint: 'Карта из руки и карта «+1» из ряда'
+        icon: actions/loc-card-swap
+        next: la-swap
+      - label: 'Взять эликсир'
+        hint: '«+» и карта с колбой'
+        icon: actions/loc-elixir
+        next: la-elixir
+      - label: 'Тренировка в школе'
+        hint: 'Символы школ и «−2, −3, −4, −5»'
+        icon: actions/loc-school-training
+        next: la-school
+      - label: 'Задание на выслеживание'
+        hint: '«+1 золото» и «+ след»'
+        icon: actions/loc-hunt
+        next: la-hunt
+      - label: 'Золото и чистка ряда'
+        hint: '«0 золота: +1» и две убранные карты ряда'
+        icon: actions/loc-gold-row
+        next: la-gold-row
+
+  - id: p1-poker-check
+    type: question
+    title: 'Покер с ведьмаком'
+    phase: phase1
+    pages: [13, 14]
+    rules: [poker-witcher]
+    note: 'Соперник не может отказаться. С каждым ведьмаком — не больше одной партии за ход.'
+    question: 'У вас и у соперника есть хотя бы по 1 золоту, и вы ещё не играли с ним в этот ход?'
+    yes:
+      label: 'Да, играем'
+      next: p1-poker
+      set: { pokerPlayed: true }
+    no:
+      label: 'Нет — вернуться к локации'
+      next: p1-arrived
+
+  - id: p1-poker
+    type: step
+    title: 'Покер на костях'
+    phase: phase1
+    pages: [13, 14]
+    rules: [poker-rules, poker-witcher]
+    components: [poker-dice, gold]
+    warning: 'С этим ведьмаком нельзя сражаться в фазе II этого хода.'
+    zones: [z-supply]
+    checklist:
+      - text: 'Каждый кладёт 1 своё золото, добавьте 1 золото из запаса — на кону 3'
+      - text: 'Оба бросают по 5 кубиков'
+      - text: 'Соперник перебрасывает любые свои кубики (один раз)'
+      - text: 'Вы перебрасываете любые свои кубики (один раз)'
+      - text: 'Лучшая комбинация забирает всё золото. Ничья — сравните старшие кубики; полное равенство — побеждаете вы'
+    next: p1-arrived
+
+  - id: p1-quest
+    type: step
+    title: 'Выполнение задания'
+    phase: phase1
+    pages: 17
+    rules: [quests, events]
+    components: [exploration-city, exploration-wilds, event-card, location-token]
+    note: 'Заданий может быть сколько угодно. Выполнять их не обязательно, штрафов нет.'
+    zones: [z-event-deck, z-location-stacks]
+    checklist:
+      - text: 'Вы в локации из задания (или в локации с жетона на карте задания)'
+      - text: 'Заплатите стоимость, если она указана'
+      - text: 'Игрок справа берёт из колоды карту события с номером из задания'
+      - text: 'Эффект или выбор на карте события — выполните как у исследования'
+      - text: 'Снаряжение или спутник — положите у своего планшета до конца игры'
+      - text: 'Карту задания уберите в коробку; жетон локации с неё замешайте в стопку своего типа'
+    next: p1-arrived

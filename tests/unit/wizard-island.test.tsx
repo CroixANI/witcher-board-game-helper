@@ -528,7 +528,14 @@ describe('<WizardIsland>: иконки вариантов и пунктов че
         { label: 'Без иконки', next: 'end' },
       ],
     },
-    { id: 'end', type: 'end', title: 'Конец', phase: 'phase3', pages: 12, outcome: 'turn-complete' },
+    {
+      id: 'end',
+      type: 'end',
+      title: 'Конец',
+      phase: 'phase3',
+      pages: 12,
+      outcome: 'turn-complete',
+    },
   ];
   const data: WizardData = {
     graph: 'turn',

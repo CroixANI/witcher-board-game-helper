@@ -17,7 +17,10 @@ const root = (p: string) => fileURLToPath(new URL(`../../${p}`, import.meta.url)
 const yamls = (dir: string) =>
   readdirSync(root(dir))
     .filter((f) => f.endsWith('.yaml'))
-    .map((f) => ({ id: f.replace(/\.yaml$/, ''), data: parseYaml(readFileSync(root(`${dir}/${f}`), 'utf8')) }));
+    .map((f) => ({
+      id: f.replace(/\.yaml$/, ''),
+      data: parseYaml(readFileSync(root(`${dir}/${f}`), 'utf8')),
+    }));
 
 const entries = yamls('src/content/turn').map((e) => e.data as TurnEntry<ViewNode>);
 const g = turnGraph(entries);
@@ -37,11 +40,22 @@ const pick = (s: WizardState, label: string | RegExp) => {
   const i = labels(s).findIndex((l) =>
     typeof label === 'string' ? l === label : label.test(l ?? ''),
   );
-  expect(i, `вариант «${String(label)}» в ${s.current}: ${labels(s).join(' | ')}`).toBeGreaterThanOrEqual(0);
+  expect(
+    i,
+    `вариант «${String(label)}» в ${s.current}: ${labels(s).join(' | ')}`,
+  ).toBeGreaterThanOrEqual(0);
   return choose(g, s, i);
 };
 
-const LA = ['la-skill', 'la-poker-town', 'la-swap', 'la-elixir', 'la-school', 'la-hunt', 'la-gold-row'];
+const LA = [
+  'la-skill',
+  'la-poker-town',
+  'la-swap',
+  'la-elixir',
+  'la-school',
+  'la-hunt',
+  'la-gold-row',
+];
 
 describe('граф хода: фаза I', () => {
   it('t-start ведёт к вопросу «Перемещаетесь?»; «Нет» — сразу к фазе II', () => {
@@ -110,7 +124,10 @@ describe('граф хода: фаза I', () => {
         `actions/${action!.icon.replace(/\.svg$/, '')}`,
       );
       expect([n.pages].flat(), id).toEqual(expect.arrayContaining([action!.page].flat()));
-      expect(n.checklist?.some((c) => /1 раз за ход/.test(c.text)), `${id}: напоминание`).toBe(true);
+      expect(
+        n.checklist?.some((c) => /1 раз за ход/.test(c.text)),
+        `${id}: напоминание`,
+      ).toBe(true);
     }
     expect([...actions.keys()].toSorted()).toEqual(
       LA.map((id) => node(id).locationAction).toSorted(),
@@ -118,7 +135,7 @@ describe('граф хода: фаза I', () => {
   });
 
   it('p1-move-how: 4 способа с иконками перемещения', () => {
-    const icons = node('p1-move-how').checklist?.map((c) => c.icon);
+    const icons = node('p1-move-how').checklist?.flatMap((c) => (c.icon ? [c.icon] : []));
     expect(icons).toEqual([
       'actions/move-terrain',
       'actions/move-two-cards',
@@ -129,7 +146,9 @@ describe('граф хода: фаза I', () => {
 
   it('узлы, где важно, куда класть или откуда брать, показывают зоны поля (SPEC 11.5.1)', () => {
     expect(node('p1-move-how').zones).toContain('z-map');
-    expect(node('p1-quest').zones).toEqual(expect.arrayContaining(['z-event-deck', 'z-location-stacks']));
+    expect(node('p1-quest').zones).toEqual(
+      expect.arrayContaining(['z-event-deck', 'z-location-stacks']),
+    );
     expect(node('la-hunt').zones).toContain('z-location-stacks');
     expect(node('la-swap').zones).toContain('z-action-row');
     expect(node('la-gold-row').zones).toContain('z-action-row');

@@ -1,0 +1,103 @@
+# Действия локаций (SPEC 8.4). Шаги каждого действия — из коллекции location-actions
+# (поле locationAction), здесь только дополнения для хода. Сверено с книгой правил, стр. 10–11, 14, 19, 35–36.
+# Все узлы возвращают в p1-arrived.
+subgraph: location-actions
+entry: la-skill
+nodes:
+  - id: la-skill
+    type: step
+    title: 'Повышение навыка'
+    phase: phase1
+    pages: [35, 10, 11]
+    rules: [loc-skill-raise, defense-shield, alchemy-elixir, witcher-level]
+    components: [cube-marker, shield-marker, elixir]
+    locationAction: skill-raise
+    checklist:
+      - text: 'Действие этой локации — 1 раз за ход'
+    next: p1-arrived
+
+  - id: la-poker-town
+    type: step
+    title: 'Покер с горожанами'
+    phase: phase1
+    pages: [35, 14]
+    rules: [loc-poker-town, poker-rules]
+    components: [poker-dice, gold]
+    zones: [z-supply]
+    locationAction: poker-town
+    checklist:
+      - text: 'В остальном — обычные правила покера на костях'
+        rule: poker-rules
+      - text: 'Действие этой локации — 1 раз за ход'
+    next: p1-arrived
+
+  - id: la-swap
+    type: step
+    title: 'Обмен карты'
+    phase: phase1
+    pages: [35, 19]
+    rules: [loc-card-swap, remove-from-game, row-refill]
+    components: [action-card]
+    warning: '«Убрать из игры» — карта уходит в коробку, а не в ваш сброс.'
+    zones: [z-action-row, z-action-deck]
+    locationAction: card-swap
+    checklist:
+      - text: 'Действие этой локации — 1 раз за ход'
+    next: p1-arrived
+
+  - id: la-elixir
+    type: step
+    title: 'Взять эликсир'
+    phase: phase1
+    pages: [35, 11]
+    rules: [loc-elixir, elixirs]
+    components: [elixir]
+    zones: [z-elixir-deck]
+    locationAction: elixir
+    checklist:
+      - text: 'Действие этой локации — 1 раз за ход'
+    next: p1-arrived
+
+  - id: la-school
+    type: step
+    title: 'Тренировка в школе'
+    phase: phase1
+    pages: [36, 10, 11]
+    rules: [loc-school-training, specializations, defense-shield, alchemy-elixir, witcher-level]
+    components: [cube-marker, gold]
+    note: 'Специализацию можно тренировать только в своей родной школе.'
+    zones: [z-supply]
+    locationAction: school-training
+    checklist:
+      - text: 'Защита выросла — сразу щит +1. Алхимия выросла — сразу возьмите эликсир'
+      - text: 'Все навыки теперь выше уровня ведьмака — поднимите уровень ведьмака'
+        rule: witcher-level
+      - text: 'Действие этой локации — 1 раз за ход'
+    next: p1-arrived
+
+  - id: la-hunt
+    type: step
+    title: 'Задание на выслеживание'
+    phase: phase1
+    pages: [36, 11]
+    rules: [loc-hunt, trail-tokens]
+    components: [gold, location-token, trail-token]
+    zones: [z-location-stacks, z-supply]
+    locationAction: hunt
+    checklist:
+      - text: 'Жетонов локаций нужного типа в стопке не осталось — выслеживать этого монстра нельзя'
+      - text: 'Действие этой локации — 1 раз за ход'
+    next: p1-arrived
+
+  - id: la-gold-row
+    type: step
+    title: 'Золото и чистка ряда'
+    phase: phase1
+    pages: 36
+    rules: [loc-gold-row, remove-from-game, row-refill]
+    components: [gold, action-card]
+    zones: [z-action-row, z-action-deck, z-supply]
+    locationAction: gold-row
+    checklist:
+      - text: 'Действие этой локации — 1 раз за ход'
+    next: p1-arrived
