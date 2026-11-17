@@ -175,6 +175,7 @@ export function validateContent({
     ],
   ];
   const nodeIds = new Set<string>();
+  const actionIds = new Set(raw.locationActions.map((e) => e.id));
   for (const [graph, nodes, entries, roots] of graphs) {
     if (failed.has(graph)) continue;
     const refErrors = checkGraphRefs(graph, nodes, entries);
@@ -184,7 +185,7 @@ export function validateContent({
       ...(refErrors.length ? [] : checkGraphFlow(graph, nodes, roots)),
       ...checkPagesAndRules(graph, nodes, known.rules),
       ...checkZones(graph, nodes, zoneIds),
-      ...checkLocationActions(graph, nodes, new Set(raw.locationActions.map((e) => e.id))),
+      ...checkLocationActions(graph, nodes, actionIds),
     );
     for (const n of nodes) nodeIds.add(n.id);
   }
