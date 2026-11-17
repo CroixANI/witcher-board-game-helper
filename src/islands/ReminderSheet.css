@@ -1,0 +1,46 @@
+/* «Не забудь» (SPEC 8.9). */
+.reminder-sheet h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.reminder-sheet__list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reminder {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-raised);
+  border-left: 4px solid var(--color-border);
+  border-radius: 4px;
+}
+
+.reminder--now {
+  border-left-color: var(--color-accent-light);
+}
+
+.reminder p {
+  margin: 0;
+}
+
+.reminder__now {
+  color: var(--color-accent-light);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.reminder__meta {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.reminder__meta a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+}

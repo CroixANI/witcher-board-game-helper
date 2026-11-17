@@ -332,10 +332,14 @@ function readJson(storage: SafeStorage, key: string): unknown {
   }
 }
 
-export function loadState(g: Graph, graph: GraphName, storage: SafeStorage): WizardState {
+/** Общие параметры партии (`twow:v1:params`); `undefined` — ключа нет или он битый. */
+export function loadParams(storage: SafeStorage): Params | undefined {
   const shared = readJson(storage, PARAMS_KEY);
-  const params = isRecord(shared) ? sanitizeParams(shared) : undefined;
-  return hydrate(g, graph, readJson(storage, storageKey(graph)), params);
+  return isRecord(shared) ? sanitizeParams(shared) : undefined;
+}
+
+export function loadState(g: Graph, graph: GraphName, storage: SafeStorage): WizardState {
+  return hydrate(g, graph, readJson(storage, storageKey(graph)), loadParams(storage));
 }
 
 /** Пишет state и общие параметры (их подхватывает другой wizard). */

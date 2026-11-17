@@ -501,6 +501,38 @@ describe('<WizardIsland> графа хода: школа и параметры �
     render(<WizardIsland data={setup} storage={memoryStorage()} />);
     expect(screen.queryByRole('button', { name: /Параметры партии/ })).toBeNull();
   });
+  it('«Не забудь» и «Сейчас не мой ход»: на каждом шаге хода, пометка по фазе узла (R3.4)', () => {
+    const storage = memoryStorage();
+    storage.set(PARAMS_KEY, JSON.stringify({ players: 2, school: 'bear' }));
+    const reminders = [
+      {
+        id: 'r1',
+        text: 'Помни о фазе III',
+        page: 18,
+        phases: ['phase3' as const],
+        rule: { id: 'phase3-draw', title: 'Добор' },
+      },
+    ];
+    render(<WizardIsland data={{ ...turn, reminders }} storage={storage} />);
+    for (const title of ['Ваш ход', 'Фаза III']) {
+      expect(heading().textContent).toBe(title);
+      const link = screen.getByRole('link', { name: 'Сейчас не мой ход →' });
+      expect(link.getAttribute('href')).toMatch(/turn\/not-my-turn\/$/);
+      fireEvent.click(screen.getByRole('button', { name: /Не забудь/ }));
+      expect(document.querySelector('dialog')!.open).toBe(true);
+      expect(document.querySelectorAll('.reminder--now')).toHaveLength(
+        title === 'Фаза III' ? 1 : 0,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
+      click('Далее →');
+    }
+  });
+
+  it('у подготовки нет «Не забудь» и ссылки «Не мой ход»', () => {
+    render(<WizardIsland data={setup} storage={memoryStorage()} />);
+    expect(screen.queryByRole('button', { name: /Не забудь/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /не мой ход/ })).toBeNull();
+  });
 });
 
 describe('<WizardIsland>: иконки вариантов и пунктов чек-листа (R3.2)', () => {

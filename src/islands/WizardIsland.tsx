@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { ComponentType } from 'preact';
 import { formatPages } from '../lib/reference';
+import { url } from '../lib/url';
 import { createSafeStorage, type SafeStorage } from '../lib/safe-storage';
 import {
   advance,
@@ -22,6 +23,7 @@ import {
 } from '../lib/wizard-engine';
 import { nodeRuleIds, type Phase, type ViewNode, type WizardData } from '../lib/wizard-view';
 import { ComponentChip } from './ComponentChip';
+import { ReminderSheet } from './ReminderSheet';
 import { RuleCard } from './RuleCard';
 import { SchoolBadge } from './SchoolBadge';
 import { ChecklistStep } from './steps/ChecklistStep';
@@ -163,6 +165,7 @@ export function WizardIsland({ data, storage: injected }: Props) {
           {barTitle}
           {position > 0 && ` ${position}/${total}`}
         </span>
+        {data.reminders && <ReminderSheet reminders={data.reminders} phase={node.phase} />}
         <button
           type="button"
           ref={restartButton}
@@ -170,7 +173,8 @@ export function WizardIsland({ data, storage: injected }: Props) {
           onClick={() => setConfirming(true)}
           aria-expanded={confirming}
         >
-          ⟲ <span class="visually-hidden">Начать </span>Заново
+          ⟲ <span class="visually-hidden">Начать </span>
+          <span class="wizard-bar__label">Заново</span>
         </button>
         {data.graph === 'turn' && (
           <div class="wizard-menu">
@@ -280,6 +284,12 @@ export function WizardIsland({ data, storage: injected }: Props) {
           </div>
         )}
       </article>
+
+      {data.graph === 'turn' && (
+        <p class="wizard-aside">
+          <a href={url('turn/not-my-turn')}>Сейчас не мой ход →</a>
+        </p>
+      )}
     </section>
   );
 }

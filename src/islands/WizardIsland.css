@@ -40,6 +40,19 @@
   white-space: nowrap;
 }
 
+/* Узкий экран: у «⟲ Заново» остаётся только значок (имя для скринридера то же), чтобы
+   заголовок фазы поместился рядом с ⚑ и ☰. */
+@media (max-width: 420px) {
+  .wizard-bar__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
 .wizard-bar__title {
   overflow: hidden;
   font-weight: 600;
@@ -400,4 +413,15 @@
 .school-badge__pages {
   color: var(--color-text-muted);
   font-size: 0.9rem;
+}
+
+/* Ссылка «Сейчас не мой ход» под узлом хода. */
+.wizard-aside {
+  margin: 0;
+}
+
+.wizard-aside a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
 }

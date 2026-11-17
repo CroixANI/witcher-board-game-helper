@@ -7,6 +7,7 @@ import { renderIcon } from './icons';
 import type { GraphName } from './wizard-engine';
 import {
   buildWizardData,
+  toReminderViews,
   toSchoolViews,
   toViewNode,
   type ViewNode,
@@ -39,9 +40,11 @@ export async function loadWizardData(graph: GraphName): Promise<WizardData> {
   }
   if (!entry) throw new Error(`wizard: у графа ${graph} нет точки входа`);
   const [rules, components] = await loadWizardRefs();
-  const schools = graph === 'turn' ? toSchoolViews(await getCollection('schools')) : undefined;
+  const turn = graph === 'turn';
+  const schools = turn ? toSchoolViews(await getCollection('schools')) : undefined;
+  const reminders = turn ? toReminderViews(await getCollection('reminders'), rules) : undefined;
   return buildWizardData(
-    { graph, title: TITLES[graph], entry, nodes, progress, schools },
+    { graph, title: TITLES[graph], entry, nodes, progress, schools, reminders },
     rules,
     components,
     iconSvg,
