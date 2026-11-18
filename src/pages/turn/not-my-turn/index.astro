@@ -1,11 +1,122 @@
 ---
+// «Сейчас не мой ход» (SPEC 4.1, 8.8; ROADMAP R3.4): аккордеон на `<details>`, работает без JS.
+// С JS ситуации со `showIf.players` прячутся по числу игроков из `twow:v1:params`.
+import { getCollection, getEntries, render } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import ZonePeek from '../../../components/ZonePeek.astro';
+import { PLAYERS_ATTR, playersAttr } from '../../../lib/not-my-turn';
+import { formatPages } from '../../../lib/reference';
+import { url } from '../../../lib/url';
+
+const entries = (await getCollection('notMyTurn')).toSorted((a, b) => a.data.order - b.data.order);
+const situations = await Promise.all(
+  entries.map(async (entry) => ({
+    entry,
+    Content: (await render(entry)).Content,
+    rules: await getEntries(entry.data.rules),
+  })),
+);
 ---
 
 <BaseLayout title="Не мой ход">
   <h1>Не мой ход</h1>
   <p>Ситуации, в которых от вас что-то нужно, пока ходят другие игроки.</p>
-  <p class="stub">Раздел в разработке (ROADMAP, задача R3.4).</p>
+  <p class="players-note" id="players-note" hidden></p>
+
+  <div class="situations">
+    {situations.map(({ entry, Content, rules }) => (
+      <details
+        class="situation"
+        id={entry.id}
+        {...{ [PLAYERS_ATTR]: playersAttr(entry.data.showIf?.players) }}
+      >
+        <summary>
+          <span class="situation__title">{entry.data.title}</span>
+          <span class="situation__trigger">{entry.data.trigger}</span>
+        </summary>
+        <div class="situation__body">
+          <Content />
+          <p class="situation__meta">
+            {rules.map((r, i) => (
+              <>
+                {i > 0 && ' · '}
+                <a href={url(`rules/${r.id}`)}>{r.data.title}</a>
+              </>
+            ))}
+            {' · '}
+            {formatPages(entry.data.pages)}
+          </p>
+        </div>
+      </details>
+    ))}
+  </div>
+
+  <p>
+    <a href={url('turn')}>← К своему ходу</a>
+  </p>
   <ZonePeek />
 </BaseLayout>
+
+<script>
+  import { applyPlayersFilter, PLAYERS_ATTR } from '../../../lib/not-my-turn';
+  import { createSafeStorage } from '../../../lib/safe-storage';
+
+  const items = document.querySelectorAll<HTMLElement>(`.situation[${PLAYERS_ATTR}]`);
+  const players = applyPlayersFilter(items, createSafeStorage());
+  const note = document.getElementById('players-note');
+  if (note && players !== undefined) {
+    note.textContent = `Показано для партии на ${players} игроков (меняется в «Мой ход» → ☰).`;
+    note.hidden = false;
+  }
+</script>
+
+<style>
+  .players-note {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .situations {
+    display: grid;
+    gap: var(--space-2);
+    margin-block: var(--space-4);
+  }
+
+  .situation {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  .situation summary {
+    display: grid;
+    gap: var(--space-1);
+    min-height: var(--tap-min);
+    padding: var(--space-3) var(--space-4);
+    cursor: pointer;
+  }
+
+  .situation__title {
+    font-weight: 600;
+  }
+
+  .situation__trigger {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .situation__body {
+    padding: 0 var(--space-4) var(--space-3);
+  }
+
+  .situation__meta {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .situation__meta a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+</style>

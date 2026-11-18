@@ -1,0 +1,5 @@
+text: 'Навык на 5-м уровне уже ничем не понизить.'
+order: 60
+rule: skill-max-5
+page: 10
+phases: [general]

@@ -92,6 +92,17 @@ export type WizardData = {
   readonly components: Readonly<Record<string, ComponentView>>;
   /** Школы для бейджа специализации — только у графа хода. */
   readonly schools?: Readonly<Partial<Record<School, SchoolView>>> | undefined;
+  /** Панель «Не забудь» (SPEC 8.9) — только у графа хода. */
+  readonly reminders?: readonly ReminderView[] | undefined;
+};
+
+/** Пункт панели «Не забудь» (SPEC 8.9): текст, страница и ссылка на карточку правила. */
+export type ReminderView = {
+  readonly id: string;
+  readonly text: string;
+  readonly page: Pages;
+  readonly phases: readonly Phase[];
+  readonly rule: { readonly id: string; readonly title: string };
 };
 
 /** Ссылка коллекции: в Astro — `{ collection, id }`, в валидаторе без Astro — строка. */
@@ -214,4 +225,32 @@ export function toSchoolViews(
     views[id] = { id, name, specialization, timing, effect, page, color };
   }
   return views;
+}
+
+type ReminderSource = {
+  id: string;
+  data: { text: string; order: number; page: Pages; phases: readonly Phase[]; rule: Ref };
+};
+
+/** Записи коллекции `reminders` → пункты панели по `order`. Неизвестное правило — ошибка сборки. */
+export function toReminderViews(
+  entries: readonly ReminderSource[],
+  ruleEntries: readonly RuleSource[],
+): ReminderView[] {
+  const titles = new Map(ruleEntries.map((e) => [e.id, e.data.title]));
+  return entries
+    .toSorted((a, b) => a.data.order - b.data.order)
+    .map(({ id, data }) => {
+      const ruleId = refId(data.rule);
+      const title = titles.get(ruleId);
+      if (title === undefined)
+        throw new Error(`wizard: напоминание ${id} ссылается на неизвестное правило ${ruleId}`);
+      return {
+        id,
+        text: data.text,
+        page: data.page,
+        phases: data.phases,
+        rule: { id: ruleId, title },
+      };
+    });
 }

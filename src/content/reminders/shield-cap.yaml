@@ -1,0 +1,5 @@
+text: 'Щит не может быть выше защиты. Если защита упала ниже щита — опустите щит вместе с ней.'
+order: 70
+rule: defense-shield
+page: [18, 24]
+phases: [battle, general]

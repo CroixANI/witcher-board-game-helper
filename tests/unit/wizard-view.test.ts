@@ -4,6 +4,7 @@ import {
   buildWizardData,
   nodeRuleIds,
   refId,
+  toReminderViews,
   toSchoolViews,
   toViewNode,
   type ViewNode,
@@ -207,5 +208,47 @@ describe('toSchoolViews', () => {
 
   it('неизвестная школа — ошибка сборки', () => {
     expect(() => toSchoolViews([school('manticore')])).toThrow(/неизвестная школа manticore/);
+  });
+});
+
+describe('toReminderViews', () => {
+  const reminder = (id: string, order: number, ruleRef: string | { id: string }) => ({
+    id,
+    data: {
+      text: `Текст ${id}`,
+      order,
+      page: [10, 18],
+      phases: ['battle' as const],
+      rule: ruleRef,
+    },
+  });
+
+  it('сортирует по order и подставляет заголовок правила', () => {
+    const views = toReminderViews(
+      [reminder('b', 20, 'hand-limit'), reminder('a', 10, { id: 'deck-empty' })],
+      [rule('hand-limit'), rule('deck-empty')],
+    );
+    expect(views).toEqual([
+      {
+        id: 'a',
+        text: 'Текст a',
+        page: [10, 18],
+        phases: ['battle'],
+        rule: { id: 'deck-empty', title: 'Правило deck-empty' },
+      },
+      {
+        id: 'b',
+        text: 'Текст b',
+        page: [10, 18],
+        phases: ['battle'],
+        rule: { id: 'hand-limit', title: 'Правило hand-limit' },
+      },
+    ]);
+  });
+
+  it('неизвестное правило — ошибка сборки', () => {
+    expect(() => toReminderViews([reminder('a', 10, 'nope')], [rule('hand-limit')])).toThrow(
+      /напоминание a .*nope/,
+    );
   });
 });
