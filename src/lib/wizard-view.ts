@@ -138,7 +138,6 @@ export function toViewNode<
   };
 }
 
-/** Правила узла: из `rules` и из пунктов чек-листа, без дублей, в порядке появления. */
 /** Тексты предупреждений `alerts`, видимые в текущем состоянии. */
 export function visibleAlerts(node: ViewNode, state: WizardState): string[] {
   return (node.alerts ?? []).filter((a) => evaluate(a.showIf, state)).map((a) => a.text);
@@ -151,6 +150,7 @@ export function actorLabel(node: ViewNode, turn: number): string | undefined {
   return label[(Math.max(turn, 1) - 1) % label.length];
 }
 
+/** Правила узла: из `rules` и из пунктов чек-листа, без дублей, в порядке появления. */
 export function nodeRuleIds(node: ViewNode): string[] {
   const ids = [
     ...(node.rules ?? []),
