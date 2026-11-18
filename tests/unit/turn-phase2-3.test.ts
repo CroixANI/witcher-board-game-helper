@@ -50,6 +50,18 @@ const walk = (s: WizardState) => {
   return s;
 };
 const path = (s: WizardState) => [...s.history.map((h) => h.id), s.current];
+/** Битва с монстром (без следа, один ход монстра) до узла исхода `outcome`. */
+const fight = (s: WizardState, outcome: 'Прогнал' | 'Поражение') => {
+  s = pick(pick(s, 'Битва'), 'Монстр');
+  s = advance(g, pick(s, /^Условия нет/)); // bm-life → bm-first
+  s = pick(pick(s, /^Нет/), 'Битва окончена'); // монстр ходит первым
+  return pick(s, outcome);
+};
+/** До p3-discard: шаги исхода и завершения битвы. */
+const toPhase3 = (s: WizardState) => {
+  while (s.current !== 'p3-discard') s = advance(g, s);
+  return s;
+};
 
 describe('граф хода: фаза II', () => {
   it('p2-choose: битва, медитация, исследование; с предупреждением и стр. 15', () => {
@@ -108,19 +120,12 @@ describe('граф хода: фаза II', () => {
     expect(node('p2-explore-read').warning).toMatch(/невыбранного/);
   });
 
-  it('заглушка битвы: исходы ставят флаги и ведут в фазу III или к победе', () => {
+  it('b-target: монстр → bm-ability, ведьмак → bw-check', () => {
     const t = pick(phase2(), 'Битва');
     expect(t.current).toBe('b-target');
-    expect(pick(t, /не проиграл/)).toMatchObject({
-      current: 'p3-discard',
-      flags: { afterBattle: true },
-    });
-    expect(pick(t, /проиграл битву/)).toMatchObject({
-      current: 'p3-discard',
-      flags: { afterBattle: true, lostBattle: true },
-    });
-    expect(pick(t, 'Победа в игре').current).toBe('game-won');
-    expect(pick(t, /Передумал/).current).toBe('p2-choose');
+    expect(labels(t)).toEqual(['Монстр', 'Ведьмак']);
+    expect(pick(t, 'Монстр').current).toBe('bm-ability');
+    expect(pick(t, 'Ведьмак').current).toBe('bw-check');
   });
 });
 
@@ -136,13 +141,13 @@ describe('граф хода: фаза III и конец', () => {
   });
 
   it('afterBattle: «рука пуста», сброс до 3 скрыт; без lostBattle добор полный', () => {
-    const discard = pick(pick(phase2(), 'Битва'), /не проиграл/);
+    const discard = toPhase3(fight(phase2(), 'Прогнал'));
     expect(items(discard)).toEqual([expect.stringMatching(/рука пуста/)]);
     expect(items(advance(g, discard)).join('\n')).not.toMatch(/на 1 карту меньше/);
   });
 
   it('lostBattle: добор на 1 карту меньше', () => {
-    const draw = advance(g, pick(pick(phase2(), 'Битва'), /проиграл битву/));
+    const draw = advance(g, toPhase3(fight(phase2(), 'Поражение')));
     expect(draw.current).toBe('p3-draw');
     expect(items(draw)).toContainEqual(expect.stringMatching(/на 1 карту меньше/));
   });
@@ -157,9 +162,7 @@ describe('граф хода: фаза III и конец', () => {
   });
 
   it('у узлов фаз II–III есть страницы и правила', () => {
-    const ids = [...g.nodes.keys()].filter((id) =>
-      /^(p2-|p3-|b-target|turn-end|game-won)/.test(id),
-    );
+    const ids = [...g.nodes.keys()].filter((id) => /^(p2-|p3-|turn-end|game-won)/.test(id));
     expect(ids.length).toBeGreaterThanOrEqual(17);
     for (const id of ids) {
       expect(node(id).pages, id).toBeDefined();
@@ -172,7 +175,7 @@ describe('граф хода: фаза III и конец', () => {
   });
 
   it('«Мой следующий ход»: школа и число игроков сохранены, флаги сброшены', () => {
-    let s = pick(pick(phase2(5), 'Битва'), /проиграл битву/);
+    let s = fight(phase2(5), 'Поражение');
     s = walk(s);
     expect(s).toMatchObject({
       current: 'turn-end',
@@ -189,7 +192,8 @@ describe('граф хода: фаза III и конец', () => {
   });
 
   it('«Назад» из фазы III после битвы откатывает флаги', () => {
-    const s = pick(pick(phase2(), 'Битва'), /проиграл битву/);
-    expect(back(g, s)).toMatchObject({ current: 'b-target', flags: {} });
+    const s = fight(phase2(), 'Поражение');
+    expect(s).toMatchObject({ current: 'bm-lose', flags: { lostBattle: true } });
+    expect(back(g, s)).toMatchObject({ current: 'bm-outcome', flags: {} });
   });
 });

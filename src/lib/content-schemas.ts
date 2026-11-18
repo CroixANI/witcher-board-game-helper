@@ -195,6 +195,8 @@ export function createSchemas<RR extends z.ZodType, RC extends z.ZodType>(ref: R
         type: z.literal('loop'),
         counterKey: z.string(), // 'battleTurn'
         actorLabel: z.string().optional(), // «Ходит: {actor}»
+        // подсказка «тип атаки выбирает …» по номеру хода монстра и числу игроков (SPEC 8.5)
+        monsterAttack: z.boolean().optional(),
         checklist: z.array(ChecklistItem).nonempty(),
         options: z.array(Option.extend({ increment: z.boolean().default(false) })).min(2),
       })

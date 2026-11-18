@@ -1,0 +1,268 @@
+# Битва с монстром (SPEC 8.5). Сверено с книгой правил, стр. 15, 20–27, 29, 31–32.
+# Флаги: witcherFirst — у вас есть след монстра, первым ходит ведьмак (стр. 21; нужен для подсказки,
+# кто выбирает тип атаки); afterBattle и lostBattle ставит выбор исхода в bm-outcome (стр. 26–27).
+subgraph: battle-monster
+entry: b-target
+nodes:
+  - id: b-target
+    type: choice
+    title: 'С кем битва?'
+    phase: battle
+    pages: [15, 20]
+    rules: [battle-targets]
+    note: 'Напасть можно только на того, кто стоит в вашей локации.'
+    options:
+      - label: 'Монстр'
+        hint: 'Жетон монстра в вашей локации'
+        next: bm-ability
+      - label: 'Ведьмак'
+        hint: 'Не в локации школы, не там, где закрытая корчма, и не тот, с кем вы играли в покер в этот ход'
+        next: bw-check
+
+  - id: bm-ability
+    type: choice
+    title: 'Особая способность монстра'
+    phase: battle
+    pages: [21, 31]
+    rules: [monster-battle-setup]
+    components: [monster-card]
+    note: 'Монстром управляет игрок справа от вас. Он зачитывает вслух особую способность монстра и следит, чтобы она сработала вовремя.'
+    warning: 'У некоторых монстров есть условие начала битвы (например, сбросить эликсир). Не выполнили — битвы не будет.'
+    options:
+      - label: 'Условия нет или выполняю его'
+        hint: 'Переходим к запасам жизни'
+        next: bm-life
+      - label: 'Не могу — выбрать другое действие'
+        hint: 'Битва не началась'
+        next: p2-choose
+
+  - id: bm-life
+    type: step
+    title: 'Запасы жизни'
+    phase: battle
+    pages: [20, 21]
+    rules: [battle-life-pool, unconscious, monster-battle-setup]
+    components: [action-card, monster-battle-card]
+    note: 'Ваше здоровье — карты в колоде запаса жизни и в руке. Кончились и те и другие — вы без сознания.'
+    zones: [z-monster-battle-deck]
+    checklist:
+      - text: 'Вы: замешайте свой сброс в колоду — это ваш запас жизни. Руку не трогайте: не сбрасывайте и не добирайте'
+      - text: 'Игрок справа: возьмите из колоды боевых карт монстров столько карт, сколько жизни у монстра, и перемешайте — это запас жизни монстра (руки у монстра нет)'
+      - text: 'Пересчитывать карты запаса монстра можно в любой момент, не глядя на них и не меняя порядок'
+    next: bm-first
+
+  - id: bm-first
+    type: question
+    title: 'Кто ходит первым?'
+    phase: battle
+    pages: [11, 21]
+    rules: [trail-tokens, monster-battle-setup]
+    components: [trail-token]
+    question: 'У вас есть жетон следа этого монстра — жетон локации его типа местности, лежащий лицом вниз?'
+    yes:
+      label: 'Да — первым хожу я'
+      next: bm-witcher-turn
+      set: { witcherFirst: true }
+    no:
+      label: 'Нет — первым ходит монстр'
+      next: bm-monster-turn
+
+  - id: bm-witcher-turn
+    type: loop
+    title: 'Ход ведьмака'
+    phase: battle
+    pages: [22, 23, 24]
+    rules: [witcher-battle-turn, effects-timing, combo, combo-damage, combo-shield, combo-other, battle-draw]
+    components: [elixir, action-card, shield-marker]
+    counterKey: battleTurn
+    actorLabel: 'Ходит: вы'
+    checklist:
+      - text: '1. Эффекты (по желанию, в любом порядке): эликсиры — за всю битву не больше числа у навыка алхимии, использованный переверните лицом вниз; специализация; карты перед вами. Эффекты без указанного времени — только на этом этапе'
+        rule: effects-timing
+      - text: '2. Комбинация: если в руке есть карты, сыграйте хотя бы одну. Каждую следующую кладите на верхнюю — её цвет должен совпасть с одной связью верхней карты'
+        rule: combo
+      - text: '3. Урон: символы в углах и на использованных связях — столько карт игрок справа сбрасывает с верха запаса монстра. Потом щит + символы щита (не выше защиты), потом прочие эффекты'
+        rule: combo-damage
+      - text: '4. Добор: навык сражения ± эффекты (0 и меньше — не берёте), в руке не больше 7. Колоду запаса не перемешивайте, даже если она кончилась. Сбросьте комбинацию по порядку — последняя карта сверху'
+        rule: battle-draw
+    options:
+      - label: 'Ход монстра →'
+        next: bm-monster-turn
+        increment: true
+      - label: 'Битва окончена'
+        hint: 'У монстра нет карт или вы без сознания'
+        next: bm-outcome
+
+  - id: bm-monster-turn
+    type: loop
+    title: 'Ход монстра'
+    phase: battle
+    pages: 25
+    rules: [monster-turn, monster-attack-effects, combo-damage]
+    components: [monster-battle-card]
+    counterKey: battleTurn
+    actorLabel: 'Ходит: монстр'
+    monsterAttack: true
+    note: 'Особая способность монстра может менять ход битвы — за ней следит игрок справа.'
+    checklist:
+      - text: 'Тип атаки — удар или укус — объявляют вслух до того, как открыта карта. Вы его не выбираете'
+      - text: 'Игрок справа открывает верхнюю карту запаса жизни монстра и применяет атаку объявленного типа'
+      - text: 'Урон: сначала щит, потом карты с верха вашей колоды, потом карты из руки на ваш выбор'
+        rule: combo-damage
+      - text: 'Убрать из игры: покажите и уберите в коробку 1 карту из руки (рука пуста — верхнюю карту колоды)'
+      - text: 'Понизить навык: маркер на 1 вниз, не ниже 1; навык 5-го уровня не понижается'
+      - text: 'Случайный сброс: перемешайте руку, игрок справа вслепую берёт 1–3 карты (по уровню монстра) в ваш сброс; не хватает — с верха колоды'
+      - text: 'Открытую карту монстра сбросьте'
+    options:
+      - label: 'Ход ведьмака →'
+        next: bm-witcher-turn
+        increment: true
+      - label: 'Битва окончена'
+        hint: 'У монстра нет карт или вы без сознания'
+        next: bm-outcome
+
+  - id: bm-outcome
+    type: choice
+    title: 'Чем кончилась битва?'
+    phase: battle
+    pages: [20, 25, 26]
+    rules: [monster-outcomes, unconscious]
+    note: 'Если карты кончились у обоих в один ход, побеждает тот, чья карта к этому привела.'
+    options:
+      - label: 'Победа'
+        hint: 'У монстра не осталось карт, вы в сознании'
+        next: bm-win
+        set: { afterBattle: true }
+      - label: 'Прогнал'
+        hint: 'Вы без сознания, у монстра 0 или 1 карта'
+        next: bm-drive
+        set: { afterBattle: true }
+      - label: 'Поражение'
+        hint: 'Вы без сознания, у монстра 2 карты или больше'
+        next: bm-lose
+        set: { afterBattle: true, lostBattle: true }
+
+  - id: bm-win
+    type: step
+    title: 'Монстр побеждён'
+    phase: battle
+    pages: [26, 29]
+    rules: [monster-outcomes, trophies]
+    components: [monster-token, monster-card, gold, trophy-marker]
+    zones: [z-monster-slots, z-trophy-track]
+    checklist:
+      - text: 'Жетон монстра уберите из игры и возьмите 2 золота'
+      - text: 'Переверните карту монстра, зачитайте описание победы и положите её под свой планшет так, чтобы эффект трофея был виден'
+      - text: 'Поднимите жетон трофеев на 1 деление'
+    next: bm-win-top
+
+  - id: bm-win-top
+    type: question
+    title: 'Верх шкалы?'
+    phase: battle
+    pages: 29
+    rules: [game-victory]
+    question: 'Ваш жетон трофеев дошёл до самого верхнего деления шкалы?'
+    yes:
+      label: 'Да — я победил в игре'
+      next: game-won
+    no:
+      label: 'Нет'
+      next: bm-win-exhaust
+
+  - id: bm-win-exhaust
+    type: step
+    title: 'Истощение'
+    phase: battle
+    pages: 29
+    rules: [exhaustion, remove-from-game]
+    components: [action-card]
+    zones: [z-trophy-track]
+    checklist:
+      - text: 'Число истощения — значение у деления шкалы, на которое вы только что поднялись'
+      - text: 'Просмотрите руку, колоду и сброс и уберите из игры ровно столько карт действий'
+      - text: 'Перемешайте все свои карты действий в новую колоду'
+    next: bm-new-monster-up
+
+  - id: bm-new-monster-up
+    type: step
+    title: 'Новый монстр — уровнем выше'
+    phase: battle
+    pages: [8, 26]
+    rules: [new-monster, extra-monster-stack]
+    components: [monster-token, monster-card, location-token, trail-token]
+    note: 'После монстра III уровня приходит снова монстр III уровня.'
+    zones: [z-monster-supply, z-monster-slots, z-location-stacks]
+    checklist:
+      - text: 'Возьмите случайный жетон монстра из стопки на 1 уровень выше побеждённого. Стопка пуста — соберите новую из прогнанных (не побеждённых) монстров этого уровня'
+      - text: 'Побеждён монстр I уровня, а в дополнительной стопке есть жетоны — новый монстр берётся оттуда'
+        showIf: { players: [4, 5] }
+        rule: extra-monster-stack
+      - text: 'Все игроки возвращают в стопки локаций жетоны следа этого монстра и жетоны выслеживания на него; туда же — жетон локации над освободившейся ячейкой. Перемешайте стопку. Жетоны на картах заданий не трогайте'
+      - text: 'Новый жетон локации из этой стопки положите над освободившейся ячейкой'
+      - text: 'Поставьте новый жетон монстра в локацию с этого жетона'
+      - text: 'Найдите карту нового монстра и положите её лицом вверх в освободившуюся ячейку'
+    next: b-end-monster
+
+  - id: bm-drive
+    type: step
+    title: 'Монстр прогнан'
+    phase: battle
+    pages: [26, 27]
+    rules: [monster-outcomes, cost0-card]
+    components: [gold, monster-card, monster-token, action-card]
+    zones: [z-monster-slots, z-action-row]
+    checklist:
+      - text: 'Возьмите 2 золота'
+      - text: 'Карту и жетон этого монстра сбросьте'
+      - text: 'Возьмите из ряда карту действия стоимостью 0 (модификаторы ячеек не считаются) и положите в свой сброс, восполните ряд. В ряду такой нет — открывайте колоду действий до первой карты стоимостью 0, остальные замешайте обратно'
+        rule: cost0-card
+    next: bm-new-monster-same
+
+  - id: bm-new-monster-same
+    type: step
+    title: 'Новый монстр — того же уровня'
+    phase: battle
+    pages: 26
+    rules: [new-monster]
+    components: [monster-token, monster-card, location-token, trail-token]
+    zones: [z-monster-supply, z-monster-slots, z-location-stacks]
+    checklist:
+      - text: 'Возьмите случайный жетон монстра из стопки того же уровня, что и прогнанный. Стопка пуста — соберите новую из прогнанных монстров этого уровня'
+      - text: 'Все игроки возвращают в стопки локаций жетоны следа этого монстра и жетоны выслеживания на него; туда же — жетон локации над освободившейся ячейкой. Перемешайте стопку. Жетоны на картах заданий не трогайте'
+      - text: 'Новый жетон локации из этой стопки положите над освободившейся ячейкой'
+      - text: 'Поставьте новый жетон монстра в локацию с этого жетона'
+      - text: 'Найдите карту нового монстра и положите её лицом вверх в освободившуюся ячейку'
+    next: b-end-monster
+
+  - id: bm-lose
+    type: step
+    title: 'Поражение'
+    phase: battle
+    pages: [26, 27]
+    rules: [monster-outcomes, cost0-card, trail-tokens]
+    components: [trail-token, action-card]
+    note: 'Монстр остаётся на поле. В следующей битве у него снова полный запас жизни.'
+    zones: [z-location-stacks, z-action-row]
+    checklist:
+      - text: 'Если у вас ещё нет следа этого типа местности, возьмите жетон следа из стопки локаций того же типа, что и локация монстра'
+      - text: 'Возьмите из ряда карту действия стоимостью 0 (модификаторы ячеек не считаются) и положите в свой сброс, восполните ряд. В ряду такой нет — открывайте колоду действий до первой карты стоимостью 0, остальные замешайте обратно'
+        rule: cost0-card
+      - text: 'В фазе III этого хода вы доберёте на 1 карту меньше — помощник напомнит'
+    next: b-end-monster
+
+  - id: b-end-monster
+    type: step
+    title: 'Завершение битвы'
+    phase: battle
+    pages: [22, 27]
+    rules: [battle-end, elixirs]
+    components: [elixir, shield-marker, monster-battle-card, action-card]
+    note: 'Выполняется при любом исходе. Рука после этого пуста — фаза III начнётся с добора.'
+    zones: [z-monster-battle-deck]
+    checklist:
+      - text: 'Сбросьте эликсиры, использованные в этой битве'
+      - text: 'Поднимите щит до максимума по навыку защиты'
+      - text: 'Перемешайте все боевые карты монстров, включая не попавшие в запас жизни, — это снова колода'
+      - text: 'Перемешайте все свои карты действий — колоду, сброс и руку — в новую колоду'
+    next: p3-discard
