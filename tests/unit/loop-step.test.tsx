@@ -79,4 +79,19 @@ describe('<LoopStep>', () => {
     render(<LoopStep node={loop()} state={state(3, 0)} act={act} />);
     expect(hint()).toBeUndefined();
   });
+
+  it('список actorLabel — подписи по очереди: битва ведьмаков, первым ходит нападающий', () => {
+    const duel: ViewNode = {
+      ...loop(),
+      id: 'bw-turn',
+      actorLabel: ['Ходит: вы', 'Ходит: соперник'],
+    };
+    const actors = [0, 1, 2].map((battleTurn) => {
+      const { container } = render(<LoopStep node={duel} state={state(3, battleTurn)} act={act} />);
+      const text = container.querySelector('.wizard-loop-meta')?.textContent;
+      cleanup();
+      return text;
+    });
+    expect(actors).toEqual(['Ход 1Ходит: вы', 'Ход 2Ходит: соперник', 'Ход 3Ходит: вы']);
+  });
 });

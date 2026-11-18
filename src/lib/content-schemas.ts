@@ -160,6 +160,11 @@ export function createSchemas<RR extends z.ZodType, RC extends z.ZodType>(ref: R
     components: z.array(ref.components).default([]),
     note: z.string().optional(), // короткий подзаголовок
     warning: z.string().optional(), // «⚠ Не перепутать»
+    // предупреждения над вариантами, видимые по условию (например, флаг pokerPlayed в bw-check)
+    alerts: z
+      .array(z.object({ text: z.string(), showIf: Condition.optional() }).strict())
+      .nonempty()
+      .optional(),
     showIf: Condition.optional(), // узел пропускается, если false
     faqPhase: Phase.optional(), // фильтр кнопки «?»; по умолчанию = phase
   };
@@ -194,7 +199,8 @@ export function createSchemas<RR extends z.ZodType, RC extends z.ZodType>(ref: R
         ...NodeBase,
         type: z.literal('loop'),
         counterKey: z.string(), // 'battleTurn'
-        actorLabel: z.string().optional(), // «Ходит: {actor}»
+        // «Ходит: …»; список — подписи по очереди по номеру хода (битва ведьмаков, SPEC 8.6)
+        actorLabel: z.union([z.string(), z.array(z.string()).min(2)]).optional(),
         // подсказка «тип атаки выбирает …» по номеру хода монстра и числу игроков (SPEC 8.5)
         monsterAttack: z.boolean().optional(),
         checklist: z.array(ChecklistItem).nonempty(),

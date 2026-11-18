@@ -376,6 +376,7 @@ const NodeBase = {
   components: z.array(reference('components')).default([]),
   note: z.string().optional(),                                  // короткий подзаголовок
   warning: z.string().optional(),                               // «⚠ Не перепутать»
+  alerts: z.array(z.object({ text: z.string(), showIf: Condition.optional() })).optional(), // ⚠ над вариантами, по условию (R4.2)
   showIf: Condition.optional(),                                 // узел пропускается, если false
   faqPhase: Phase.optional(),                                   // фильтр кнопки «?»; по умолчанию = phase
 };
@@ -390,7 +391,7 @@ export const WizardNode = z.discriminatedUnion('type', [
     no: Option.omit({ label: true }).extend({ label: z.string().default('Нет') }) }).strict(),
   z.object({ ...NodeBase, type: z.literal('loop'),
     counterKey: z.string(),                                     // 'battleTurn'
-    actorLabel: z.string().optional(),                          // «Ходит: {actor}»
+    actorLabel: z.union([z.string(), z.array(z.string()).min(2)]).optional(), // «Ходит: …»; список — по очереди по номеру хода (R4.2)
     monsterAttack: z.boolean().optional(),                      // подсказка «тип атаки выбирает …» (8.5)
     checklist: z.array(ChecklistItem).nonempty(),
     options: z.array(Option.extend({ increment: z.boolean().default(false) })).min(2) }).strict(),
@@ -856,16 +857,16 @@ flowchart TD
 
 | id | Тип | Текст / варианты | Переходы | Правила | Стр. |
 |---|---|---|---|---|---|
-| `bw-check` | question | «Можно напасть? Вы **не** в локации любой школы, **нет** жетона закрытой корчмы, вы **не** играли с ним в покер в этот ход». Если `pokerPlayed`, показывается предупреждение | да → условный: `players:[3,4,5]` → `bw-bets`, иначе `bw-life`; нет → `p2-choose` | `witcher-battle`, `closed-tavern`, `battle-targets` | 15, 20 |
+| `bw-check` | question | «Можно напасть? Вы **не** в локации любой школы, **нет** жетона закрытой корчмы, вы **не** играли с ним в покер в этот ход». Если `pokerPlayed`, показывается предупреждение (`alerts` с `showIf flags`) | да → `bw-bets` (при 2 игроках скрыт `showIf` и пропускается в `bw-life`); нет → `p2-choose` | `witcher-battle`, `closed-tavern`, `battle-targets` | 15, 20 |
 | `bw-bets` | step (`showIf players:[3,4,5]`) | Каждый неучастник может поставить 1 золото (из любой локации) в ячейку «нападающий» или «защищающийся» на своём планшете. Ставка против банка | → `bw-life` | `bets` | 21 |
 | `bw-life` | step | Оба замешивают сброс в колоду (запас жизни), руки не трогают. Первым ходит нападающий (вы). Соперник не может отказаться | → `bw-turn` | `battle-life-pool`, `witcher-battle` | 20 |
-| `bw-turn` | loop (`battleTurn`) | «Ходит: {вы / соперник}» (чётность счётчика). 4 этапа как в `bm-witcher-turn`. Урон по ведьмаку: щит → колода → рука | «Следующий ход» (`increment`) → `bw-turn`; «Кто-то потерял сознание» → `bw-outcome` | `witcher-battle-turn`, `combo-damage` | 20, 22–24 |
+| `bw-turn` | loop (`battleTurn`) | «Ходит: {вы / соперник}» (чётность счётчика: `actorLabel` — список из двух подписей). 4 этапа как в `bm-witcher-turn`. Урон по ведьмаку: щит → колода → рука | «Следующий ход» (`increment`) → `bw-turn`; «Кто-то потерял сознание» → `bw-outcome` | `witcher-battle-turn`, `combo-damage` | 20, 22–24 |
 | `bw-outcome` | choice | Победил нападающий (вы) / Победил защищающийся | `bw-win-attacker` / `bw-win-defender` | `witcher-battle-outcomes` | 27 |
 | `bw-win-attacker` | step | ☐ Золото = награда у жетона проигравшего на шкале трофеев (1–3). ☐ Если у вас **ещё нет** ведьмачьего трофея этой школы: возьмите его из-под планшета соперника, прочтите, под свой планшет, жетон трофеев +1. ☐ Проигравший: карта стоимостью 0 из ряда в сброс | → `bw-win-top` | `witcher-trophy`, `gold-reward`, `cost0-card` | 27–28 |
 | `bw-win-top` | question | «Получили трофей и жетон на верхнем делении?» | да → `game-won`; нет → `bw-win-exhaust` | `game-victory` | 29 |
 | `bw-win-exhaust` | step | Если трофей получен — истощение. Если трофея не было — пропустить | → `bw-end` | `exhaustion` | 29 |
 | `bw-win-defender` | step | ☐ Защищающийся: золото по репутации нападающего. ☐ Вы: карта стоимостью 0 из ряда в сброс; в фазе III доберёте на 1 меньше (`set lostBattle`) | → `bw-end` | `witcher-battle-outcomes`, `gold-reward` | 27–28 |
-| `bw-end` | step | ☐ Жетон закрытой корчмы — в эту локацию (снять с прежней). ☐ Ставки (`showIf players:[3,4,5]`): на проигравшего — золото сбросить; на победителя — вернуть + столько же, сколько получил победитель. ☐ **Оба:** щит до максимума; все карты действий → новая колода. ☐ **Соперник сразу** берёт 4 карты (победил) или 3 (проиграл). ☐ Вы доберёте карты в фазе III. `set afterBattle` | → `p3-discard` | `closed-tavern`, `bets`, `battle-end` | 20, 27–28 |
+| `bw-end` | step | ☐ Жетон закрытой корчмы — в эту локацию (снять с прежней). ☐ Ставки (`showIf players:[3,4,5]`): на проигравшего — золото сбросить; на победителя — вернуть + столько же, сколько получил победитель. ☐ **Оба:** сбросить использованные эликсиры (стр. 22); щит до максимума; все карты действий → новая колода. ☐ **Соперник сразу** берёт 4 карты (победил) или 3 (проиграл). ☐ Вы доберёте карты в фазе III. `set afterBattle` | → `p3-discard` | `closed-tavern`, `bets`, `battle-end` | 20, 27–28 |
 
 ### 8.7 Узлы: фаза III и конец (`turn/phase3.yaml`)
 
