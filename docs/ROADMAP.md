@@ -44,7 +44,7 @@
 | R3.3 | done | 2026-11-17 | #32 |
 | R3.4 | done | 2026-11-17 | #33 |
 | R3.5 | done | 2026-11-18 | #34 |
-| R4.1 | todo | | |
+| R4.1 | review | 2026-11-18 | #? |
 | R4.2 | todo | | |
 | R4.3 | todo | | |
 | R5.1 | todo | | |
@@ -429,7 +429,7 @@
 
 ## M4 — Битва
 
-### - [ ] R4.1 Битва с монстром
+### - [x] R4.1 Битва с монстром
 - **Ветка:** `content/r4.1-battle-monster` · `turn-wizard`, `content` · M4.
 - **Цель:**
   - `turn/battle-monster.yaml` по SPEC 8.5 (`b-target`, `bm-*`, `b-end-monster`);
