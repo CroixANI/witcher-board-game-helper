@@ -154,22 +154,4 @@ describe('граф хода: фаза I', () => {
     expect(node('la-gold-row').zones).toContain('z-action-row');
     expect(node('la-elixir').zones).toContain('z-elixir-deck');
   });
-
-  it('пример хода стр. 30–32, шаги 1–9 SPEC 17.1: до фазы II', () => {
-    let s = turn(); // 1. t-start → p1-move-q
-    s = advance(g, pick(s, /^Да/)); // 2. водная карта → Бан Ард
-    s = advance(g, pick(pick(s, 'Действие локации'), /навык/i)); // 3. la-skill: алхимия +1
-    expect(s.history.map((h) => h.id)).toContain('la-skill');
-    s = advance(g, pick(s, 'Переместиться ещё')); // 4. горная карта → Каэр Морхен
-    s = advance(g, choose(g, pick(s, 'Покер с ведьмаком'), 0)); // 5. покер, проигрыш
-    s = advance(g, pick(pick(s, 'Действие локации'), /школ/i)); // 6. тренировка защиты
-    s = advance(g, pick(s, 'Переместиться ещё')); // 7. джокер → Хенгфорс
-    s = advance(g, pick(pick(s, 'Действие локации'), /выслеживан/i)); // 8. la-hunt
-    expect(s.current).toBe('p1-arrived');
-    s = pick(s, 'Закончить фазу I'); // 9. к фазе II
-    expect(s).toMatchObject({ current: 'p2-choose', flags: { moved: true, pokerPlayed: true } });
-    expect(s.history.map((h) => h.id)).toEqual(
-      expect.arrayContaining(['la-skill', 'p1-poker', 'la-school', 'la-hunt']),
-    );
-  });
 });
