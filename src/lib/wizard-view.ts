@@ -46,6 +46,8 @@ export type ViewNode = Omit<WizardNode, 'options' | 'yes' | 'no'> & {
   readonly detailsHtml?: string | undefined;
   readonly question?: string | undefined;
   readonly actorLabel?: string | undefined;
+  /** `loop` хода монстра: подсказка, кто выбирает тип атаки (SPEC 8.5). */
+  readonly monsterAttack?: boolean | undefined;
   readonly outcome?: 'turn-complete' | 'game-won' | 'setup-complete' | undefined;
   readonly options?: readonly ViewOption[] | undefined;
   readonly yes?: Omit<ViewOption, 'increment'> | undefined;

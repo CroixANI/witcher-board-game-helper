@@ -1,0 +1,26 @@
+# Битва с ведьмаком (SPEC 8.6). Пока заглушка bw-check: подграф целиком — задача R4.2.
+subgraph: battle-witcher
+entry: bw-check
+nodes:
+  - id: bw-check
+    type: choice
+    title: 'Битва с ведьмаком — подсказки в разработке'
+    phase: battle
+    pages: [20, 27, 28]
+    rules: [witcher-battle, witcher-battle-outcomes, battle-end]
+    note: 'Проведите битву по правилам (стр. 20–28) и выберите, чем она закончилась.'
+    options:
+      - label: 'Я победил'
+        hint: 'Соперник потерял сознание'
+        next: p3-discard
+        set: { afterBattle: true }
+      - label: 'Я проиграл'
+        hint: 'Вы потеряли сознание: в фазе III доберёте на 1 карту меньше'
+        next: p3-discard
+        set: { afterBattle: true, lostBattle: true }
+      - label: 'Победа в игре'
+        hint: 'Трофей за битву поднял жетон на верхнее деление шкалы'
+        next: game-won
+      - label: 'Передумал — другое действие'
+        hint: 'Битва ещё не началась'
+        next: p2-choose

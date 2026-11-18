@@ -1,5 +1,5 @@
 # Фаза II: битва, медитация или исследование (SPEC 8.3). Сверено с книгой правил, стр. 15–18, 26–29.
-# Битва пока заглушка b-target (R3.3): её заменят R4.1–R4.2 (подграфы battle-monster / battle-witcher).
+# Битва — подграфы battle-monster (b-target, bm-*) и battle-witcher (bw-*).
 subgraph: phase2
 entry: p2-choose
 nodes:
@@ -20,30 +20,6 @@ nodes:
       - label: 'Исследование'
         hint: 'Города или его окрестностей — доступно в любой локации'
         next: p2-explore-where
-
-  # ── Битва: временная заглушка до R4.1–R4.2 ───────────────
-  - id: b-target
-    type: choice
-    title: 'Битва — подсказки в разработке'
-    phase: battle
-    pages: [15, 20]
-    rules: [battle-targets, battle-end]
-    note: 'Проведите битву по правилам (стр. 20–28) и выберите, чем она закончилась.'
-    options:
-      - label: 'Битва окончена, я не проиграл'
-        hint: 'Победа над монстром или ведьмаком, монстр прогнан или вы защищались'
-        next: p3-discard
-        set: { afterBattle: true }
-      - label: 'Я проиграл битву'
-        hint: 'Монстр остался в локации или напавший ведьмак проиграл'
-        next: p3-discard
-        set: { afterBattle: true, lostBattle: true }
-      - label: 'Победа в игре'
-        hint: 'Трофей за битву поднял жетон на верхнее деление шкалы'
-        next: game-won
-      - label: 'Передумал — другое действие'
-        hint: 'Битва ещё не началась'
-        next: p2-choose
 
   # ── Медитация ─────────────────────────────────────────────
   - id: p2-med-check

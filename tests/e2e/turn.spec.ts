@@ -91,10 +91,12 @@ test('пример хода стр. 30–32, шаги 1–9: фаза I до б�
   await button(page, /^Закончить фазу I/).click();
   await expect(heading(page)).toHaveText('Фаза II: одно действие');
   await button(page, /^Битва/).click();
-  await expect(heading(page)).toHaveText(/^Битва/);
+  await expect(heading(page)).toHaveText('С кем битва?');
+  await button(page, /^Монстр/).click();
+  await expect(heading(page)).toHaveText('Особая способность монстра');
 
-  // Битва — R4.x. Вместо неё исследование до конца хода.
-  await button(page, /^Передумал/).click();
+  // Битва целиком — R4.3. Здесь отказ от неё и исследование до конца хода.
+  await button(page, /^Не могу/).click();
   await expect(heading(page)).toHaveText('Фаза II: одно действие');
   await button(page, /^Исследование/).click();
   await doStep(page, /^Окрестности/);
@@ -113,4 +115,44 @@ test('пример хода стр. 30–32, шаги 1–9: фаза I до б�
   // Снова t-start, школа и число игроков не спрашиваются заново.
   await expect(heading(page)).toHaveText('Ваш ход');
   await expect(page.locator('.school-badge__name')).toHaveText('Школа Медведя');
+});
+
+test('битва с монстром при 3 игроках: кто выбирает атаку, поражение, фаза III с добором на 1 меньше', async ({
+  page,
+}) => {
+  await page.goto('turn/');
+  await expect(page.locator('astro-island[ssr]')).toHaveCount(0);
+  await button(page, /^3 игрока/).click();
+  await button(page, /^Волк/).click();
+  await button(page, 'Далее →').click();
+  await button(page, /^Нет/).click();
+  await button(page, /^Битва/).click();
+  await button(page, /^Монстр/).click();
+  await doStep(page, /^Условия нет/);
+  await expect(heading(page)).toHaveText('Кто ходит первым?');
+  await button(page, /^Нет — первым ходит монстр/).click();
+
+  const hint = page.locator('.wizard-loop-hint');
+  await expect(heading(page)).toHaveText('Ход монстра');
+  await expect(page.locator('.wizard-loop-meta')).toContainText('Ход 1');
+  await expect(hint).toContainText('игрок справа от вас');
+  await button(page, /^Ход ведьмака/).click();
+  await expect(heading(page)).toHaveText('Ход ведьмака');
+  await expect(hint).toHaveCount(0);
+  await button(page, /^Ход монстра/).click();
+  await expect(page.locator('.wizard-loop-meta')).toContainText('Ход 3');
+  await expect(hint).toContainText('игрок слева от вас');
+
+  await button(page, 'Битва окончена').click();
+  await expect(heading(page)).toHaveText('Чем кончилась битва?');
+  await button(page, /^Поражение/).click();
+  await expect(heading(page)).toHaveText('Поражение');
+  await button(page, 'Далее →').click();
+  await expect(heading(page)).toHaveText('Завершение битвы');
+  await expect(page.locator('.wizard-board')).toBeVisible();
+  await button(page, 'Далее →').click();
+  await expect(heading(page)).toHaveText('Фаза III: сбросьте лишнее');
+  await expect(page.locator('.wizard-checklist')).toContainText('рука пуста');
+  await button(page, 'Далее →').click();
+  await expect(page.locator('.wizard-checklist')).toContainText('на 1 карту меньше');
 });
