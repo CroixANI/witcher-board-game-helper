@@ -160,12 +160,22 @@ describe('граф хода: инварианты SPEC 13.2 на реально�
     for (let grew = true; grew;) {
       grew = false;
       for (const [k, to] of edges) {
-        if (!canEnd.has(k) && to.some((t) => canEnd.has(t))) grew = canEnd.add(k) !== undefined;
+        if (!canEnd.has(k) && to.some((t) => canEnd.has(t))) {
+          canEnd.add(k);
+          grew = true;
+        }
       }
     }
     const stuck = [...states.keys()].filter((k) => !canEnd.has(k));
     expect(stuck).toEqual([]);
     const reached = new Set([...states.values()].map((s) => s.current));
     expect([...reached]).toEqual(expect.arrayContaining(['turn-end', 'game-won', 'b-target']));
+  });
+
+  // SPEC 13.2, п. 4: у p1-move-q ровно 2 варианта (checkChoices проверяет только ≥ 2).
+  it.each(PLAYERS)('%i игрока: у p1-move-q ровно 2 варианта', (players) => {
+    const s = advance(g, initState(g, 'turn', { players, school: 'wolf' }));
+    expect(s.current).toBe('p1-move-q');
+    expect(labels(s)).toHaveLength(2);
   });
 });

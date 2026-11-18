@@ -110,5 +110,7 @@ test('пример хода стр. 30–32, шаги 1–9: фаза I до б�
   }
   await expect(heading(page)).toHaveText('Ход завершён');
   await button(page, 'Мой следующий ход').click();
+  // Снова t-start, школа и число игроков не спрашиваются заново.
   await expect(heading(page)).toHaveText('Ваш ход');
+  await expect(page.locator('.school-badge__name')).toHaveText('Школа Медведя');
 });
