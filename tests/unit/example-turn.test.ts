@@ -1,5 +1,5 @@
 // Сквозной сценарий хода (ROADMAP R3.5, SPEC 17.1–17.2): пример стр. 30–32 по реальному графу
-// и граф-инварианты хода при 2–5 игроках. Шаги 10–21 (битва) — R4.3.
+// и граф-инварианты хода при 2–5 игроках. Шаги 10–21 (битва с архиспорой и фаза III) — R4.3.
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -9,6 +9,7 @@ import { graphRoots, turnGraph, type TurnEntry } from '../../src/lib/load-graph'
 import {
   advance,
   choose,
+  evaluate,
   initState,
   resetTurn,
   visibleOptions,
@@ -63,7 +64,82 @@ function examplePhase1(players: PlayerCount): WizardState {
   return pick(s, 'Закончить фазу I'); // 9. к фазе II
 }
 
+/** Тексты пунктов чек-листа текущего узла, видимые при его флагах и параметрах. */
+const checklist = (s: WizardState) =>
+  (node(s.current).checklist ?? []).filter((c) => evaluate(c.showIf, s)).map((c) => c.text);
+
+/** Шаги 10–21 SPEC 17.1: битва с архиспорой (победа), фаза III до turn-end. */
+function exampleBattleAndPhase3(s: WizardState): WizardState {
+  s = pick(pick(s, 'Битва'), 'Монстр'); // 9. битва с архиспорой
+  expect(s.current).toBe('bm-ability');
+  s = advance(g, pick(s, /^Условия нет или выполняю/)); // 10. сброшен эликсир «Чёрная кровь»
+  s = pick(s, /^Да — первым хожу я/); // 11. есть след → ведьмак первый
+  expect(s).toMatchObject({ current: 'bm-witcher-turn', flags: { witcherFirst: true } });
+  s = pick(s, /^Ход монстра/); // 12. укус, 5 урона
+  expect(s.current).toBe('bm-monster-turn');
+  s = pick(s, /^Ход ведьмака/); // 13. «Доспехи» Медведя, «Пурга», комбинация 3 + 1
+  s = pick(s, /^Ход монстра/); // 14. укус, алхимия −1
+  s = pick(s, /^Ход ведьмака/); // 15. ход 3 ведьмака: монстр побеждён
+  expect(s).toMatchObject({ current: 'bm-witcher-turn', counters: { battleTurn: 4 } });
+  s = pick(pick(s, 'Битва окончена'), 'Победа');
+  expect(s.current).toBe('bm-win');
+  s = pick(advance(g, s), 'Нет'); // 16. трофей +1, до верха шкалы далеко
+  expect(s.current).toBe('bm-win-exhaust');
+  s = advance(g, s); // 17. истощение 1
+  s = advance(g, s); // 18. новый монстр уровнем выше
+  expect(s.current).toBe('b-end-monster');
+  s = advance(g, s); // 18. сброс эликсира, щит, всё перемешать
+  expect(s.current).toBe('p3-discard'); // 19. рука пуста после битвы
+  expect(checklist(s)).toEqual([expect.stringContaining('рука пуста')]);
+  s = advance(g, s);
+  expect(s.current).toBe('p3-draw'); // 19. добор 3 карт — без штрафа за поражение
+  expect(checklist(s).join(' ')).not.toContain('на 1 карту меньше');
+  s = advance(g, s); // 20. покупка в ячейке −1
+  expect(s.current).toBe('p3-buy');
+  return advance(g, advance(g, s)); // 21. сдвиг ряда → turn-end
+}
+
 describe('пример хода стр. 30–32 (SPEC 17.1)', () => {
+  it.each(PLAYERS)('%i игрока: все 21 шаг примера доходят до turn-end', (players) => {
+    const s = exampleBattleAndPhase3(examplePhase1(players));
+    expect(s).toMatchObject({
+      current: 'turn-end',
+      params: { players, school: 'bear' },
+      flags: { moved: true, pokerPlayed: true, witcherFirst: true, afterBattle: true },
+    });
+    expect(s.flags).not.toHaveProperty('lostBattle');
+    expect(path(s).slice(path(examplePhase1(players)).length - 1)).toEqual([
+      'p2-choose',
+      'b-target',
+      'bm-ability',
+      'bm-life',
+      'bm-first',
+      'bm-witcher-turn',
+      'bm-monster-turn',
+      'bm-witcher-turn',
+      'bm-monster-turn',
+      'bm-witcher-turn',
+      'bm-outcome',
+      'bm-win',
+      'bm-win-top',
+      'bm-win-exhaust',
+      'bm-new-monster-up',
+      'b-end-monster',
+      'p3-discard',
+      'p3-draw',
+      'p3-buy',
+      'p3-refill',
+      'turn-end',
+    ]);
+    expect(resetTurn(g, s)).toMatchObject({
+      current: 't-start',
+      params: { players, school: 'bear' },
+      flags: {},
+      counters: {},
+      history: [],
+    });
+  });
+
   it.each(PLAYERS)('%i игрока: шаги 1–9 доходят до b-target', (players) => {
     let s = examplePhase1(players);
     expect(s).toMatchObject({ current: 'p2-choose', flags: { moved: true, pokerPlayed: true } });
