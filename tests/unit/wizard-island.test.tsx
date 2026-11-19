@@ -592,3 +592,72 @@ describe('<WizardIsland>: иконки вариантов и пунктов че
     expect(container.querySelectorAll('.wizard-option .wizard-icon')).toHaveLength(1);
   });
 });
+
+describe('<WizardIsland>: условные предупреждения alerts (R4.2)', () => {
+  const nodes: ViewNode[] = [
+    {
+      id: 'q',
+      type: 'question',
+      title: 'Можно напасть?',
+      phase: 'battle',
+      pages: 15,
+      alerts: [
+        { text: 'Вы играли в покер', showIf: { flags: { pokerPlayed: true } } },
+        { text: 'Всегда видно' },
+      ],
+      question: 'Нападаете?',
+      yes: { label: 'Да', next: 'end' },
+      no: { label: 'Нет', next: 'end' },
+    },
+    {
+      id: 'end',
+      type: 'end',
+      title: 'Конец',
+      phase: 'phase3',
+      pages: 12,
+      outcome: 'turn-complete',
+    },
+  ];
+  const data: WizardData = {
+    graph: 'turn',
+    title: 'Ход',
+    entry: 'q',
+    nodes,
+    rules: {},
+    components: {},
+    schools: {},
+  };
+  const withFlags = (flags: Record<string, boolean>) => {
+    const storage = memoryStorage();
+    storage.set(PARAMS_KEY, JSON.stringify({ players: 3, school: 'wolf' }));
+    const state: WizardState = {
+      v: 1,
+      graph: 'turn',
+      params: { players: 3, school: 'wolf' },
+      current: 'q',
+      history: [],
+      flags,
+      counters: {},
+      checked: {},
+      updatedAt: 1,
+    };
+    storage.set(storageKey('turn'), JSON.stringify(state));
+    return storage;
+  };
+  const alerts = (container: Element) =>
+    [...container.querySelectorAll('.wizard-warning')].map((p) => p.textContent);
+
+  it('предупреждение с showIf видно только при выполненном условии, до кнопок', () => {
+    const { container } = render(
+      <WizardIsland data={data} storage={withFlags({ pokerPlayed: true })} />,
+    );
+    expect(alerts(container)).toEqual(['⚠ Вы играли в покер', '⚠ Всегда видно']);
+    const warning = container.querySelector('.wizard-warning')!;
+    const button = screen.getByRole('button', { name: 'Да' });
+    expect(warning.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    cleanup();
+
+    const other = render(<WizardIsland data={data} storage={withFlags({})} />);
+    expect(alerts(other.container)).toEqual(['⚠ Всегда видно']);
+  });
+});

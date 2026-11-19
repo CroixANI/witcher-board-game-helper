@@ -1,26 +1,193 @@
-# Битва с ведьмаком (SPEC 8.6). Пока заглушка bw-check: подграф целиком — задача R4.2.
+# Битва с ведьмаком и ставки (SPEC 8.6). Сверено с книгой правил, стр. 15, 20–24, 27–29.
+# Флаги: pokerPlayed (ставится в p1-poker) включает предупреждение в bw-check (стр. 15, 20);
+# afterBattle и lostBattle ставит выбор исхода в bw-outcome (стр. 27–28). Ставок при 2 игроках нет (стр. 21).
 subgraph: battle-witcher
 entry: bw-check
 nodes:
   - id: bw-check
-    type: choice
-    title: 'Битва с ведьмаком — подсказки в разработке'
+    type: question
+    title: 'Можно напасть на ведьмака?'
     phase: battle
-    pages: [20, 27, 28]
-    rules: [witcher-battle, witcher-battle-outcomes, battle-end]
-    note: 'Проведите битву по правилам (стр. 20–28) и выберите, чем она закончилась.'
+    pages: [15, 20]
+    rules: [witcher-battle, closed-tavern, battle-targets]
+    components: [closed-tavern]
+    note: 'Напасть можно на ведьмака в вашей локации. Отказаться от битвы он не может.'
+    alerts:
+      - text: 'В этот ход вы играли в покер с ведьмаком. На него напасть нельзя — только на другого ведьмака в этой локации.'
+        showIf: { flags: { pokerPlayed: true } }
+    question: 'Вы не в локации какой-либо школы, в вашей локации нет жетона закрытой корчмы и вы не играли с этим ведьмаком в покер в этот ход?'
+    yes:
+      label: 'Да — нападаю'
+      next: bw-bets
+    no:
+      label: 'Нет — выбрать другое действие'
+      next: p2-choose
+
+  - id: bw-bets
+    type: step
+    title: 'Ставки'
+    phase: battle
+    pages: 21
+    rules: [bets]
+    components: [gold, player-board]
+    showIf: { players: [3, 4, 5] }
+    note: 'Ставки делают только те, кто не участвует в битве. Ставить не обязательно.'
+    zones: [z-player-area]
+    checklist:
+      - text: 'Каждый неучастник может положить 1 золото из своего запаса в одну из двух ячеек справа вверху на своём планшете: на нападающего (вас) или на защищающегося'
+      - text: 'Ставка — против банка: выигрыш платит общий запас, а не другие игроки. Ставить можно из любой локации, больше 1 золота нельзя'
+    next: bw-life
+
+  - id: bw-life
+    type: step
+    title: 'Запасы жизни'
+    phase: battle
+    pages: 20
+    rules: [battle-life-pool, unconscious, witcher-battle]
+    components: [action-card]
+    note: 'Здоровье ведьмака — карты в колоде запаса жизни и в руке. Кончились и те и другие — он без сознания.'
+    checklist:
+      - text: 'Вы и соперник: замешайте свой сброс в свою колоду — это запас жизни'
+      - text: 'Руки не трогайте: не сбрасывайте и не добирайте карты'
+      - text: 'Первым ходит нападающий — вы. Дальше ходите по очереди'
+    next: bw-turn
+
+  - id: bw-turn
+    type: loop
+    title: 'Ход в битве ведьмаков'
+    phase: battle
+    pages: [20, 22, 23, 24]
+    rules:
+      [
+        witcher-battle-turn,
+        effects-timing,
+        combo,
+        combo-damage,
+        combo-shield,
+        combo-other,
+        battle-draw,
+      ]
+    components: [elixir, action-card, shield-marker]
+    counterKey: battleTurn
+    actorLabel: ['Ходит: вы', 'Ходит: соперник']
+    note: 'Тот, чей ход, проходит 4 этапа по порядку.'
+    checklist:
+      - text: '1. Эффекты (по желанию, в любом порядке): эликсиры — за всю битву не больше числа у навыка алхимии, использованный переверните лицом вниз; специализация; карты перед собой. Эффекты без указанного времени — только на этом этапе'
+        rule: effects-timing
+      - text: '2. Комбинация: если в руке есть карты, сыграйте хотя бы одну. Каждую следующую кладите на верхнюю — её цвет должен совпасть с одной связью верхней карты'
+        rule: combo
+      - text: '3. Урон противнику — символы в углах и на использованных связях: сначала снижается его щит, потом он сбрасывает карты с верха колоды, потом из руки на свой выбор. Потом свой щит + символы щита (не выше защиты), потом прочие эффекты'
+        rule: combo-damage
+      - text: '4. Добор: навык сражения ± эффекты (0 и меньше — не берёте), в руке не больше 7. Колоду запаса не перемешивайте, даже если она кончилась. Сбросьте комбинацию по порядку — последняя карта сверху'
+        rule: battle-draw
+    options:
+      - label: 'Следующий ход →'
+        next: bw-turn
+        increment: true
+      - label: 'Кто-то потерял сознание'
+        hint: 'У одного из ведьмаков не осталось карт в колоде и в руке'
+        next: bw-outcome
+
+  - id: bw-outcome
+    type: choice
+    title: 'Чем кончилась битва?'
+    phase: battle
+    pages: [20, 27]
+    rules: [witcher-battle-outcomes, unconscious]
+    note: 'Если карты кончились у обоих в один ход, побеждает тот, чья карта к этому привела.'
     options:
       - label: 'Я победил'
         hint: 'Соперник потерял сознание'
-        next: p3-discard
+        next: bw-win-attacker
         set: { afterBattle: true }
-      - label: 'Я проиграл'
-        hint: 'Вы потеряли сознание: в фазе III доберёте на 1 карту меньше'
-        next: p3-discard
+      - label: 'Победил соперник'
+        hint: 'Вы потеряли сознание'
+        next: bw-win-defender
         set: { afterBattle: true, lostBattle: true }
-      - label: 'Победа в игре'
-        hint: 'Трофей за битву поднял жетон на верхнее деление шкалы'
-        next: game-won
-      - label: 'Передумал — другое действие'
-        hint: 'Битва ещё не началась'
-        next: p2-choose
+
+  - id: bw-win-attacker
+    type: step
+    title: 'Победа над ведьмаком'
+    phase: battle
+    pages: [27, 28]
+    rules: [witcher-battle-outcomes, witcher-trophy, gold-reward, cost0-card]
+    components: [gold, witcher-trophy, trophy-marker, action-card]
+    note: 'Свои прежние трофеи соперник не теряет: забирается только его ведьмачий трофей.'
+    zones: [z-trophy-track, z-action-row]
+    checklist:
+      - text: 'Возьмите золото — столько, сколько указано напротив жетона соперника на шкале трофеев (1, 2 или 3)'
+        rule: gold-reward
+      - text: 'Если у вас ещё нет ведьмачьего трофея этого соперника: возьмите эту карту из-под верхней части его планшета, зачитайте описание победы и положите под свой планшет — эффект должен быть виден. Поднимите жетон трофеев на 1 деление'
+        rule: witcher-trophy
+      - text: 'Соперник: берёт из ряда карту действия стоимостью 0 (модификаторы ячеек не считаются) в свой сброс и восполняет ряд. В ряду такой нет — открывает колоду действий до первой карты стоимостью 0, остальные замешивает обратно'
+        rule: cost0-card
+    next: bw-win-top
+
+  - id: bw-win-top
+    type: question
+    title: 'Верх шкалы?'
+    phase: battle
+    pages: 29
+    rules: [game-victory]
+    question: 'Вы получили трофей, и жетон трофеев дошёл до самого верхнего деления шкалы?'
+    yes:
+      label: 'Да — я победил в игре'
+      next: game-won
+    no:
+      label: 'Нет'
+      next: bw-win-exhaust
+
+  - id: bw-win-exhaust
+    type: step
+    title: 'Истощение'
+    phase: battle
+    pages: 29
+    rules: [exhaustion, remove-from-game]
+    components: [action-card]
+    note: 'Трофея в этой битве не было (он у вас уже есть) — истощения нет, переходите дальше.'
+    zones: [z-trophy-track]
+    checklist:
+      - text: 'Число истощения — значение у деления шкалы, на которое вы только что поднялись'
+      - text: 'Просмотрите руку, колоду и сброс и уберите из игры ровно столько карт действий'
+      - text: 'Перемешайте все свои карты действий в новую колоду'
+    next: bw-end
+
+  - id: bw-win-defender
+    type: step
+    title: 'Победил соперник'
+    phase: battle
+    pages: [27, 28]
+    rules: [witcher-battle-outcomes, gold-reward, cost0-card]
+    components: [gold, action-card]
+    note: 'Защищающийся трофей не получает.'
+    zones: [z-trophy-track, z-action-row]
+    checklist:
+      - text: 'Соперник берёт золото — столько, сколько указано напротив вашего жетона на шкале трофеев (1, 2 или 3)'
+        rule: gold-reward
+      - text: 'Вы: возьмите из ряда карту действия стоимостью 0 (модификаторы ячеек не считаются) в свой сброс и восполните ряд. В ряду такой нет — открывайте колоду действий до первой карты стоимостью 0, остальные замешайте обратно'
+        rule: cost0-card
+      - text: 'В фазе III этого хода вы доберёте на 1 карту меньше — помощник напомнит'
+    next: bw-end
+
+  - id: bw-end
+    type: step
+    title: 'Завершение битвы'
+    phase: battle
+    pages: [20, 22, 27, 28]
+    rules: [battle-end, closed-tavern, bets, elixirs]
+    components: [closed-tavern, gold, elixir, shield-marker, action-card]
+    note: 'Выполняется при любом исходе. Ваша рука после этого пуста — фаза III начнётся с добора.'
+    zones: [z-map]
+    checklist:
+      - text: 'Поставьте жетон закрытой корчмы в эту локацию. Если он лежал в другой локации — заберите его оттуда'
+        rule: closed-tavern
+      - text: 'Ставки: золото, поставленное на проигравшего, — в общий запас. Поставившие на победителя забирают своё золото и берут из запаса столько же, сколько получил победитель'
+        showIf: { players: [3, 4, 5] }
+        rule: bets
+      - text: 'Оба: сбросьте эликсиры, использованные в этой битве'
+        rule: elixirs
+      - text: 'Оба: поднимите щит до максимума по навыку защиты'
+      - text: 'Оба: перемешайте все свои карты действий — колоду, сброс и руку — в новую колоду'
+      - text: 'Соперник сразу, не дожидаясь своего хода, берёт из колоды 4 карты, если победил, или 3, если проиграл'
+      - text: 'Вы доберёте карты в фазе III'
+    next: p3-discard

@@ -21,7 +21,13 @@ import {
   type Params,
   type WizardState,
 } from '../lib/wizard-engine';
-import { nodeRuleIds, type Phase, type ViewNode, type WizardData } from '../lib/wizard-view';
+import {
+  nodeRuleIds,
+  visibleAlerts,
+  type Phase,
+  type ViewNode,
+  type WizardData,
+} from '../lib/wizard-view';
 import { ComponentChip } from './ComponentChip';
 import { ReminderSheet } from './ReminderSheet';
 import { RuleCard } from './RuleCard';
@@ -253,6 +259,11 @@ export function WizardIsland({ data, storage: injected }: Props) {
           <span class="wizard-node__pages">{formatPages(node.pages)}</span>
         </header>
         {node.note && <p class="wizard-node__note">{node.note}</p>}
+        {visibleAlerts(node, state).map((text) => (
+          <p key={text} class="wizard-warning">
+            <strong>⚠</strong> {text}
+          </p>
+        ))}
 
         <Step node={node} state={state} act={act} />
 

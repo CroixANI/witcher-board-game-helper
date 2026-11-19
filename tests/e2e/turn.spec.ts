@@ -156,3 +156,74 @@ test('битва с монстром при 3 игроках: кто выбир�
   await button(page, 'Далее →').click();
   await expect(page.locator('.wizard-checklist')).toContainText('на 1 карту меньше');
 });
+
+test('битва с ведьмаком при 2 игроках: предупреждение о покере, без ставок, проигрыш нападающего', async ({
+  page,
+}) => {
+  await page.goto('turn/');
+  await expect(page.locator('astro-island[ssr]')).toHaveCount(0);
+  await button(page, /^2 игрока/).click();
+  await button(page, /^Кот/).click();
+  await button(page, 'Далее →').click();
+  await doStep(page, /^Да, перемещаюсь/);
+  await button(page, /^Покер с ведьмаком/).click();
+  await doStep(page, /^Да, играем/);
+  await button(page, /^Закончить фазу I/).click();
+  await button(page, /^Битва/).click();
+  await button(page, /^Ведьмак/).click();
+
+  await expect(heading(page)).toHaveText('Можно напасть на ведьмака?');
+  await expect(page.locator('.wizard-warning').first()).toContainText('играли в покер');
+  await button(page, /^Да — нападаю/).click();
+  await expect(heading(page)).toHaveText('Запасы жизни');
+  await button(page, 'Далее →').click();
+
+  const meta = page.locator('.wizard-loop-meta');
+  await expect(heading(page)).toHaveText('Ход в битве ведьмаков');
+  await expect(meta).toContainText('Ход 1');
+  await expect(meta).toContainText('Ходит: вы');
+  await button(page, /^Следующий ход/).click();
+  await expect(meta).toContainText('Ход 2');
+  await expect(meta).toContainText('Ходит: соперник');
+
+  await button(page, /^Кто-то потерял сознание/).click();
+  await button(page, /^Победил соперник/).click();
+  await expect(heading(page)).toHaveText('Победил соперник');
+  await button(page, 'Далее →').click();
+  await expect(heading(page)).toHaveText('Завершение битвы');
+  await expect(page.locator('.wizard-checklist')).not.toContainText('Ставки');
+  await expect(page.locator('.wizard-board')).toBeVisible();
+  await button(page, 'Далее →').click();
+  await expect(heading(page)).toHaveText('Фаза III: сбросьте лишнее');
+  await button(page, 'Далее →').click();
+  await expect(page.locator('.wizard-checklist')).toContainText('на 1 карту меньше');
+});
+
+test('битва с ведьмаком при 3 игроках: ставки, победа нападающего, ставки в завершении', async ({
+  page,
+}) => {
+  await page.goto('turn/');
+  await expect(page.locator('astro-island[ssr]')).toHaveCount(0);
+  await button(page, /^3 игрока/).click();
+  await button(page, /^Грифон/).click();
+  await button(page, 'Далее →').click();
+  await button(page, /^Нет/).click();
+  await button(page, /^Битва/).click();
+  await button(page, /^Ведьмак/).click();
+
+  await expect(page.locator('.wizard-warning')).toHaveCount(0);
+  await button(page, /^Да — нападаю/).click();
+  await expect(heading(page)).toHaveText('Ставки');
+  await button(page, 'Далее →').click();
+  await button(page, 'Далее →').click();
+  await button(page, /^Кто-то потерял сознание/).click();
+  await button(page, /^Я победил/).click();
+  await expect(heading(page)).toHaveText('Победа над ведьмаком');
+  await button(page, 'Далее →').click();
+  await expect(heading(page)).toHaveText('Верх шкалы?');
+  await button(page, /^Нет/).click();
+  await expect(heading(page)).toHaveText('Истощение');
+  await button(page, 'Далее →').click();
+  await expect(heading(page)).toHaveText('Завершение битвы');
+  await expect(page.locator('.wizard-checklist')).toContainText('Ставки');
+});

@@ -4,12 +4,14 @@
  * и передаёт острову пропсом — в браузере коллекции Astro недоступны.
  */
 import {
+  evaluate,
   isSchool,
   type Condition,
   type GraphName,
   type Option,
   type School,
   type WizardNode,
+  type WizardState,
 } from './wizard-engine';
 
 export type Pages = number | readonly number[];
@@ -34,6 +36,8 @@ export type ViewNode = Omit<WizardNode, 'options' | 'yes' | 'no'> & {
   readonly components?: readonly string[] | undefined;
   readonly note?: string | undefined;
   readonly warning?: string | undefined;
+  /** Предупреждения над вариантами, видимые по `showIf`. */
+  readonly alerts?: readonly ViewChecklistItem[] | undefined;
   readonly checklist?: readonly ViewChecklistItem[] | undefined;
   readonly zones?: readonly string[] | undefined;
   /** Действие локации (`la-*`): его шаги из коллекции `location-actions` идут в начало чек-листа. */
@@ -45,7 +49,8 @@ export type ViewNode = Omit<WizardNode, 'options' | 'yes' | 'no'> & {
   /** Подробный текст узла в HTML (тело Markdown-файла подготовки). */
   readonly detailsHtml?: string | undefined;
   readonly question?: string | undefined;
-  readonly actorLabel?: string | undefined;
+  /** «Ходит: …»; список — подписи по очереди: ход 1 — первая, ход 2 — вторая и т. д. */
+  readonly actorLabel?: string | readonly string[] | undefined;
   /** `loop` хода монстра: подсказка, кто выбирает тип атаки (SPEC 8.5). */
   readonly monsterAttack?: boolean | undefined;
   readonly outcome?: 'turn-complete' | 'game-won' | 'setup-complete' | undefined;
@@ -131,6 +136,18 @@ export function toViewNode<
     }),
     ...(detailsHtml && { detailsHtml }),
   };
+}
+
+/** Тексты предупреждений `alerts`, видимые в текущем состоянии. */
+export function visibleAlerts(node: ViewNode, state: WizardState): string[] {
+  return (node.alerts ?? []).filter((a) => evaluate(a.showIf, state)).map((a) => a.text);
+}
+
+/** Подпись «Ходит: …» для хода `turn` (с 1); у списка подписи идут по кругу. */
+export function actorLabel(node: ViewNode, turn: number): string | undefined {
+  const label = node.actorLabel;
+  if (typeof label === 'string' || label === undefined) return label;
+  return label[(Math.max(turn, 1) - 1) % label.length];
 }
 
 /** Правила узла: из `rules` и из пунктов чек-листа, без дублей, в порядке появления. */
