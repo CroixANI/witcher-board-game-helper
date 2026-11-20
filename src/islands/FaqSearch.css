@@ -1,0 +1,98 @@
+/* Поиск и фильтры FAQ (SPEC 10.2). */
+.faq-search {
+  display: grid;
+  gap: var(--space-3);
+  margin-block: var(--space-4);
+}
+
+.faq-search__form {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.faq-search__form input {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  color: var(--color-text);
+  font: inherit;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.faq-search__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.faq-search__chips legend {
+  float: left;
+  width: 100%;
+  margin-bottom: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.faq-search__chips button {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  color: var(--color-text);
+  font: inherit;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.faq-search__chips button[aria-pressed='true'] {
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.faq-search__status {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.faq-search__status:empty {
+  display: none;
+}
+
+.faq-search__results {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.faq-search__result {
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.faq-search__result > a {
+  font-weight: 600;
+}
+
+.faq-search__result a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+}
+
+.faq-search__result p {
+  margin: var(--space-1) 0 0;
+}
+
+.faq-search__result ul {
+  margin: 0;
+  padding-left: var(--space-4);
+}

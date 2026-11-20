@@ -172,6 +172,12 @@ export function WizardIsland({ data, storage: injected }: Props) {
           {position > 0 && ` ${position}/${total}`}
         </span>
         {data.reminders && <ReminderSheet reminders={data.reminders} phase={node.phase} />}
+        <a
+          class="wizard-bar__button wizard-bar__faq"
+          href={url(`faq/?phase=${node.faqPhase ?? node.phase}`)}
+        >
+          ?<span class="visually-hidden"> Частые вопросы об этой фазе</span>
+        </a>
         <button
           type="button"
           ref={restartButton}

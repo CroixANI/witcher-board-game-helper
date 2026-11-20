@@ -53,6 +53,19 @@
   }
 }
 
+/* «?» — ссылка на FAQ с фильтром фазы (SPEC 10.2); выглядит как кнопки панели. */
+.wizard-bar__faq {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
 .wizard-bar__title {
   overflow: hidden;
   font-weight: 600;
