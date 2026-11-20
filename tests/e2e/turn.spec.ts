@@ -1,5 +1,5 @@
 // Wizard хода, фаза I (ROADMAP R3.2, SPEC 8.2, 8.4): перемещение, действие локации, выход в фазу II.
-// Пример стр. 30–32: шаги 1–9 SPEC 17.1 (R3.5); шаги битвы 10–21 — R4.3.
+// Пример стр. 30–32: все 21 шаг SPEC 17.1 (R3.5, R4.3).
 import { expect, test, type Page } from '@playwright/test';
 
 const heading = (page: Page) => page.locator('.wizard-node h2');
@@ -50,9 +50,8 @@ async function doStep(page: Page, option: RegExp) {
   await button(page, 'Далее →').click();
 }
 
-test('пример хода стр. 30–32, шаги 1–9: фаза I до битвы; затем ход через исследование', async ({
-  page,
-}) => {
+/** Шаги 1–9 SPEC 17.1 (2 игрока, Медведь): фаза I примера и выбор битвы с монстром. */
+async function examplePhase1(page: Page) {
   await page.goto('turn/');
   await expect(page.locator('astro-island[ssr]')).toHaveCount(0);
   await button(page, /^2 игрока/).click();
@@ -94,8 +93,13 @@ test('пример хода стр. 30–32, шаги 1–9: фаза I до б�
   await expect(heading(page)).toHaveText('С кем битва?');
   await button(page, /^Монстр/).click();
   await expect(heading(page)).toHaveText('Особая способность монстра');
+}
 
-  // Битва целиком — R4.3. Здесь отказ от неё и исследование до конца хода.
+test('пример хода стр. 30–32, шаги 1–9: фаза I до битвы; затем ход через исследование', async ({
+  page,
+}) => {
+  await examplePhase1(page);
+  // Отказ от битвы и исследование до конца хода.
   await button(page, /^Не могу/).click();
   await expect(heading(page)).toHaveText('Фаза II: одно действие');
   await button(page, /^Исследование/).click();
@@ -115,6 +119,56 @@ test('пример хода стр. 30–32, шаги 1–9: фаза I до б�
   // Снова t-start, школа и число игроков не спрашиваются заново.
   await expect(heading(page)).toHaveText('Ваш ход');
   await expect(page.locator('.school-badge__name')).toHaveText('Школа Медведя');
+});
+
+test('пример хода стр. 30–32 целиком: битва с архиспорой, победа, фаза III до конца хода', async ({
+  page,
+}) => {
+  await examplePhase1(page);
+  // 10. Условие архиспоры: сбросить эликсир — выполнено.
+  await doStep(page, /^Условия нет или выполняю/);
+  // 11. Есть след монстра — первым ходит ведьмак.
+  await expect(heading(page)).toHaveText('Кто ходит первым?');
+  await button(page, /^Да — первым хожу я/).click();
+  const meta = page.locator('.wizard-loop-meta');
+  const hint = page.locator('.wizard-loop-hint');
+  await expect(heading(page)).toHaveText('Ход ведьмака');
+  await expect(meta).toContainText('Ход 1');
+  // 12. Монстр: укус. При 2 игроках тип атаки выбирает соперник.
+  await button(page, /^Ход монстра/).click();
+  await expect(heading(page)).toHaveText('Ход монстра');
+  await expect(meta).toContainText('Ход 2');
+  await expect(hint).toContainText('соперник');
+  // 13–14. Ход ведьмака и снова монстр.
+  await button(page, /^Ход ведьмака/).click();
+  await button(page, /^Ход монстра/).click();
+  // 15. Третий ход ведьмака: монстр побеждён.
+  await button(page, /^Ход ведьмака/).click();
+  await expect(meta).toContainText('Ход 5');
+  await button(page, 'Битва окончена').click();
+  await expect(heading(page)).toHaveText('Чем кончилась битва?');
+  // 16. Победа: жетон из игры, +2 золота, трофей.
+  await doStep(page, /^Победа/);
+  await expect(heading(page)).toHaveText('Верх шкалы?');
+  await button(page, /^Нет/).click();
+  // 17–18. Истощение, новый монстр, завершение битвы.
+  for (const title of ['Истощение', 'Новый монстр — уровнем выше', 'Завершение битвы']) {
+    await expect(heading(page)).toHaveText(title);
+    await button(page, 'Далее →').click();
+  }
+  // 19. Фаза III: рука пуста, добор 3 карт без штрафа.
+  await expect(heading(page)).toHaveText('Фаза III: сбросьте лишнее');
+  await expect(page.locator('.wizard-checklist')).toContainText('рука пуста');
+  await button(page, 'Далее →').click();
+  await expect(heading(page)).toHaveText('Доберите до трёх');
+  await expect(page.locator('.wizard-checklist')).not.toContainText('на 1 карту меньше');
+  await button(page, 'Далее →').click();
+  // 20–21. Покупка из ряда и восполнение ряда.
+  for (const title of ['Возьмите карту из ряда', 'Восполните ряд']) {
+    await expect(heading(page)).toHaveText(title);
+    await button(page, 'Далее →').click();
+  }
+  await expect(heading(page)).toHaveText('Ход завершён');
 });
 
 test('битва с монстром при 3 игроках: кто выбирает атаку, поражение, фаза III с добором на 1 меньше', async ({
