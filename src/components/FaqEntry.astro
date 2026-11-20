@@ -1,0 +1,108 @@
+---
+// Один вопрос FAQ (SPEC 10.1): ответ, источник, «стр. N», карточки правил и «Показать на поле».
+// На `/faq/` — элемент списка с якорем `#slug`, на `/faq/[slug]/` — содержимое страницы.
+import { getEntries, getEntry, render, type CollectionEntry } from 'astro:content';
+import { faqSourceLabel } from '../lib/faq';
+import { formatPages } from '../lib/reference';
+import { url } from '../lib/url';
+
+interface Props {
+  entry: CollectionEntry<'faq'>;
+  /** Отдельная страница вопроса: заголовок `h1` без ссылки и без якоря. */
+  standalone?: boolean;
+}
+
+const { entry, standalone = false } = Astro.props;
+const { question, page, rules: ruleRefs, zones: zoneIds } = entry.data;
+const { Content } = await render(entry);
+const rules = await getEntries(ruleRefs);
+const zones = await Promise.all(
+  zoneIds.map(async (id) => {
+    const zone = await getEntry('zones', id);
+    if (zone === undefined) throw new Error(`FAQ ${entry.id}: нет текста зоны ${id}`);
+    return { id, title: zone.data.title };
+  }),
+);
+---
+
+<article class="faq-entry" id={standalone ? undefined : entry.id}>
+  {standalone ? (
+    <h1>{question}</h1>
+  ) : (
+    <h3>
+      <a href={url(`faq/${entry.id}`)}>{question}</a>
+    </h3>
+  )}
+  <div class="faq-entry__answer">
+    <Content />
+  </div>
+  <p class="faq-entry__source">
+    Источник: {faqSourceLabel(entry.data)}
+    {page !== undefined && <>, {formatPages(page)}</>}
+  </p>
+  {rules.length > 0 && (
+    <p class="faq-entry__links">
+      Правила:{' '}
+      {rules.map((r, i) => (
+        <>
+          {i > 0 && ' · '}
+          <a href={url(`rules/${r.id}`)}>{r.data.title}</a>{' '}
+          <span class="faq-entry__pages">{formatPages(r.data.page)}</span>
+        </>
+      ))}
+    </p>
+  )}
+  {zones.length > 0 && (
+    <ul class="faq-entry__zones">
+      {zones.map((z) => (
+        <li>
+          <a class="zone-link" data-zone={z.id} href={url(`board/#${z.id}`)}>
+            Показать на поле: {z.title}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</article>
+
+<style>
+  .faq-entry {
+    padding: var(--space-3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    scroll-margin-top: var(--space-4);
+  }
+
+  .faq-entry h1,
+  .faq-entry h3 {
+    margin-top: 0;
+  }
+
+  .faq-entry h3 {
+    font-size: 1.1rem;
+  }
+
+  .faq-entry__source,
+  .faq-entry__links {
+    margin: var(--space-2) 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .faq-entry__pages {
+    white-space: nowrap;
+  }
+
+  .faq-entry__zones {
+    margin: var(--space-2) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .faq-entry a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+</style>

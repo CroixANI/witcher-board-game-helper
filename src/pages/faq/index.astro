@@ -1,9 +1,78 @@
 ---
+// Список FAQ (SPEC 4.1, 10): вопросы по фазам, у каждого якорь `#slug`; работает без JS.
+// Поиск и фильтры (`FaqSearch`, Pagefind) — R5.2.
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import FaqEntry from '../../components/FaqEntry.astro';
+import ZonePeek from '../../components/ZonePeek.astro';
+import { groupFaq } from '../../lib/faq';
+
+const groups = groupFaq(await getCollection('faq'));
 ---
 
-<BaseLayout title="FAQ">
+<BaseLayout
+  title="FAQ"
+  description="Частые вопросы по правилам «Ведьмак: Старый мир» с номерами страниц книги правил."
+>
   <h1>FAQ</h1>
-  <p>Вопросы, возникшие за столом, с поиском, работающим offline.</p>
-  <p class="stub">Раздел в разработке (ROADMAP, этап M5).</p>
+  <p>
+    Вопросы, которые возникают за столом. Ответы — своими словами, со ссылкой на страницу книги
+    правил или официальный FAQ.
+  </p>
+
+  <nav class="toc" aria-label="Фазы">
+    <ul>
+      {groups.map((g) => (
+        <li>
+          <a href={`#phase-${g.id}`}>
+            {g.label} ({g.entries.length})
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  {groups.map((g) => (
+    <section id={`phase-${g.id}`} aria-labelledby={`phase-${g.id}-title`}>
+      <h2 id={`phase-${g.id}-title`}>{g.label}</h2>
+      <ul class="list">
+        {g.entries.map((entry) => (
+          <li>
+            <FaqEntry entry={entry} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+  <ZonePeek />
 </BaseLayout>
+
+<style>
+  section {
+    margin-top: var(--space-6);
+    scroll-margin-top: var(--space-4);
+  }
+
+  .toc ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .toc a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+
+  .list {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>

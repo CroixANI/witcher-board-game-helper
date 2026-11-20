@@ -1,0 +1,36 @@
+---
+// Один вопрос FAQ (SPEC 4.1): канонический URL; на списке тот же вопрос — по якорю `#slug`.
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FaqEntry from '../../components/FaqEntry.astro';
+import ZonePeek from '../../components/ZonePeek.astro';
+import { faqPhaseLabel } from '../../lib/faq';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('faq');
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+interface Props {
+  entry: CollectionEntry<'faq'>;
+}
+
+const { entry } = Astro.props;
+---
+
+<BaseLayout title={entry.data.question}>
+  <p class="crumb">
+    <a href={url(`faq#phase-${entry.data.phase}`)}>← FAQ: {faqPhaseLabel(entry.data.phase)}</a>
+  </p>
+  <FaqEntry entry={entry} standalone />
+  <ZonePeek />
+</BaseLayout>
+
+<style>
+  .crumb a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+</style>

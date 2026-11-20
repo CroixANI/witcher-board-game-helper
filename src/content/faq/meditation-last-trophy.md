@@ -4,8 +4,9 @@ tags: [трофеи, медитация, победа]
 phase: phase2
 source: rulebook
 page: 15
-rules: [meditation]
-updated: 2026-11-05
+rules: [meditation, last-trophy-meditation]
+zones: [z-trophy-track]
+updated: 2026-11-20
 ---
 
 Нет. Последний трофей нужно получить в битве. Если медитация дала бы победный трофей, вы его забираете (эффект работает), но жетон трофеев не двигается и истощения нет (стр. 15, 29).
