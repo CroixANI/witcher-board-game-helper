@@ -2,7 +2,7 @@
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { COLLECTIONS } from '../../src/lib/content-schemas';
+import { COLLECTIONS, Phase } from '../../src/lib/content-schemas';
 import {
   FAQ_PHASES,
   faqPhaseLabel,
@@ -33,26 +33,38 @@ describe('groupFaq', () => {
   });
 
   it('у каждой фазы схемы есть группа', () => {
-    expect(FAQ_PHASES.map((p) => p.id)).toEqual([
-      'setup',
-      'phase1',
-      'phase2',
-      'battle',
-      'phase3',
-      'general',
-    ]);
+    expect(FAQ_PHASES.map((p) => p.id).toSorted()).toEqual(Phase.options.toSorted());
     expect(faqPhaseLabel('battle')).toBe('Битва');
   });
 });
 
 describe('faqSourceLabel', () => {
-  it('книга правил, офиц. FAQ (с пунктом и без), договорённость стола', () => {
+  const REF = 'Офиц. FAQ, Базовая игра, п. 11';
+
+  it('книга правил: со страницей и без', () => {
+    expect(faqSourceLabel({ source: 'rulebook', page: 15 })).toBe('Книга правил, стр. 15');
     expect(faqSourceLabel({ source: 'rulebook' })).toBe('Книга правил');
-    expect(
-      faqSourceLabel({ source: 'official-faq', sourceRef: 'Офиц. FAQ, Базовая игра, п. 8' }),
-    ).toBe('Офиц. FAQ, Базовая игра, п. 8');
+  });
+
+  it('книга правил + sourceRef: пункт офиц. FAQ не теряется', () => {
+    expect(faqSourceLabel({ source: 'rulebook', page: 18, sourceRef: REF })).toBe(
+      `Книга правил, стр. 18 · ${REF}`,
+    );
+  });
+
+  it('офиц. FAQ: страница — книги правил, а не FAQ', () => {
+    expect(faqSourceLabel({ source: 'official-faq', sourceRef: REF, page: 22 })).toBe(
+      `${REF} · Книга правил, стр. 22`,
+    );
+    expect(faqSourceLabel({ source: 'official-faq', sourceRef: REF })).toBe(REF);
     expect(faqSourceLabel({ source: 'official-faq' })).toBe('Официальный FAQ');
+  });
+
+  it('договорённость стола: со страницей книги и без', () => {
     expect(faqSourceLabel({ source: 'house' })).toBe('Договорённость стола');
+    expect(faqSourceLabel({ source: 'house', page: 9 })).toBe(
+      'Договорённость стола · Книга правил, стр. 9',
+    );
   });
 });
 

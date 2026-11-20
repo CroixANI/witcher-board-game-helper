@@ -13,7 +13,7 @@ interface Props {
 }
 
 const { entry, standalone = false } = Astro.props;
-const { question, page, rules: ruleRefs, zones: zoneIds } = entry.data;
+const { question, rules: ruleRefs, zones: zoneIds } = entry.data;
 const { Content } = await render(entry);
 const rules = await getEntries(ruleRefs);
 const zones = await Promise.all(
@@ -36,10 +36,7 @@ const zones = await Promise.all(
   <div class="faq-entry__answer">
     <Content />
   </div>
-  <p class="faq-entry__source">
-    Источник: {faqSourceLabel(entry.data)}
-    {page !== undefined && <>, {formatPages(page)}</>}
-  </p>
+  <p class="faq-entry__source">Источник: {faqSourceLabel(entry.data)}</p>
   {rules.length > 0 && (
     <p class="faq-entry__links">
       Правила:{' '}
