@@ -23,7 +23,14 @@ const { entry } = Astro.props;
   <p class="crumb">
     <a href={url(`faq#phase-${entry.data.phase}`)}>← FAQ: {faqPhaseLabel(entry.data.phase)}</a>
   </p>
-  <FaqEntry entry={entry} standalone />
+  <!-- Индекс Pagefind (SPEC 10.2): только тело вопроса, фильтры фазы и тегов. -->
+  <div data-pagefind-body>
+    <span data-pagefind-filter={`phase:${entry.data.phase}`}></span>
+    {entry.data.tags.map((tag) => (
+      <span data-pagefind-filter={`tag:${tag}`}></span>
+    ))}
+    <FaqEntry entry={entry} standalone />
+  </div>
   <ZonePeek />
 </BaseLayout>
 
