@@ -87,7 +87,7 @@ describe('FaqSearch: текстовый поиск через Pagefind', () => {
         url: '/base/faq/a/',
         meta: { title: 'Вопрос A' },
         excerpt: 'про <mark>медитацию</mark>',
-        sub_results: [{ url: '/base/faq/a/', title: 'Вопрос A' }],
+        sub_results: [{ url: '/base/faq/a/', title: 'Вопрос A', locations: [3] }],
       },
     ]);
     setup('?phase=phase2', pf.load);
@@ -109,14 +109,42 @@ describe('FaqSearch: текстовый поиск через Pagefind', () => {
         meta: { title: 'Поле' },
         excerpt: '…',
         sub_results: [
-          { url: '/base/board/#z-action-row', title: 'Ряд карт действий' },
-          { url: '/base/board/', title: 'Поле' },
+          { url: '/base/board/#z-action-row', title: 'Ряд карт действий', locations: [5] },
+          { url: '/base/board/', title: 'Поле', locations: [1] },
         ],
       },
     ]);
     setup('?q=ряд', pf.load);
     const link = await screen.findByRole('link', { name: 'Ряд карт действий' });
     expect(link.getAttribute('href')).toBe('/base/board/#z-action-row');
+  });
+
+  it('sub-results: сверху разделы с наибольшим числом совпадений, не больше 3', async () => {
+    const zone = (id: string, hits: number) => ({
+      url: `/base/board/#${id}`,
+      title: id,
+      locations: Array.from({ length: hits }, (_, i) => i),
+    });
+    const pf = fakePagefind([
+      {
+        url: '/base/board/',
+        meta: { title: 'Поле' },
+        excerpt: '…',
+        sub_results: [
+          zone('z-1', 1),
+          zone('z-2', 1),
+          zone('z-3', 14),
+          zone('z-4', 11),
+          zone('z-5', 6),
+        ],
+      },
+    ]);
+    setup('?q=монстр', pf.load);
+    await screen.findByRole('link', { name: 'z-3' });
+    const titles = [...document.querySelectorAll('.faq-search__result li a')].map(
+      (a) => a.textContent,
+    );
+    expect(titles).toEqual(['z-3', 'z-4', 'z-5']);
   });
 
   it('Pagefind не загрузился — сообщение, список снова виден', async () => {

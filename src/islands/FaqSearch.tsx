@@ -20,7 +20,11 @@ export type PagefindResultData = {
   readonly url: string;
   readonly excerpt: string;
   readonly meta: { readonly title?: string };
-  readonly sub_results?: readonly { readonly url: string; readonly title: string }[];
+  readonly sub_results?: readonly {
+    readonly url: string;
+    readonly title: string;
+    readonly locations: readonly number[];
+  }[];
 };
 export type Pagefind = {
   search(
@@ -185,6 +189,8 @@ function statusText(searching: boolean, found: Found, shown: number, total: numb
 function SearchResult({ result }: { result: PagefindResultData }) {
   const anchors = (result.sub_results ?? [])
     .filter((s) => s.url.includes('#'))
+    // Pagefind отдаёт разделы в порядке страницы; сверху — с наибольшим числом совпадений.
+    .toSorted((a, b) => b.locations.length - a.locations.length)
     .slice(0, MAX_SUB_RESULTS);
   return (
     <li class="faq-search__result">
