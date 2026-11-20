@@ -43,20 +43,23 @@ const zoneIds = BOARD_ZONES.map((z) => z.id);
   description="Схема игрового поля: где какие стопки и ячейки, что в них лежит и когда они нужны."
 >
   <style is:inline set:html={zoneHighlightCss(zoneIds)} />
-  <h1>Поле</h1>
-  <p>Тап по карточке подсвечивает зону на схеме.</p>
-  <BoardPage client:load zoneIds={zoneIds}>
-    <div class="board-sticky">
-      <BoardSchematic zones={[]} latent={zoneIds} />
-    </div>
-    {cards.map(({ children, ...card }) => (
-      <ZoneCard {...card}>
-        {children.map((child) => (
-          <ZoneCard {...child} nested />
-        ))}
-      </ZoneCard>
-    ))}
-  </BoardPage>
+  <!-- Pagefind (SPEC 11.5.3): заголовки карточек с id дают sub-results `#<zone-id>`. -->
+  <div data-pagefind-body>
+    <h1>Поле</h1>
+    <p>Тап по карточке подсвечивает зону на схеме.</p>
+    <BoardPage client:load zoneIds={zoneIds}>
+      <div class="board-sticky" data-pagefind-ignore>
+        <BoardSchematic zones={[]} latent={zoneIds} />
+      </div>
+      {cards.map(({ children, ...card }) => (
+        <ZoneCard {...card}>
+          {children.map((child) => (
+            <ZoneCard {...child} nested />
+          ))}
+        </ZoneCard>
+      ))}
+    </BoardPage>
+  </div>
 </BaseLayout>
 
 <style>

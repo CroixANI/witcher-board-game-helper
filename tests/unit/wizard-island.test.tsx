@@ -170,6 +170,21 @@ describe('<WizardIsland> на графе из 4 узлов (подготовка
   });
 });
 
+describe('<WizardIsland>: кнопка «?» (SPEC 10.2)', () => {
+  const faqLink = () => screen.getByRole('link', { name: /Частые вопросы об этой фазе/ });
+
+  it('ведёт на /faq/?phase=<фаза узла>', () => {
+    render(<WizardIsland data={setup} storage={memoryStorage()} />);
+    expect(faqLink().getAttribute('href')).toBe('/faq/?phase=setup');
+  });
+
+  it('faqPhase узла важнее phase', () => {
+    const nodes = setupNodes.map((n) => (n.id === 'a' ? { ...n, faqPhase: 'battle' as const } : n));
+    render(<WizardIsland data={{ ...setup, nodes }} storage={memoryStorage()} />);
+    expect(faqLink().getAttribute('href')).toBe('/faq/?phase=battle');
+  });
+});
+
 describe('<WizardIsland> на демо-графе (все типы узлов)', () => {
   it('choice ставит players: пункт чек-листа с showIf виден только при 4–5 игроках', () => {
     render(<WizardIsland data={demo} storage={memoryStorage()} />);

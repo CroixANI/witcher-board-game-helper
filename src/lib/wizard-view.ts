@@ -31,6 +31,8 @@ export type ViewOption = Option & WithIcon & { readonly hint?: string | undefine
 export type ViewNode = Omit<WizardNode, 'options' | 'yes' | 'no'> & {
   readonly title: string;
   readonly phase: Phase;
+  /** Фильтр кнопки «?» (SPEC 10.2); по умолчанию — `phase`. */
+  readonly faqPhase?: Phase | undefined;
   readonly pages: Pages;
   readonly rules?: readonly string[] | undefined;
   readonly components?: readonly string[] | undefined;

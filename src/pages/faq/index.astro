@@ -1,13 +1,18 @@
 ---
 // Список FAQ (SPEC 4.1, 10): вопросы по фазам, у каждого якорь `#slug`; работает без JS.
-// Поиск и фильтры (`FaqSearch`, Pagefind) — R5.2.
+// Поиск и фильтры — остров `FaqSearch` (R5.2): он скрывает лишнее в готовом списке
+// по `data-faq-*` и показывает результаты Pagefind.
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import FaqEntry from '../../components/FaqEntry.astro';
 import ZonePeek from '../../components/ZonePeek.astro';
-import { groupFaq } from '../../lib/faq';
+import { FaqSearch } from '../../islands/FaqSearch';
+import { FAQ_PHASES, groupFaq } from '../../lib/faq';
+import { faqTags } from '../../lib/faq-search';
 
-const groups = groupFaq(await getCollection('faq'));
+const entries = await getCollection('faq');
+const groups = groupFaq(entries);
+const items = entries.map((e) => ({ slug: e.id, phase: e.data.phase, tags: e.data.tags }));
 ---
 
 <BaseLayout
@@ -20,30 +25,34 @@ const groups = groupFaq(await getCollection('faq'));
     правил или официальный FAQ.
   </p>
 
-  <nav class="toc" aria-label="Фазы">
-    <ul>
-      {groups.map((g) => (
-        <li>
-          <a href={`#phase-${g.id}`}>
-            {g.label} ({g.entries.length})
-          </a>
-        </li>
-      ))}
-    </ul>
-  </nav>
+  <FaqSearch client:load items={items} phases={FAQ_PHASES} tags={faqTags(items)} />
 
-  {groups.map((g) => (
-    <section id={`phase-${g.id}`} aria-labelledby={`phase-${g.id}-title`}>
-      <h2 id={`phase-${g.id}-title`}>{g.label}</h2>
-      <ul class="list">
-        {g.entries.map((entry) => (
-          <li>
-            <FaqEntry entry={entry} />
+  <div data-faq-list>
+    <nav class="toc" aria-label="Фазы">
+      <ul>
+        {groups.map((g) => (
+          <li data-faq-toc={g.id}>
+            <a href={`#phase-${g.id}`}>
+              {g.label} ({g.entries.length})
+            </a>
           </li>
         ))}
       </ul>
-    </section>
-  ))}
+    </nav>
+
+    {groups.map((g) => (
+      <section id={`phase-${g.id}`} aria-labelledby={`phase-${g.id}-title`} data-faq-group={g.id}>
+        <h2 id={`phase-${g.id}-title`}>{g.label}</h2>
+        <ul class="list">
+          {g.entries.map((entry) => (
+            <li data-faq-item={entry.id}>
+              <FaqEntry entry={entry} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
   <ZonePeek />
 </BaseLayout>
 

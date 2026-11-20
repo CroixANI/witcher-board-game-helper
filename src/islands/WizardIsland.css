@@ -40,8 +40,8 @@
   white-space: nowrap;
 }
 
-/* Узкий экран: у «⟲ Заново» остаётся только значок (имя для скринридера то же), чтобы
-   заголовок фазы поместился рядом с ⚑ и ☰. */
+/* Узкий экран: у «← Назад» и «⟲ Заново» остаются только значки (имя для скринридера то же),
+   чтобы заголовок фазы поместился рядом с ⚑, ? и ☰. */
 @media (max-width: 420px) {
   .wizard-bar__label {
     position: absolute;
@@ -51,6 +51,19 @@
     clip: rect(0 0 0 0);
     white-space: nowrap;
   }
+}
+
+/* «?» — ссылка на FAQ с фильтром фазы (SPEC 10.2); выглядит как кнопки панели. */
+.wizard-bar__faq {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
 }
 
 .wizard-bar__title {

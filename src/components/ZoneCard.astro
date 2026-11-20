@@ -26,7 +26,12 @@ const usedIn = [
 const faq = uses.filter((u) => u.graph === 'faq');
 ---
 
-<section id={id} class:list={['zone-card', { 'zone-card--nested': nested }]}>
+<!-- data-pagefind-title: sub-result Pagefind `/board/#<id>` с названием зоны (R5.2). -->
+<section
+  id={id}
+  class:list={['zone-card', { 'zone-card--nested': nested }]}
+  data-pagefind-title={data.title}
+>
   <div class="zone-card__head">
     <Heading>
       <a class="zone-card__anchor" href={`#${id}`}>

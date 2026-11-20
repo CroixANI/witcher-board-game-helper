@@ -1,4 +1,4 @@
-// Страницы FAQ и связка с полем (SPEC 10, 11.5; ROADMAP R5.1).
+// Страницы FAQ, связка с полем, поиск и фильтры (SPEC 10, 11.5; ROADMAP R5.1, R5.2).
 import { expect, test, type Page } from '@playwright/test';
 
 const SLUG = 'meditation-last-trophy';
@@ -46,8 +46,67 @@ for (const path of ['faq/', `faq/${SLUG}/`]) {
   });
 }
 
+test.describe('поиск и фильтры (Pagefind)', () => {
+  const search = (page: Page) => page.getByLabel('Поиск по FAQ и полю');
+
+  test('«медитация» находит вопрос; ссылка с base path', async ({ page }) => {
+    await page.goto('faq/');
+    await hydrated(page);
+    await search(page).fill('медитация');
+    const results = page.locator('.faq-search__results');
+    await expect(results.getByRole('link', { name: QUESTION })).toHaveAttribute(
+      'href',
+      `/witcher-board-game-helper/faq/${SLUG}/`,
+    );
+    await expect(page.locator('[data-faq-list]')).toBeHidden();
+    await expect(page).toHaveURL(/\?q=/);
+  });
+
+  test('«ряд карт» ведёт к карточке зоны на /board/', async ({ page }) => {
+    await page.goto('faq/?q=ряд карт');
+    await hydrated(page);
+    const link = page
+      .locator('.faq-search__results')
+      .getByRole('link', { name: 'Ряд карт действий' });
+    await expect(link).toHaveAttribute('href', '/witcher-board-game-helper/board/#z-action-row');
+    await link.click();
+    await expect(page).toHaveURL(/\/board\/#z-action-row$/);
+  });
+
+  test('?phase=battle фильтрует список, чип «Битва» нажат', async ({ page }) => {
+    await page.goto('faq/?phase=battle');
+    await hydrated(page);
+    await expect(page.locator(`#${SLUG}`)).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Битва' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await page.getByRole('button', { name: 'Все' }).first().click();
+    await expect(page.locator(`#${SLUG}`)).toBeVisible();
+    await expect(page).toHaveURL(/\/faq\/$/);
+  });
+
+  test("«?» в wizard'е ведёт на FAQ с фильтром фазы", async ({ page }) => {
+    await page.goto('setup/');
+    await hydrated(page);
+    const help = page.getByRole('link', { name: /Частые вопросы об этой фазе/ });
+    await expect(help).toHaveAttribute('href', '/witcher-board-game-helper/faq/?phase=setup');
+    await help.click();
+    await expect(page).toHaveURL(/\/faq\/\?phase=setup$/);
+    await expect(page.getByRole('button', { name: 'Подготовка' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+});
+
 test.describe('без JS', () => {
   test.use({ javaScriptEnabled: false });
+
+  test('с ?phase=battle виден полный список', async ({ page }) => {
+    await page.goto('faq/?phase=battle');
+    await expect(page.locator(`#${SLUG}`)).toBeVisible();
+  });
 
   test('«Показать на поле» ведёт на /board/#зона', async ({ page }) => {
     await page.goto(`faq/${SLUG}/`);

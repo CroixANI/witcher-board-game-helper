@@ -47,8 +47,8 @@
 | R4.1 | done | 2026-11-18 | #35 |
 | R4.2 | done | 2026-11-19 | #36 |
 | R4.3 | done | 2026-11-19 | #37 |
-| R5.1 | review | 2026-11-20 | #38 |
-| R5.2 | todo | | |
+| R5.1 | done | 2026-11-20 | #38 |
+| R5.2 | review | 2026-11-20 | #39 |
 | R5.3 | todo | | |
 | R5.4 | todo | | |
 | R5.5 | todo | | |
@@ -477,7 +477,7 @@
   - `ZonePeek` подключён на `/faq/` и `/faq/[slug]/`.
 - **Проверка:** `npm run build`; `ls dist/faq/`.
 
-### - [ ] R5.2 Pagefind, фильтры, кнопка «?» из wizard'а
+### - [x] R5.2 Pagefind, фильтры, кнопка «?» из wizard'а
 - **Ветка:** `feat/r5.2-faq-search` · `faq` · M5.
 - **Цель:** `astro-pagefind`, остров `FaqSearch` (JS API, фильтры phase/tag, URL-параметры), кнопка «?» в `WizardIsland` → `/faq/?phase=…` (SPEC 10.2).
 - **Готово, когда:**
