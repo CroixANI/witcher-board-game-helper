@@ -55,6 +55,27 @@ describe('buildZoneIndex', () => {
     expect(index.get('z-row-plus1')?.map((u) => u.id)).toEqual(['p3']);
   });
 
+  it("FAQ попадает в зону и её родителя после узлов wizard'ов", () => {
+    const index = buildZoneIndex(ZONES, {
+      setup: [node('s02', ['z-row'])],
+      turn: [],
+      faq: [{ id: 'take-card-with-cost', title: 'Вопрос?', zones: ['z-row-minus1'] }],
+    });
+    expect(index.get('z-row')).toEqual([
+      { graph: 'setup', id: 's02', title: 'Узел s02' },
+      { graph: 'faq', id: 'take-card-with-cost', title: 'Вопрос?' },
+    ]);
+    expect(index.get('z-row-minus1')).toEqual([
+      { graph: 'faq', id: 'take-card-with-cost', title: 'Вопрос?' },
+    ]);
+  });
+
+  it('неизвестная зона в FAQ — ошибка с источником faq', () => {
+    expect(() =>
+      buildZoneIndex(ZONES, { setup: [], turn: [], faq: [node('q', ['z-nope'])] }),
+    ).toThrow(/faq: узел q: неизвестная зона z-nope/);
+  });
+
   it('неизвестная зона в узле — понятная ошибка', () => {
     expect(() => buildZoneIndex(ZONES, { setup: [node('s1', ['z-nope'])], turn: [] })).toThrow(
       /узел s1: неизвестная зона z-nope/,

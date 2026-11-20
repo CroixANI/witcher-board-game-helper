@@ -448,6 +448,7 @@ const faq = defineCollection({
     sourceRef: z.string().optional(),        // «Офиц. FAQ, Базовая игра, п. 8»
     sourceUrl: z.string().url().optional(),
     rules: z.array(reference('rules')).default([]),
+    zones: z.array(ZoneId).default([]),      // id из ZONE_IDS (board-zones.ts); «Показать на поле» (R5.1)
     updated: z.coerce.date(),
     expansion: Expansion,
   }).strict().refine(f => f.source !== 'rulebook' || f.page, { message: 'rulebook → нужен page' }),
@@ -1075,6 +1076,7 @@ source: house         # rulebook | official-faq | house
 # page: 15            # обязателен для rulebook
 # sourceRef: "Офиц. FAQ, Базовая игра, п. 8"
 rules: []             # id карточек правил, например [meditation]
+# zones: [z-action-row]  # id зон поля из src/data/board-zones.ts → «Показать на поле»
 updated: 2026-11-03
 ---
 Короткий ответ своими словами. Укажите страницу правил: (стр. N).

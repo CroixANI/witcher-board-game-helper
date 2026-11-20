@@ -6,6 +6,7 @@
  * объектом `ref` ({ rules, components }): Astro подставляет `reference()`, валидатор — проверку по реальным id.
  */
 import { z } from 'astro/zod';
+import { ZONE_IDS } from '../data/board-zones';
 
 // ── общие типы ────────────────────────────────────────────
 export const Page = z.number().int().min(1).max(36); // стр. книги правил
@@ -14,6 +15,10 @@ export const Expansion = z.enum(['base']).default('base'); // задел под 
 export const Phase = z.enum(['setup', 'phase1', 'phase2', 'battle', 'phase3', 'general']);
 export const PlayerCount = z.number().int().min(2).max(5);
 export const Id = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/); // kebab-case
+/** id зоны поля из `src/data/board-zones.ts`. */
+export const ZoneId = z.string().refine((id) => ZONE_IDS.has(id), {
+  error: (iss) => `неизвестная зона ${String(iss.input)}`,
+});
 
 /** Условие показа узла / варианта / перехода. Все поля через AND, массив = OR значений. */
 export const Condition = z
@@ -276,6 +281,7 @@ export function createSchemas<RR extends z.ZodType, RC extends z.ZodType>(ref: R
       sourceRef: z.string().optional(), // «Офиц. FAQ, Базовая игра, п. 8»
       sourceUrl: z.url().optional(),
       rules: z.array(ref.rules).default([]),
+      zones: z.array(ZoneId).default([]), // «Показать на поле» и «Частые вопросы здесь» на /board/
       updated: z.coerce.date(),
       expansion: Expansion,
     })

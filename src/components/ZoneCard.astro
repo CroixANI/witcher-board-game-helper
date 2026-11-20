@@ -1,5 +1,5 @@
 ---
-// Карточка зоны на `/board/` (SPEC 11.5.3): что здесь лежит, когда используется, правила.
+// Карточка зоны на `/board/` (SPEC 11.5.3): что здесь лежит, когда используется, FAQ, правила.
 // Подзоны приходят слотом и вкладываются в родителя.
 import type { CollectionEntry } from 'astro:content';
 import Icon from './Icon.astro';
@@ -23,6 +23,7 @@ const usedIn = [
   { label: 'Подготовка', items: uses.filter((u) => u.graph === 'setup') },
   { label: 'Ход', items: uses.filter((u) => u.graph === 'turn') },
 ].filter((group) => group.items.length > 0);
+const faq = uses.filter((u) => u.graph === 'faq');
 ---
 
 <section id={id} class:list={['zone-card', { 'zone-card--nested': nested }]}>
@@ -57,6 +58,19 @@ const usedIn = [
         {usedIn.map((group) => (
           <li>
             {group.label}: {group.items.map((u) => u.title).join('; ')}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  {faq.length > 0 && (
+    <div class="zone-card__block">
+      <p class="zone-card__label">Частые вопросы здесь</p>
+      <ul>
+        {faq.map((q) => (
+          <li>
+            <a href={url(`faq/${q.id}`)}>{q.title}</a>
           </li>
         ))}
       </ul>

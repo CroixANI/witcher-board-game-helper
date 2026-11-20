@@ -52,6 +52,13 @@ describe('validate-content: битые фикстуры (tests/fixtures/bad)', (
     expect(errors[0]).toContain('rulebook → нужен page');
   });
 
+  it('FAQ: неизвестная зона в zones', () => {
+    const { errors } = bad('faq-unknown-zone');
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain('faq/bad-zone.md');
+    expect(errors[0]).toContain('zones.0: неизвестная зона z-nope');
+  });
+
   it('неизвестная зона', () => {
     const { errors } = bad('unknown-zone');
     expect(errors).toHaveLength(1);
