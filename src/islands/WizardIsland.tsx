@@ -165,7 +165,7 @@ export function WizardIsland({ data, storage: injected }: Props) {
           onClick={() => update(back)}
           disabled={state.history.length === 0}
         >
-          ← Назад
+          ← <span class="wizard-bar__label">Назад</span>
         </button>
         <span class="wizard-bar__title">
           {barTitle}
