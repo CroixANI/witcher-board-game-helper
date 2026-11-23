@@ -92,10 +92,9 @@ test.describe('поиск и фильтры (Pagefind)', () => {
     await page.goto('faq/?phase=battle');
     await hydrated(page);
     await expect(page.locator(`#${SLUG}`)).toBeHidden();
-    await expect(page.getByRole('button', { name: 'Битва', exact: true })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    await expect(
+      page.getByRole('group', { name: 'Фаза' }).getByRole('button', { name: 'Битва', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
     await page.getByRole('button', { name: 'Все' }).first().click();
     await expect(page.locator(`#${SLUG}`)).toBeVisible();
     await expect(page).toHaveURL(/\/faq\/$/);
@@ -108,10 +107,11 @@ test.describe('поиск и фильтры (Pagefind)', () => {
     await expect(help).toHaveAttribute('href', '/witcher-board-game-helper/faq/?phase=setup');
     await help.click();
     await expect(page).toHaveURL(/\/faq\/\?phase=setup$/);
-    await expect(page.getByRole('button', { name: 'Подготовка', exact: true })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    await expect(
+      page
+        .getByRole('group', { name: 'Фаза' })
+        .getByRole('button', { name: 'Подготовка', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 });
 
