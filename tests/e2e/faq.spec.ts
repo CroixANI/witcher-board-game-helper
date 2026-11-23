@@ -62,6 +62,21 @@ test.describe('поиск и фильтры (Pagefind)', () => {
     await expect(page).toHaveURL(/\?q=/);
   });
 
+  for (const [query, question] of [
+    ['ставки', 'Можно ли делать ставки при игре вдвоём?'],
+    ['жетон следа', 'Как взять жетон следа по эффекту?'],
+    ['покер', 'Можно ли сразиться с ведьмаком, с которым только что играл в покер?'],
+  ] as const) {
+    test(`стартовый набор: «${query}» находит вопрос`, async ({ page }) => {
+      await page.goto('faq/');
+      await hydrated(page);
+      await search(page).fill(query);
+      await expect(
+        page.locator('.faq-search__results').getByRole('link', { name: question }),
+      ).toBeVisible();
+    });
+  }
+
   test('«ряд карт» ведёт к карточке зоны на /board/', async ({ page }) => {
     await page.goto('faq/?q=ряд карт');
     await hydrated(page);
@@ -77,7 +92,7 @@ test.describe('поиск и фильтры (Pagefind)', () => {
     await page.goto('faq/?phase=battle');
     await hydrated(page);
     await expect(page.locator(`#${SLUG}`)).toBeHidden();
-    await expect(page.getByRole('button', { name: 'Битва' })).toHaveAttribute(
+    await expect(page.getByRole('button', { name: 'Битва', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -93,7 +108,7 @@ test.describe('поиск и фильтры (Pagefind)', () => {
     await expect(help).toHaveAttribute('href', '/witcher-board-game-helper/faq/?phase=setup');
     await help.click();
     await expect(page).toHaveURL(/\/faq\/\?phase=setup$/);
-    await expect(page.getByRole('button', { name: 'Подготовка' })).toHaveAttribute(
+    await expect(page.getByRole('button', { name: 'Подготовка', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
