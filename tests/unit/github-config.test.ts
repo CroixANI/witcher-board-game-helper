@@ -3,6 +3,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
+import { Phase } from '../../src/lib/content-schemas';
 
 type Step = { uses?: string; run?: string; if?: string; with?: Record<string, unknown> };
 type Job = { needs?: string | string[]; steps: Step[]; environment?: { name: string } };
@@ -136,11 +137,21 @@ describe('Issue Forms', () => {
     for (const field of form.body) expect(field.attributes.label).toBeTruthy();
   });
 
-  it('FAQ: label faq, вопрос и фаза обязательны', () => {
+  it('FAQ: label faq, вопрос и фаза обязательны, есть поле «Теги» и все 6 фаз', () => {
     const form = load<IssueForm>(`${dir}/faq-question.yml`);
     expect(form.labels).toEqual(['faq']);
     const required = form.body.filter((f) => f.validations?.required).map((f) => f.id);
     expect(required).toEqual(['question', 'phase']);
+
+    const phase = form.body.find((f) => f.id === 'phase');
+    expect(phase?.type).toBe('dropdown');
+    expect(phase?.attributes.options).toHaveLength(Phase.options.length);
+
+    const tags = form.body.find((f) => f.id === 'tags');
+    expect(tags).toMatchObject({ type: 'input', attributes: { label: 'Теги' } });
+    expect(tags?.validations?.required).toBeFalsy();
+
+    expect(form.body.map((f) => f.id)).toEqual(['question', 'phase', 'tags', 'answer', 'page']);
   });
 
   it('Ошибка в правилах: label rules, страница обязательна, игроков 2–5 (D3)', () => {
