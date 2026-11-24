@@ -32,7 +32,7 @@
     "@playwright/test": "^1.65.1",
     "@testing-library/preact": "^3.2.6",
     "@types/node": "^26.6.6",
-    "@vitest/coverage-v8": "^5.1.0",
+    "@vitest/coverage-v8": "^5.1.1",
     "astro": "^7.4.13",
     "astro-pagefind": "^2.0.1",
     "eslint": "^10.14.0",
